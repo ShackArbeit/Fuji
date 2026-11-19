@@ -5,47 +5,556 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RPA 業績規劃</title>
 <style>
+/* 單一主色 + 兩個語意色（機器人／人工覆核）；系統字型；投影可讀 */
 :root {
-  --ink: #1a1f2b;
+  --ink: #172033;
+  --muted: #4f5b70;
   --bg: #ffffff;
-  --muted: #5b6475;
-  --primary: #0b5cad;
-  --robot: #0b7a5a;
-  --human: #b45309;
-  --line: #d9dee7;
-  font-size: 20px;
+  --panel: #f5f7fa;
+  --line: #d5dbe5;
+  --primary: #0b4f9c;
+  --primary-soft: #e7eff9;
+  --robot: #0a7254;
+  --robot-soft: #e2f3ec;
+  --human: #a14a05;
+  --human-soft: #fcefe1;
+  --ok: #0a7254;
+  --bad: #b42318;
+  --radius: 10px;
+  --dots-w: 72px;
 }
+html { font-size: 18px; scroll-snap-type: y proximity; scroll-behavior: smooth; }
+@media (min-width: 1600px) { html { font-size: 20px; } }
 * { box-sizing: border-box; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", system-ui, sans-serif;
-  line-height: 1.6;
+  font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", "Heiti TC", system-ui, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
-.slide { min-height: 100vh; padding: 48px 64px; }
-h1 { color: var(--primary); margin: 0 0 8px; }
-.note { color: var(--muted); }
-table.check { border-collapse: collapse; margin-top: 24px; }
-table.check th, table.check td { border-bottom: 1px solid var(--line); padding: 8px 16px; text-align: left; }
-table.check td:last-child { font-variant-numeric: tabular-nums; }
+p { margin: 0; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.3; }
+h1 { font-size: 2.6rem; color: var(--primary); }
+h2 { font-size: 2.1rem; }
+h3 { font-size: 1.3rem; margin-bottom: .6rem; }
+h4 { font-size: 1.05rem; margin: .8rem 0 .4rem; color: var(--muted); }
+a { color: var(--primary); }
+strong { font-weight: 700; }
+.muted { color: var(--muted); }
+.num, .tbl td.num, .tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 16px; top: 16px; z-index: 50; background: #fff; padding: 8px 12px; }
+
+/* ---- 投影片 ---- */
+.slide {
+  min-height: 100vh;
+  scroll-snap-align: start;
+  padding: 2.2rem calc(var(--dots-w) + 2rem) 2rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  border-bottom: 1px solid var(--line);
+  max-width: 1920px;
+  margin: 0 auto;
+}
+.slide:focus { outline: none; }
+.slide-head { display: flex; flex-direction: column; gap: .4rem; }
+.row-head { flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 2rem; flex-wrap: wrap; }
+.eyebrow { color: var(--primary); font-weight: 700; letter-spacing: .05em; }
+.eyebrow .no { display: inline-block; min-width: 2.2em; }
+.lead { font-size: 1.15rem; color: var(--muted); max-width: 70em; }
+.lead strong { color: var(--ink); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.3rem; }
+.hint { color: var(--muted); margin-top: auto; }
+.tag-assume {
+  display: inline-block; font-size: .8rem; font-weight: 700; line-height: 1.4;
+  padding: 0 .45em; border: 1px dashed var(--muted); border-radius: 4px; color: var(--muted);
+  vertical-align: .12em; white-space: nowrap;
+}
+.tag-assume::before { content: "※"; margin-right: .15em; }
+.tag-changed { display: inline-block; font-size: .8rem; font-weight: 700; color: #fff; background: var(--primary); border-radius: 4px; padding: 0 .4em; margin-left: .4em; }
+.status { font-weight: 700; }
+[data-state="ok"] { color: var(--ok); }
+[data-state="bad"] { color: var(--bad); }
+
+/* ---- 導覽 ---- */
+.dots {
+  position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 10px; z-index: 20;
+}
+.dot {
+  position: relative; display: block; width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--primary); background: #fff;
+}
+.dot[aria-current="true"] { background: var(--primary); }
+.dot-label {
+  position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+  white-space: nowrap; background: var(--ink); color: #fff; font-size: .85rem;
+  padding: 2px 8px; border-radius: 4px; opacity: 0; pointer-events: none;
+}
+.dot:hover .dot-label, .dot:focus-visible .dot-label { opacity: 1; }
+.progress { position: fixed; left: 0; top: 0; right: 0; height: 4px; z-index: 20; background: transparent; }
+.progress-bar { height: 100%; background: var(--primary); width: 0; transition: width .2s; }
+
+/* ---- 按鈕與控制 ---- */
+.btn {
+  font: inherit; font-weight: 700; cursor: pointer;
+  border: 2px solid var(--primary); background: var(--primary); color: #fff;
+  border-radius: 8px; padding: .35rem 1rem;
+}
+.btn-ghost { background: #fff; color: var(--primary); }
+.toggle { display: inline-flex; border: 2px solid var(--primary); border-radius: 10px; overflow: hidden; }
+.toggle-btn, .chip {
+  font: inherit; cursor: pointer; border: 0; background: #fff; color: var(--primary);
+  padding: .45rem 1.1rem; font-weight: 700;
+}
+.toggle-btn[aria-pressed="true"] { background: var(--primary); color: #fff; }
+.filter { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip { border: 2px solid var(--primary); border-radius: 999px; padding: .2rem .9rem; }
+.chip[aria-pressed="true"] { background: var(--primary); color: #fff; }
+.chip[aria-pressed="true"]::before { content: "✓ "; }
+label, legend { font-weight: 700; }
+.field { display: flex; flex-direction: column; gap: .3rem; margin-bottom: 1rem; }
+.field output { color: var(--primary); font-variant-numeric: tabular-nums; }
+select { font: inherit; padding: .4rem .5rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; max-width: 100%; }
+input[type="range"] { width: 100%; accent-color: var(--primary); height: 28px; }
+fieldset { border: 0; padding: 0; margin: 0 0 1rem; }
+fieldset label { font-weight: 400; display: flex; gap: .5rem; align-items: center; }
+input[type="radio"] { width: 1.1rem; height: 1.1rem; accent-color: var(--primary); }
+
+/* ---- 徽章 ---- */
+.badge {
+  display: inline-block; font-size: .85rem; font-weight: 700; line-height: 1.5;
+  padding: 0 .55em; border-radius: 5px; white-space: nowrap; border: 1.5px solid transparent;
+}
+.ev-A { background: var(--primary); color: #fff; }
+.ev-Am { border-color: var(--primary); color: var(--primary); background: #fff; }
+.ev-B { border: 1.5px dashed var(--muted); color: var(--muted); background: #fff; }
+.prod-full { background: var(--robot); color: #fff; }
+.prod-semi { border-color: var(--robot); color: var(--robot); background: #fff; }
+.role { background: var(--primary-soft); color: var(--primary); }
+.role-main { background: var(--primary); color: #fff; }
+.hero-badge { background: var(--human-soft); color: var(--human); border-color: var(--human); }
+
+/* ---- 1. 摘要 ---- */
+.versions { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.vcard { border: 2px solid var(--primary); border-radius: var(--radius); padding: 1.1rem 1.4rem; display: flex; flex-direction: column; gap: .3rem; }
+.vcard-tag { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+.big { font-size: 3rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.kpi { background: var(--panel); border-radius: var(--radius); padding: 1rem 1.3rem; border-left: 6px solid var(--primary); }
+.kpi-label { font-weight: 700; color: var(--muted); }
+.kpi-value { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.kpi-sub { color: var(--muted); }
+.hero-line { font-size: 1.1rem; }
+.thesis { font-size: 1.25rem; font-weight: 700; border-left: 6px solid var(--human); background: var(--human-soft); padding: .8rem 1.2rem; border-radius: 0 var(--radius) var(--radius) 0; }
+
+/* ---- 2. 產業 ---- */
+.industry-layout { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { padding: .45rem .6rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.tbl thead th { color: var(--muted); font-size: .9rem; border-bottom: 2px solid var(--line); }
+.tbl tfoot td { font-weight: 800; border-top: 2px solid var(--ink); border-bottom: 0; }
+.tbl tr.is-selected { background: var(--primary-soft); }
+.ind-btn {
+  font: inherit; text-align: left; background: none; border: 0; cursor: pointer; padding: .2rem 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: .15rem; color: var(--ink);
+}
+.ind-btn .ind-name { font-weight: 800; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.ind-btn[aria-pressed="true"] .ind-name { color: var(--primary); text-decoration-color: var(--primary); }
+.meter { display: inline-block; width: 4.2rem; height: .7rem; background: #e3e7ee; border-radius: 4px; overflow: hidden; vertical-align: middle; margin-right: .4rem; }
+.meter > span { display: block; height: 100%; background: var(--primary); }
+.meter-num { font-weight: 700; }
+.foot-note { color: var(--muted); font-size: .9rem; margin-top: .5rem; }
+.industry-detail ul { padding-left: 0; list-style: none; margin: .4rem 0 0; display: flex; flex-direction: column; gap: .35rem; }
+.link-btn { font: inherit; background: none; border: 0; color: var(--primary); text-decoration: underline; cursor: pointer; padding: 0; text-align: left; }
+
+/* ---- 3. 卡片 ---- */
+.cases-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 1.2rem; align-items: start; }
+.case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.case-card {
+  font: inherit; text-align: left; cursor: pointer; color: var(--ink);
+  background: #fff; border: 1.5px solid var(--line); border-radius: var(--radius);
+  padding: .55rem .8rem; display: flex; flex-direction: column; gap: .2rem;
+}
+.case-card:hover { border-color: var(--primary); }
+.case-card[aria-expanded="true"] { border: 2.5px solid var(--primary); background: var(--primary-soft); }
+.case-card.is-hero { box-shadow: inset 5px 0 0 var(--human); }
+.case-top { color: var(--muted); font-size: .9rem; display: flex; gap: .4rem; align-items: center; }
+.case-title { font-weight: 800; line-height: 1.3; }
+.case-meta { display: flex; gap: .35rem; flex-wrap: wrap; align-items: center; font-size: .9rem; color: var(--muted); }
+.case-detail { min-height: 20rem; }
+.detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .4rem; }
+.detail-head h3 { margin: 0 .4rem 0 0; font-size: 1.45rem; }
+.pain { font-size: 1.1rem; border-left: 4px solid var(--human); padding-left: .8rem; margin-bottom: .8rem; }
+.flows { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.flow h4 { margin-top: 0; }
+.flow ol { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
+.step { position: relative; background: #fff; border: 1.5px solid var(--line); border-radius: 8px; padding: .3rem .6rem; display: flex; gap: .5rem; align-items: baseline; }
+.step + .step::before { content: "↓"; position: absolute; top: -.85rem; left: 1.2rem; font-size: .8rem; color: var(--muted); line-height: 1; }
+.actor { flex: none; font-size: .8rem; font-weight: 800; padding: 0 .4em; border-radius: 4px; }
+.step-manual .actor { background: #e3e7ee; color: var(--muted); }
+.step-robot { border-color: var(--robot); background: var(--robot-soft); }
+.step-robot .actor { background: var(--robot); color: #fff; }
+.step-human { border: 2px solid var(--human); background: var(--human-soft); }
+.step-human .actor { background: var(--human); color: #fff; }
+.detail-foot { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; margin-top: 1rem; }
+.quote-total { font-size: 2rem; font-weight: 800; color: var(--primary); }
+.evidence ul { margin: .3rem 0 0; padding-left: 1.1rem; }
+.box { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: .7rem .9rem; display: flex; flex-direction: column; gap: .3rem; }
+
+/* ---- 4. 組合器 ---- */
+.pricing-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.total-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: .8rem; }
+.total-row .big { color: var(--primary); }
+.diff { font-weight: 800; font-size: 1.1rem; }
+.diff.up { color: var(--primary); }
+.diff.down { color: var(--human); }
+.stack { display: flex; height: 2.2rem; border-radius: 6px; overflow: hidden; margin: .4rem 0 .6rem; }
+.seg-dev { background: var(--primary); }
+.seg-semi { background: #5a8fd0; }
+.seg-days { background: var(--robot); }
+.legend { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .25rem; }
+.legend li { display: flex; justify-content: space-between; gap: .6rem; }
+.sw { display: inline-block; width: .9rem; height: .9rem; border-radius: 3px; margin-right: .4rem; vertical-align: -.1em; }
+.legend .sum { border-top: 2px solid var(--ink); padding-top: .25rem; font-weight: 800; }
+.zero td { color: var(--muted); }
+
+/* ---- 5. A/B ---- */
+.ab-panel.is-hidden, .funnel-panel.is-hidden { display: none; }
+.ab-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.bars { display: flex; flex-direction: column; gap: .5rem; }
+.bar-row { display: grid; grid-template-columns: 7rem minmax(0, 1fr) 8.5rem; gap: .6rem; align-items: center; }
+.bar-track { background: #e3e7ee; height: 1.2rem; border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--primary); }
+.target-bar { position: relative; height: 1.6rem; background: #e3e7ee; border-radius: 6px; margin: 1.8rem 0 .5rem; }
+.target-fill { height: 100%; background: var(--primary); border-radius: 6px 0 0 6px; }
+.target-fill.renewal { background: #5a8fd0; border-radius: 6px 0 0 6px; float: left; }
+.target-fill.newbiz { background: var(--primary); border-radius: 0; float: left; }
+.target-marker { position: absolute; top: -1.6rem; bottom: -.3rem; border-left: 3px dashed var(--ink); }
+.target-marker span { position: absolute; right: .4rem; top: 0; font-size: .9rem; font-weight: 700; white-space: nowrap; }
+.sens tr.is-current { background: var(--primary-soft); font-weight: 800; }
+.sens tr.is-current td:first-child::before { content: "▶ "; color: var(--primary); }
+ul.plain { margin: .3rem 0 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
+
+/* ---- 6. 漏斗 ---- */
+.funnel-layout { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.funnel-cols { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 1.2rem; }
+.funnel { display: flex; flex-direction: column; gap: .35rem; }
+.f-row { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 10rem; gap: .6rem; align-items: center; }
+.f-bar-wrap { display: flex; justify-content: center; }
+.f-bar { height: 2.2rem; background: var(--primary); border-radius: 4px; min-width: 4px; }
+.f-row.win .f-bar { background: var(--robot); }
+.f-val { font-weight: 800; font-variant-numeric: tabular-nums; }
+.f-val small { display: block; font-weight: 400; color: var(--muted); font-size: .85rem; }
+.f-rate { grid-column: 2; text-align: center; color: var(--muted); font-size: .9rem; line-height: 1; }
+.coverage { margin-top: 1rem; font-size: 1.1rem; }
+.notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.note { border-left: 4px solid var(--primary); padding: .2rem .8rem; }
+.note h4 { margin: 0 0 .2rem; color: var(--ink); }
+
+/* ---- 7. 時間軸 ---- */
+.timeline { --label-w: 14rem; }
+.tl-body { position: relative; }
+.tl-body > .tl-row { position: relative; z-index: 1; }
+.tl-row { display: grid; grid-template-columns: var(--label-w) minmax(0, 1fr); align-items: center; min-height: 2.6rem; }
+.tl-label { font-weight: 700; padding-right: .8rem; }
+.tl-track { position: relative; height: 2.6rem; }
+.tl-bar { position: absolute; top: .45rem; bottom: .45rem; background: var(--primary); border-radius: 5px; color: #fff; font-size: .85rem; font-weight: 700; padding: 0 .4rem; display: flex; align-items: center; overflow: hidden; white-space: nowrap; }
+.tl-bar.phase-warm { background: #5a8fd0; }
+.tl-bar.phase-close { background: var(--robot); }
+.tl-overlay { position: absolute; top: 0; bottom: 0; left: var(--label-w); right: 0; pointer-events: none; z-index: 0; }
+.tl-holiday { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, rgba(161,74,5,.14) 0 8px, rgba(161,74,5,.04) 8px 16px); border-left: 2px solid var(--human); border-right: 2px solid var(--human); }
+.tl-line { position: absolute; top: 0; bottom: 0; border-left: 3px solid var(--ink); }
+.tl-line.dashed { border-left-style: dashed; }
+.tl-month { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); }
+.tl-head .tl-track { height: 2rem; }
+.tl-head .tl-track span { position: absolute; top: .2rem; font-weight: 700; color: var(--muted); padding-left: .3rem; }
+.tl-marks .tl-track { height: auto; min-height: 4.6rem; }
+.tl-mark { position: absolute; font-size: .9rem; font-weight: 700; white-space: nowrap; padding-left: .3rem; border-left: 3px solid var(--ink); line-height: 1.3; }
+.tl-mark.holiday { border-left-color: var(--human); color: var(--human); }
+.tl-mark.align-right { transform: translateX(-100%); border-left: 0; border-right: 3px solid var(--ink); padding: 0 .3rem 0 0; }
+.phase-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: .8rem; }
+.phase-card { border-top: 5px solid var(--primary); background: var(--panel); border-radius: 0 0 8px 8px; padding: .6rem .8rem; }
+.phase-card h4 { margin: 0; color: var(--ink); }
+.phase-card ul { margin: .3rem 0 0; padding-left: 1.1rem; }
+
+/* ---- 8. 情境 ---- */
+.scenario-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; }
+.scn { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1rem; display: flex; flex-direction: column; gap: .5rem; background: #fff; }
+.scn h3 { color: var(--primary); margin: 0; }
+.scn .amount { font-size: 1.8rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.scn dt { font-weight: 700; color: var(--muted); font-size: .9rem; }
+.scn dd { margin: 0 0 .3rem; }
+.badges { display: flex; flex-wrap: wrap; gap: .3rem; }
+
+/* ---- 9. 風險 ---- */
+.risk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+.risk { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 1rem 1.3rem; background: #fff; }
+.risk h3 { margin: 0 0 .5rem; }
+.risk-dl { display: grid; grid-template-columns: 4rem 1fr; gap: .4rem .8rem; margin: 0; }
+.risk dt { font-weight: 700; color: var(--muted); }
+.risk dd { margin: 0; }
+.risk dd.impact { font-weight: 700; color: var(--bad); }
+.risk dd.response { font-weight: 700; color: var(--robot); }
+
+/* ---- 10. 假設與來源 ---- */
+.sources-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.as-cols { columns: 4; column-gap: 1.6rem; }
+.as-group { break-inside: avoid; margin-bottom: .5rem; }
+.as-group h4 { font-size: .95rem; }
+.as-group h4 { margin: 0 0 .2rem; color: var(--primary); }
+.as-group dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0 .6rem; font-size: .85rem; line-height: 1.45; }
+.as-group dt { color: var(--muted); }
+.as-group dd { margin: 0; font-weight: 700; white-space: nowrap; }
+.as-group dd.wrap { white-space: normal; }
+.as-group dt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.src-list { list-style: none; padding: 0; margin: .4rem 0 0; columns: 2; column-gap: 1.6rem; font-size: .85rem; line-height: 1.45; }
+.src-list li { border-bottom: 1px solid var(--line); padding: .2rem 0; break-inside: avoid; }
+.src-list .cited { color: var(--muted); }
+.ev-legend { display: flex; flex-wrap: wrap; gap: .3rem 1.6rem; margin-bottom: .4rem; font-size: .9rem; }
+
+/* ---- 說明視窗 ---- */
+dialog { border: 0; border-radius: 12px; padding: 1.5rem 2rem; max-width: 40rem; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+dialog::backdrop { background: rgba(23,32,51,.5); }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: .5rem 1rem; margin: 1rem 0; }
+.keys dd { margin: 0; }
+kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5px; padding: 0 .4em; font-family: inherit; background: var(--panel); }
+
+/* ---- 窄螢幕 ---- */
+@media (max-width: 1300px) {
+  .pricing-layout { grid-template-columns: 1fr 1fr; }
+  .std-explain { grid-column: 1 / -1; }
+  .scenario-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .phase-cards { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .versions, .kpis, .industry-layout, .cases-layout, .pricing-layout, .ab-grid, .funnel-layout, .funnel-cols, .notes, .risk-grid, .sources-layout { grid-template-columns: 1fr; }
+  .scenario-grid, .phase-cards { grid-template-columns: 1fr 1fr; }
+  .slide { padding: 1.5rem 1rem; }
+  .dots { display: none; }
+}
+
+/* ---- 減少動態 ---- */
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---- 列印（PDF 備援）：橫向、每章一頁、隱藏導覽與控制項 ---- */
+@media print {
+  @page { size: A4 landscape; margin: 9mm; }
+  html { font-size: 10.5px; scroll-snap-type: none; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .dots, .progress, .no-print, .hint, .toggle, .filter, .btn, .skip, dialog,
+  input[type="range"], .cfg-controls { display: none !important; }
+  .pricing-layout { grid-template-columns: 1fr 1fr; }
+  .std-explain { grid-column: auto; }
+  .slide { min-height: auto; height: auto; padding: 0; border: 0; gap: .8rem; break-after: page; page-break-after: always; break-inside: avoid; }
+  .slide:last-of-type { break-after: auto; page-break-after: auto; }
+  .ab-panel.is-hidden, .funnel-panel.is-hidden { display: block; }
+  .ab-panel + .ab-panel, .funnel-panel + .funnel-panel { margin-top: .8rem; }
+  .print-only { display: block !important; }
+  .case-grid { grid-template-columns: 1fr 1fr; }
+  .as-cols { columns: 4; }
+  a { color: var(--ink); text-decoration: none; }
+}
+.print-only { display: none; }
 
 </style>
 </head>
 <body>
+<a class="skip" href="#s-summary">跳到內容</a>
+
+<nav class="dots" id="dots" aria-label="章節導覽"></nav>
+<div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+
 <main id="app">
-  <section class="slide" id="s-summary">
-    <h1 data-bind="meta.title"></h1>
-    <p class="note">M0 驗算檢視（骨架將於 M1 建立）</p>
-    <table class="check">
-      <thead><tr><th>項目</th><th>計算結果</th></tr></thead>
-      <tbody id="m0-table"></tbody>
-    </table>
+
+  <!-- 1. 開場摘要 -->
+  <section class="slide" id="s-summary" data-title="開場摘要" tabindex="-1" aria-labelledby="h-summary">
+    <header class="slide-head">
+      <p class="eyebrow">開場摘要</p>
+      <h1 id="h-summary" data-bind="meta.title"></h1>
+      <p class="lead">先找到產業既定流程裡的痛點，再用「標準案」組合與成案率回推，讓 <strong data-bind="target.wan"></strong> 有一條可執行、可檢查的路徑。</p>
+    </header>
+    <div class="versions">
+      <article class="vcard vcard-a">
+        <p class="vcard-tag">A 版　從零開始</p>
+        <p class="big" data-bind="a.totalWan"></p>
+        <p>新簽 <strong data-bind="a.count"></strong> 案：<span data-bind="a.mix"></span></p>
+        <p class="status" data-bind="a.status"></p>
+      </article>
+      <article class="vcard vcard-b">
+        <p class="vcard-tag">B 版　續約保底 + 新增</p>
+        <p class="big" data-bind="b.totalWan"></p>
+        <p>續約 <strong data-bind="b.renewalWan"></strong>（續約率 <span data-bind="b.rate"></span>，<span class="tag-assume">假設</span>）+ 新增 <strong data-bind="b.count"></strong> 案</p>
+        <p class="status" data-bind="b.status"></p>
+      </article>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <p class="kpi-label">標準案怎麼拆</p>
+        <p class="kpi-value" data-bind="std.totalWan"></p>
+        <p class="kpi-sub">授權 <span data-bind="std.licenseWan"></span> + 開發 <span data-bind="std.days"></span> 人天 <span data-bind="std.serviceWan"></span></p>
+      </div>
+      <div class="kpi">
+        <p class="kpi-label">A 版所需名單量 <span class="tag-assume">假設</span></p>
+        <p class="kpi-value"><span data-bind="fa.leads"></span> 份</p>
+        <p class="kpi-sub">→ 商機 <span data-bind="fa.opp"></span> → Demo／PoC <span data-bind="fa.poc"></span> → 回簽 <span data-bind="a.count"></span></p>
+      </div>
+      <div class="kpi">
+        <p class="kpi-label">Q1 有效時程 <span class="tag-assume">假設</span></p>
+        <p class="kpi-value"><span data-bind="wd.days"></span> 個工作天</p>
+        <p class="kpi-sub">季初至內部回簽目標 <span data-bind="time.sign"></span>，扣除春節空窗（暫定）</p>
+      </div>
+    </div>
+    <p class="thesis" data-bind="meta.thesis"></p>
+    <p class="hero-line">主打流程：<strong data-bind="hero.title"></strong>　<span class="muted">案件業績以「回簽報價單」即計入</span></p>
+    <p class="hint no-print">按 → 或空白鍵翻頁，按 ? 看快捷鍵</p>
   </section>
+
+  <!-- 2. 產業與痛點地圖 -->
+  <section class="slide" id="s-industry" data-title="產業與痛點地圖" tabindex="-1" aria-labelledby="h-industry">
+    <header class="slide-head">
+      <p class="eyebrow">產業與痛點地圖</p>
+      <h2 id="h-industry">先選對產業，再選對流程</h2>
+      <p class="lead">評分是我依「成交速度、市場規模、客單、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看對應的痛點流程。</p>
+    </header>
+    <div class="industry-layout">
+      <div id="industry-map" class="industry-map"></div>
+      <aside id="industry-detail" class="panel industry-detail" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <!-- 3. 痛點互動卡片 -->
+  <section class="slide" id="s-cases" data-title="痛點卡片" tabindex="-1" aria-labelledby="h-cases">
+    <header class="slide-head">
+      <p class="eyebrow">痛點互動卡片</p>
+      <h2 id="h-cases">從一個人工步驟，看到一張報價單</h2>
+      <p class="lead">每張卡片：痛點、現況 vs 導入後流程、對應產品與報價、證據等級。公開案例皆為「同類型案例」，不代表特定客戶一定有此痛點。</p>
+    </header>
+    <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
+    <div class="cases-layout">
+      <div class="case-grid" id="case-grid"></div>
+      <div class="panel case-detail" id="case-detail" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 4. 計價與組合器 -->
+  <section class="slide" id="s-pricing" data-title="計價與組合器" tabindex="-1" aria-labelledby="h-pricing">
+    <header class="slide-head">
+      <p class="eyebrow">計價與組合器</p>
+      <h2 id="h-pricing">選一個流程，報價就出來</h2>
+      <p class="lead">必要組合 = 開發工具 1 套 + 機器人（全自動或半自動擇 1）；其餘依使用量加購。授權為年訂閱，開發為一次性人天。</p>
+    </header>
+    <div class="pricing-layout">
+      <form class="panel cfg-controls" id="cfg-form" aria-label="報價組合器" onsubmit="return false"></form>
+      <div class="panel cfg-result" id="cfg-result" aria-live="polite"></div>
+      <aside class="panel std-explain" id="std-explain"></aside>
+    </div>
+  </section>
+
+  <!-- 5. A / B 業績拆解 -->
+  <section class="slide" id="s-ab" data-title="A／B 業績拆解" tabindex="-1" aria-labelledby="h-ab">
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">A／B 業績拆解</p>
+        <h2 id="h-ab">兩種起點，同一個目標</h2>
+      </div>
+      <div class="toggle" role="group" aria-label="切換版本">
+        <button type="button" class="toggle-btn" data-version="A" aria-pressed="true">A 版　從零開始</button>
+        <button type="button" class="toggle-btn" data-version="B" aria-pressed="false">B 版　續約 + 新增</button>
+      </div>
+    </header>
+    <div id="ab-a" class="ab-panel"></div>
+    <div id="ab-b" class="ab-panel"></div>
+  </section>
+
+  <!-- 6. 成案率回推與漏斗 -->
+  <section class="slide" id="s-funnel" data-title="成案率回推" tabindex="-1" aria-labelledby="h-funnel">
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">成案率回推與漏斗</p>
+        <h2 id="h-funnel">要簽幾案，就倒推要幾份名單</h2>
+      </div>
+      <div class="toggle" role="group" aria-label="切換漏斗模式">
+        <button type="button" class="toggle-btn" data-funnel-mode="back" aria-pressed="true">反向：由目標回推</button>
+        <button type="button" class="toggle-btn" data-funnel-mode="fwd" aria-pressed="false">正向：由名單試算</button>
+      </div>
+    </header>
+    <div class="funnel-layout">
+      <div class="panel funnel-rates" id="funnel-rates"></div>
+      <div class="funnel-main">
+        <div id="funnel-back" class="funnel-panel"></div>
+        <div id="funnel-fwd" class="funnel-panel"></div>
+      </div>
+    </div>
+    <div class="notes" id="funnel-notes"></div>
+  </section>
+
+  <!-- 7. Q1 時間軸 -->
+  <section class="slide" id="s-timeline" data-title="Q1 時間軸" tabindex="-1" aria-labelledby="h-timeline">
+    <header class="slide-head">
+      <p class="eyebrow">Q1 時間軸</p>
+      <h2 id="h-timeline">以回簽日倒推，避開春節空窗</h2>
+      <p class="lead">A 版以 12 月啟動暖名單為前提。內部回簽目標 <strong data-bind="time.sign"></strong>，距季末留 <strong data-bind="time.buffer"></strong> 天緩衝。日期皆為暫定 <span class="tag-assume">假設</span>，春節放假以人事行政總處公告為準。</p>
+    </header>
+    <div class="panel timeline" id="timeline"></div>
+    <div class="phase-cards" id="phase-cards"></div>
+  </section>
+
+  <!-- 8. 特定情境／產品組合攻略 -->
+  <section class="slide" id="s-scenarios" data-title="情境攻略" tabindex="-1" aria-labelledby="h-scenarios">
+    <header class="slide-head">
+      <p class="eyebrow">特定情境／產品組合攻略</p>
+      <h2 id="h-scenarios">什麼客戶，給什麼組合</h2>
+      <p class="lead">同一套價目表，依客戶階段組出不同報價；金額由價目表即時算出，人天為假設。</p>
+    </header>
+    <div class="scenario-grid" id="scenarios"></div>
+  </section>
+
+  <!-- 9. 風險與備援 -->
+  <section class="slide" id="s-risks" data-title="風險與備援" tabindex="-1" aria-labelledby="h-risks">
+    <header class="slide-head">
+      <p class="eyebrow">風險與備援</p>
+      <h2 id="h-risks">先想好哪裡會破，再準備怎麼補</h2>
+    </header>
+    <div class="risk-grid" id="risks"></div>
+  </section>
+
+  <!-- 10. 假設與來源 -->
+  <section class="slide" id="s-sources" data-title="假設與來源" tabindex="-1" aria-labelledby="h-sources">
+    <header class="slide-head">
+      <p class="eyebrow">假設與來源</p>
+      <h2 id="h-sources">所有假設都攤開，所有案例都標證據</h2>
+      <p class="lead">下表由程式自動彙整；在前面章節調整的值會即時反映並標示「已調整」。</p>
+    </header>
+    <div class="sources-layout">
+      <div class="panel" id="assumptions"></div>
+      <div class="panel" id="sources"></div>
+    </div>
+  </section>
+
 </main>
+
+<dialog id="help" aria-labelledby="h-help">
+  <h2 id="h-help">快捷鍵</h2>
+  <dl class="keys">
+    <dt><kbd>→</kbd> <kbd>PageDown</kbd> <kbd>空白鍵</kbd></dt><dd>下一章</dd>
+    <dt><kbd>←</kbd> <kbd>PageUp</kbd></dt><dd>上一章</dd>
+    <dt><kbd>1</kbd>～<kbd>9</kbd>、<kbd>0</kbd></dt><dd>跳到第 1～9 章、第 10 章</dd>
+    <dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>第一章／最後一章</dd>
+    <dt><kbd>?</kbd></dt><dd>開關本說明</dd>
+    <dt><kbd>Tab</kbd></dt><dd>在卡片、按鈕、滑桿間移動；滑桿用方向鍵調整</dd>
+  </dl>
+  <form method="dialog"><button class="btn" type="submit">關閉（Esc）</button></form>
+</dialog>
+
 <script>
 // 唯一資料來源。所有金額、案數、漏斗數字都由 calc.js 依此計算。
 // 數字種子依 CLAUDE.md §4（已驗算）；調整需經 Shack 同意並更新 scripts/verify.mjs。
@@ -56,7 +565,8 @@ const DATA = {
     title: "2027 Q1 業績 500 萬達成規劃",
     target: 5_000_000,
     interviewDate: "2026-11-27",
-    heroCaseId: "mfg-delivery-followup" // 預設主打流程；Shack 尚無偏好，隨時可改這一行
+    heroCaseId: "mfg-delivery-followup", // 預設主打流程；Shack 尚無偏好，隨時可改這一行
+    thesis: "這個職位的關鍵，是先找到產業既定流程裡的痛點；計價、業績拆解與漏斗回推，則用來證明這份規劃有數字、可執行。"
   },
 
   price: { dev: 176_000, semi: 64_000, full: 400_000, day: 20_000 },
@@ -104,16 +614,25 @@ const DATA = {
     oppToPoc:  0.50,        // 商機 → Demo/PoC
     pocToWin:  0.50,        // PoC → 回簽
     existingOppToWin: 0.60, // 既有客戶擴充：商機 → 回簽
-    coverageTarget: 4       // 商機加權覆蓋倍數（目標 3–4 倍）
+    coverageTarget: 4,      // 商機加權覆蓋倍數（目標 3–4 倍）
+    abmAccounts: [10, 15]   // 百貨／金融 ABM 鎖定家數
   },
 
+  // score 為主觀假設（1–5，resistance 越高代表阻力越低）；pitch 為推論，需 Discovery 驗證
   industries: [
-    { id: "manufacturing", name: "製造業供應鏈",   role: "主攻",       score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 } },
-    { id: "retail",        name: "傳統零售／電商", role: "副攻",       score: { speed: 4, size: 4, ticket: 2, quantifiable: 4, resistance: 4 } },
-    { id: "hightech",      name: "高科技",         role: "選擇性",     score: { speed: 2, size: 3, ticket: 5, quantifiable: 3, resistance: 2 } },
-    { id: "department",    name: "百貨",           role: "單點 ABM",   score: { speed: 3, size: 1, ticket: 3, quantifiable: 4, resistance: 3 } },
-    { id: "finance",       name: "金融／保險",     role: "長線／擴充", score: { speed: 1, size: 2, ticket: 5, quantifiable: 4, resistance: 1 } }
-  ], // score 為主觀假設（1–5，resistance 越高代表阻力越低）
+    { id: "manufacturing", name: "製造業供應鏈",   short: "製造",   role: "主攻",       abm: false, score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 },
+      pitch: "跨 ERP、Email、Excel 的重複作業多，工時與錯誤率容易量化；富士官網與公開報導都有同類型案例可引用。" },
+    { id: "retail",        name: "傳統零售／電商", short: "零售",   role: "副攻",       abm: false, score: { speed: 4, size: 4, ticket: 2, quantifiable: 4, resistance: 4 },
+      pitch: "多平台、多門市的資料搬運量大、決策快；客單偏低，以標準案與入門包為主。" },
+    { id: "hightech",      name: "高科技",         short: "高科技", role: "選擇性",     abm: false, score: { speed: 2, size: 3, ticket: 5, quantifiable: 3, resistance: 2 },
+      pitch: "客單潛力高，但大廠常有自建 RPA 團隊；切入點是授權與特定報表流程，少賣人天。" },
+    { id: "department",    name: "百貨",           short: "百貨",   role: "單點 ABM",   abm: true,  score: { speed: 3, size: 1, ticket: 3, quantifiable: 4, resistance: 3 },
+      pitch: "市場集中、家數少，適合鎖定少數目標的 ABM；以專櫃營業額與抽成結算切入。" },
+    { id: "finance",       name: "金融／保險",     short: "金融",   role: "長線／擴充", abm: true,  score: { speed: 1, size: 2, ticket: 5, quantifiable: 4, resistance: 1 },
+      pitch: "客單高，但法遵與資安審查期長，Q1 新案不易回簽；以既有客戶擴充為主、新案長線經營。" }
+  ],
+
+  scoreShort: { speed: "速度", size: "規模", ticket: "客單", quantifiable: "可量化", resistance: "低阻力" },
 
   scoreLabels: {
     speed: "成交速度",
@@ -128,15 +647,52 @@ const DATA = {
     quarter: ["2027-01-01", "2027-03-31"],
     lunarNewYearDay1: "2027-02-06",
     holidayWindow: ["2027-02-04", "2027-02-14"], // 暫定
+    otherHolidays: ["2027-01-01", "2027-03-01"], // 暫定：元旦、228 補假（以公告為準）
     signTargetDate: "2027-03-20", // 內部回簽目標（留 10 天緩衝）
     phases: [
-      { id: "warm",  label: "暖名單啟動（Q1 前）", start: "2026-12-01", end: "2026-12-31" },
-      { id: "disc",  label: "Discovery + Demo",   start: "2027-01-04", end: "2027-01-29" },
-      { id: "push",  label: "春節前簽核推進",       start: "2027-02-01", end: "2027-02-03" },
-      { id: "poc",   label: "PoC 與報價",           start: "2027-02-15", end: "2027-03-12" },
-      { id: "close", label: "回簽衝刺",             start: "2027-03-08", end: "2027-03-31" }
+      { id: "warm",  label: "暖名單啟動（Q1 前）", start: "2026-12-01", end: "2026-12-31",
+        tasks: ["盤點既有客戶與暖名單", "名單分級，預約 1 月 Discovery"] },
+      { id: "disc",  label: "Discovery + Demo",   start: "2027-01-04", end: "2027-01-29",
+        tasks: ["訪談：筆數、工時、例外比例", "標準範本 Demo，篩選 PoC 流程"] },
+      { id: "push",  label: "春節前簽核推進",       start: "2027-02-01", end: "2027-02-03",
+        tasks: ["送出報價、確認預算", "鎖定簽核關係人"] },
+      { id: "poc",   label: "PoC 與報價",           start: "2027-02-15", end: "2027-03-12",
+        tasks: ["真實資料 PoC（建議付費可抵扣）", "效益試算與正式報價"] },
+      { id: "close", label: "回簽衝刺",             start: "2027-03-08", end: "2027-03-31",
+        tasks: ["追蹤法務／採購流程", "內部回簽目標日前完成主要案件"] }
     ]
   },
+
+  // 特定情境／產品組合攻略（§7-8）；bundle 為「這一筆」報價內容，人天為假設
+  scenarios: [
+    { id: "starter", title: "入門包首購", when: "第一次接觸 RPA、預算未編列，先證明一個流程有效",
+      bundle: { dev: 1, semi: 1, days: 10 }, alt: { label: "純授權版（客戶自行開發）", bundle: { dev: 1, semi: 1, days: 0 } },
+      industries: ["department", "retail"], note: "降低首購門檻，之後以人天擴充第二個流程" },
+    { id: "standard", title: "標準案", when: "流程明確、每日筆數多、跨兩套以上系統",
+      bundle: { dev: 1, semi: 1, days: 13 }, industries: ["manufacturing", "retail", "hightech"],
+      note: "業績主力；Discovery 先確認筆數、工時、例外比例" },
+    { id: "full-upgrade", title: "全自動升級", when: "既有半自動流程已穩定，需要無人值守排程（夜間批次、每日報表）",
+      bundle: { full: 1, days: 15 }, industries: ["manufacturing", "finance"],
+      note: "客戶已有開發工具，只加購全自動機器人與人天" },
+    { id: "expansion", title: "既有客戶純人天擴充", when: "既有客戶已有授權，想把機器人用到第二、第三個流程",
+      bundle: { days: 15 }, industries: ["manufacturing", "finance"],
+      note: "不需新授權採購流程，回簽速度快" },
+    { id: "renewal-plus", title: "續約 + 加購", when: "年約到期續約時，順勢盤點新流程",
+      bundle: { semi: 1, days: 5 }, industries: ["manufacturing", "retail", "finance"], addOnRenewal: true,
+      note: "金額為續約以外的加購部分" }
+  ],
+
+  // 風險與備援（§7-9）；calc 指定影響試算方式
+  risks: [
+    { id: "flagship-delay", title: "全自動旗艦延後", trigger: "三方比對例外多、客戶內部審查拉長", calc: "flagshipDelay",
+      response: "以標準案補位；旗艦改為分階段（先半自動上線，Q2 升級全自動）" },
+    { id: "renewal-drop", title: "續約率下滑", trigger: "既有客戶預算縮減或流程停用", calc: "renewalDrop", rate: 0.9,
+      response: "續約前 60 天盤點使用率；以既有客戶擴充 + 新客標準案補缺口" },
+    { id: "poc-capacity", title: "PoC 產能不足", trigger: "同時進行的 PoC 超過團隊可支援場次", calc: "pocLoad",
+      response: "Demo 用標準範本；PoC 只給高意願案件，採付費可抵扣" },
+    { id: "hightech-diy", title: "高科技大廠自建能力強", trigger: "客戶已有 RPA 團隊，傾向自行開發", calc: "licenseOnly",
+      response: "賣授權與加購機器人、少賣人天；以教育訓練與顧問支援補位" }
+  ],
 
   // 證據等級說明（§6.1）
   evidenceLevels: {
@@ -497,11 +1053,20 @@ function dealBreakdown(typeKey) {
   const { price } = DATA;
   const license = t.noLicense ? 0 : price.dev + (t.fullAuto ? price.full : price.semi);
   const service = t.days * price.day;
-  return { typeKey, label: t.label, license, service, days: t.days, total: license + service };
+  return { typeKey, label: t.label, license, service, days: t.days, fullAuto: t.fullAuto, noLicense: !!t.noLicense, total: license + service };
 }
 
 function dealAmount(typeKey) {
   return dealBreakdown(typeKey).total;
+}
+
+// 任意組合：{ dev, semi, full, days }
+function bundleAmount(b = {}) {
+  const { price } = DATA;
+  const dev = b.dev || 0, semi = b.semi || 0, full = b.full || 0, days = b.days || 0;
+  const license = dev * price.dev + semi * price.semi + full * price.full;
+  const service = days * price.day;
+  return { dev, semi, full, days, license, service, total: license + service };
 }
 
 function sumDeals(deals, groupKey) {
@@ -550,21 +1115,7 @@ function versionBTotal(rate = DATA.versionB.renewalRate) {
   };
 }
 
-// 由成交案數反推各階段所需量。stages 由「最接近成交」往上排。
-// 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
-function funnelBack({ deals, rates }) {
-  const stages = rates || defaultStages();
-  let raw = deals;
-  const out = [];
-  for (const s of stages) {
-    raw = raw / s.rate;
-    out.push({ key: s.key, label: s.label, rate: s.rate, raw, ceil: Math.ceil(raw - 1e-9) });
-  }
-  return { deals, stages: out, byKey: Object.fromEntries(out.map(o => [o.key, o])) };
-}
-
-function defaultStages() {
-  const f = DATA.funnel;
+function defaultStages(f = DATA.funnel) {
   return [
     { key: "poc",  label: "Demo／PoC", rate: f.pocToWin },
     { key: "opp",  label: "有效商機",  rate: f.oppToPoc },
@@ -572,41 +1123,65 @@ function defaultStages() {
   ];
 }
 
-function funnelA() {
-  const a = versionATotal();
-  const back = funnelBack({ deals: a.count });
-  const opp = back.byKey.opp.raw;
-  const coverage = (opp * a.avgTicket) / DATA.meta.target;
-  return { ...back, avgTicket: a.avgTicket, coverage, coverageTarget: DATA.funnel.coverageTarget };
+const ceil = v => Math.ceil(v - 1e-9);
+
+// 由成交案數反推各階段所需量。rates 由「最接近成交」往上排；預設用 DATA.funnel。
+// 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
+function funnelBack({ deals, rates }) {
+  const stages = rates || defaultStages();
+  let raw = deals;
+  const out = [];
+  for (const s of stages) {
+    raw = raw / s.rate;
+    out.push({ key: s.key, label: s.label, rate: s.rate, raw, ceil: ceil(raw) });
+  }
+  return { deals, stages: out, byKey: Object.fromEntries(out.map(o => [o.key, o])) };
 }
 
-function funnelB() {
-  const f = DATA.funnel;
+function funnelA(f = DATA.funnel) {
+  const a = versionATotal();
+  const back = funnelBack({ deals: a.count, rates: defaultStages(f) });
+  const opp = back.byKey.opp.raw;
+  const coverage = (opp * a.avgTicket) / DATA.meta.target;
+  return { ...back, avgTicket: a.avgTicket, coverage, coverageTarget: f.coverageTarget };
+}
+
+function funnelB(f = DATA.funnel) {
   const nOf = src => DATA.versionB.deals.filter(d => d.source === src).reduce((a, d) => a + d.n, 0);
   const existing = funnelBack({
     deals: nOf("existing"),
     rates: [{ key: "opp", label: "擴充商機", rate: f.existingOppToWin }]
   });
-  const fresh = funnelBack({ deals: nOf("new") });
+  const fresh = funnelBack({ deals: nOf("new"), rates: defaultStages(f) });
   return { existing, fresh };
 }
 
-// 由名單正推（供滑桿）
+// 由名單正推（供滑桿）；客單價由 A 版案型組合帶出，不自由調整
 function funnelForward({ leads, rates = {}, avgTicket }) {
   const f = { ...DATA.funnel, ...rates };
   const ticket = avgTicket ?? versionATotal().avgTicket;
   const opp = leads * f.leadToOpp;
   const poc = opp * f.oppToPoc;
   const wins = poc * f.pocToWin;
-  return { leads, opp, poc, wins, winsFloor: Math.floor(wins + 1e-9), amount: wins * ticket, avgTicket: ticket, rates: f };
+  const amount = wins * ticket;
+  return { leads, opp, poc, wins, winsFloor: Math.floor(wins + 1e-9), amount, avgTicket: ticket, rates: f, gapToTarget: DATA.meta.target - amount };
 }
 
 function renewalSensitivity(rates = DATA.versionB.sensitivityRates) {
   const std = standardCaseAmount();
+  const planned = versionBTotal().newTotal;
   return rates.map(rate => {
     const renewal = Math.round(DATA.versionB.renewalBase * rate);
     const gap = Math.max(0, DATA.meta.target - renewal);
-    return { rate, renewal, gap, standardCasesRaw: gap / std, standardCases: Math.ceil(gap / std - 1e-9) };
+    const shortfall = Math.max(0, gap - planned); // 已規劃新增之外仍不足
+    return {
+      rate, renewal, gap,
+      standardCasesRaw: gap / std,
+      standardCases: ceil(gap / std),
+      planned,
+      shortfall,
+      extraStandardCases: ceil(shortfall / std)
+    };
   });
 }
 
@@ -636,34 +1211,97 @@ function evidenceSummary() {
   return out;
 }
 
-// 自動彙整所有「假設」
-function collectAssumptions() {
-  const f = DATA.funnel;
+// ---- 日期（以 UTC 日序計，避免時區誤差）----
+function dayNum(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return Math.round(Date.UTC(y, m - 1, d) / 86_400_000);
+}
+function isoOf(n) {
+  return new Date(n * 86_400_000).toISOString().slice(0, 10);
+}
+
+// Q1 有效工作天：季初 → 內部回簽目標，扣除週末、春節空窗與其他假日（皆為暫定假設）
+function workingDays({ start, end } = {}) {
+  const t = DATA.timeline;
+  const s = dayNum(start || t.quarter[0]);
+  const e = dayNum(end || t.signTargetDate);
+  const hw = [dayNum(t.holidayWindow[0]), dayNum(t.holidayWindow[1])];
+  const off = new Set((t.otherHolidays || []).map(dayNum));
+  let days = 0;
+  for (let n = s; n <= e; n++) {
+    const dow = new Date(n * 86_400_000).getUTCDay();
+    if (dow === 0 || dow === 6) continue;
+    if (n >= hw[0] && n <= hw[1]) continue;
+    if (off.has(n)) continue;
+    days++;
+  }
+  return { days, calendarDays: e - s + 1, bufferDays: dayNum(t.quarter[1]) - e };
+}
+
+function phaseWeeks(phaseId) {
+  const p = DATA.timeline.phases.find(x => x.id === phaseId);
+  return (dayNum(p.end) - dayNum(p.start) + 1) / 7;
+}
+
+// ---- 風險影響試算 ----
+function flagshipDelayImpact() {
+  const a = versionATotal();
+  const flagship = a.deals.filter(d => d.type === "flagship").reduce((s, d) => s + d.amount, 0);
+  const without = a.total - flagship;
+  const shortfall = Math.max(0, DATA.meta.target - without);
+  return { flagship, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), share: flagship / a.total };
+}
+
+function pocLoad(f = DATA.funnel) {
+  const poc = funnelA(f).byKey.poc;
+  const weeks = phaseWeeks("poc");
+  return { poc: poc.ceil, pocRaw: poc.raw, weeks, perWeek: poc.raw / weeks };
+}
+
+function scenarioAmounts() {
+  return DATA.scenarios.map(s => ({
+    id: s.id,
+    main: bundleAmount(s.bundle),
+    alt: s.alt ? { label: s.alt.label, ...bundleAmount(s.alt.bundle) } : null
+  }));
+}
+
+// 自動彙整所有「假設」；overrides 可帶入 UI 目前調整值（funnel、renewalRate）
+function collectAssumptions(overrides = {}) {
+  const f = { ...DATA.funnel, ...(overrides.funnel || {}) };
+  const rr = overrides.renewalRate ?? DATA.versionB.renewalRate;
   const pct = v => Math.round(v * 100) + "%";
+  const changed = (k, v) => DATA.funnel[k] !== v;
   const list = [
-    { group: "漏斗轉換率", label: "名單 → 有效商機", value: pct(f.leadToOpp) },
-    { group: "漏斗轉換率", label: "商機 → Demo／PoC", value: pct(f.oppToPoc) },
-    { group: "漏斗轉換率", label: "PoC → 回簽", value: pct(f.pocToWin) },
-    { group: "漏斗轉換率", label: "既有客戶擴充：商機 → 回簽", value: pct(f.existingOppToWin) },
+    { group: "漏斗轉換率", label: "名單 → 有效商機", value: pct(f.leadToOpp), changed: changed("leadToOpp", f.leadToOpp) },
+    { group: "漏斗轉換率", label: "商機 → Demo／PoC", value: pct(f.oppToPoc), changed: changed("oppToPoc", f.oppToPoc) },
+    { group: "漏斗轉換率", label: "PoC → 回簽", value: pct(f.pocToWin), changed: changed("pocToWin", f.pocToWin) },
+    { group: "漏斗轉換率", label: "既有客戶擴充：商機 → 回簽", value: pct(f.existingOppToWin), changed: changed("existingOppToWin", f.existingOppToWin) },
     { group: "漏斗轉換率", label: "商機加權覆蓋倍數目標", value: f.coverageTarget + " 倍" },
-    { group: "續約", label: "基準續約率", value: pct(DATA.versionB.renewalRate) }
+    { group: "續約", label: "續約率（基準）", value: pct(rr), changed: rr !== DATA.versionB.renewalRate }
   ];
-  for (const [k, t] of Object.entries(DATA.dealTypes)) {
+  for (const t of Object.values(DATA.dealTypes)) {
     list.push({ group: "案型人天", label: t.label, value: t.days + " 人天" });
+  }
+  for (const s of DATA.scenarios) {
+    if (s.bundle.days) list.push({ group: "情境組合人天", label: s.title, value: s.bundle.days + " 人天" });
   }
   for (const c of DATA.cases) {
     list.push({ group: "流程預估人天", label: c.title, value: c.estDays + " 人天" });
   }
+  const scoreGroup = "產業評分（" + Object.values(DATA.scoreShort).join("・") + "，主觀 1–5）";
   for (const ind of DATA.industries) {
-    const s = Object.entries(ind.score).map(([k, v]) => `${DATA.scoreLabels[k]} ${v}`).join("、");
-    list.push({ group: "產業評分（主觀 1–5）", label: ind.name, value: s });
+    list.push({ group: scoreGroup, label: ind.name, value: Object.values(ind.score).join("・") });
   }
   const t = DATA.timeline;
-  list.push({ group: "時程", label: "春節初一", value: t.lunarNewYearDay1 });
-  list.push({ group: "時程", label: "春節空窗（暫定）", value: t.holidayWindow.join(" ～ ") });
-  list.push({ group: "時程", label: "內部回簽目標", value: t.signTargetDate });
-  for (const p of t.phases) list.push({ group: "時程", label: p.label, value: `${p.start} ～ ${p.end}` });
-  for (const a of DATA.assumptions) list.push({ group: "其他", label: a.label, value: a.value, note: a.note });
+  const md = iso => { const p = iso.split("-"); return `${+p[1]}/${+p[2]}`; };
+  const g = "時程（暫定，以公告為準）";
+  list.push({ group: g, label: "春節初一", value: md(t.lunarNewYearDay1) });
+  list.push({ group: g, label: "春節空窗", value: `${md(t.holidayWindow[0])}–${md(t.holidayWindow[1])}` });
+  list.push({ group: g, label: "其他假日", value: (t.otherHolidays || []).map(md).join("、") });
+  list.push({ group: g, label: "內部回簽目標", value: md(t.signTargetDate) });
+  for (const p of t.phases) list.push({ group: g, label: p.label, value: `${md(p.start)}–${md(p.end)}` });
+  for (const a of DATA.assumptions) list.push({ group: "其他", label: a.label, value: a.value, note: a.note, wrap: true });
   return list;
 }
 
@@ -672,61 +1310,801 @@ function fmtMoney(n) {
   return Math.round(n).toLocaleString("en-US");
 }
 function fmtWan(n, digits = 1) {
-  const v = n / 10_000;
+  const v = Math.round(n) / 10_000;
   return (Number.isInteger(v) ? String(v) : v.toFixed(digits)) + " 萬";
+}
+function fmtPct(v, digits = 0) {
+  return (v * 100).toFixed(digits) + "%";
+}
+function fmtNum(v, digits = 1) {
+  return Number.isInteger(v) ? String(v) : (Math.round(v * 10 ** digits) / 10 ** digits).toFixed(digits);
 }
 
 </script>
 <script>
-// DOM 與互動；只讀 DATA 與 calc 結果。M0 階段僅顯示驗算表。
+// DOM 與互動；只讀 DATA 與 calc.js 的結果。所有數字皆由 calc 算出，不在此寫死。
 (function () {
   "use strict";
 
-  function get(obj, path) {
-    return path.split(".").reduce((o, k) => (o == null ? o : o[k]), obj);
-  }
+  // ---------- 工具 ----------
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = v => String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const IND = Object.fromEntries(DATA.industries.map(i => [i.id, i]));
+  const CASE = Object.fromEntries(DATA.cases.map(c => [c.id, c]));
+  const SRC = Object.fromEntries(DATA.sources.map(s => [s.id, s]));
+  const ROBOT = { semi: "半自動機器人", full: "全自動機器人" };
+  const ASSUME = '<span class="tag-assume">假設</span>';
+  const shortDate = iso => { const p = iso.split("-"); return `${+p[1]}/${+p[2]}`; };
+  const pct = v => fmtPct(v);
+  const P = DATA.price;
 
-  function bindAll(root) {
-    root.querySelectorAll("[data-bind]").forEach(el => {
-      const v = get({ meta: DATA.meta }, el.getAttribute("data-bind"));
-      if (v != null) el.textContent = v;
-    });
+  function vsTarget(total) {
+    const gap = DATA.meta.target - total;
+    return gap <= 0
+      ? { text: `✔ 達標，超出目標 ${fmtWan(-gap)}`, ok: true }
+      : { text: `✘ 距目標尚差 ${fmtWan(gap)}`, ok: false };
   }
+  const statusHtml = s => `<p class="status" data-state="${s.ok ? "ok" : "bad"}">${esc(s.text)}</p>`;
+  const evBadge = level => `<span class="badge ev ev-${level === "A-" ? "Am" : esc(level)}">證據 ${esc(level)}</span>`;
+  const prodBadge = t => `<span class="badge prod-${t}">${t === "full" ? "全自動" : "半自動"}</span>`;
+  const roleBadge = ind => `<span class="badge role${ind.role === "主攻" ? " role-main" : ""}">${esc(ind.role)}</span>`;
 
-  function renderM0() {
+  // ---------- 狀態 ----------
+  const defaultCfg = () => ({ caseId: "", productType: "semi", extraSemi: 0, days: DATA.standardCase.days });
+  const state = {
+    version: "A",
+    funnelMode: "back",
+    industry: "all",
+    openCase: DATA.meta.heroCaseId,
+    renewalRate: DATA.versionB.renewalRate,
+    funnel: { ...DATA.funnel },
+    leads: null, // null = 跟隨反推所需名單
+    cfg: defaultCfg()
+  };
+
+  // ---------- data-bind ----------
+  function computeBinds() {
     const a = versionATotal();
-    const b = versionBTotal();
-    const fa = funnelA();
-    const fb = funnelB();
-    const sens = renewalSensitivity()
-      .map(s => `${Math.round(s.rate * 100)}%：缺口 ${fmtWan(s.gap)} → ${s.standardCases} 案`)
-      .join("；");
-    const rows = [
-      ["標準案金額", fmtMoney(standardCaseAmount())],
-      ["全自動旗艦", fmtMoney(dealAmount("flagship"))],
-      ["入門包（10 人天）", fmtMoney(dealAmount("starter"))],
-      ["入門包（純授權）", fmtMoney(dealAmount("starterLite"))],
-      ["既有客戶擴充", fmtMoney(dealAmount("expansion"))],
-      ["A 版合計", `${fmtMoney(a.total)}（${a.count} 案）`],
-      ["B 版（基準續約率）", `${fmtMoney(b.renewal)} + ${fmtMoney(b.newTotal)} = ${fmtMoney(b.total)}（新增 ${b.count} 案）`],
-      ["A 版漏斗", `PoC ${fa.byKey.poc.ceil}、商機 ${fa.byKey.opp.ceil}、名單 ${fa.byKey.lead.ceil}、覆蓋 ${fa.coverage.toFixed(2)} 倍`],
-      ["B 版漏斗", `擴充商機 ${fb.existing.byKey.opp.raw.toFixed(2)}（進位 ${fb.existing.byKey.opp.ceil}）、新客商機 ${fb.fresh.byKey.opp.ceil}、新客名單 ${fb.fresh.byKey.lead.ceil}`],
-      ["B 敏感度", sens]
-    ];
-    const tbody = document.getElementById("m0-table");
-    rows.forEach(([k, v]) => {
-      const tr = document.createElement("tr");
-      const th = document.createElement("td");
-      const td = document.createElement("td");
-      th.textContent = k;
-      td.textContent = v;
-      tr.append(th, td);
-      tbody.append(tr);
+    const b = versionBTotal(state.renewalRate);
+    const fa = funnelA(state.funnel);
+    const std = dealBreakdown("standard");
+    const wd = workingDays();
+    const mix = Object.entries(a.byIndustry).map(([k, v]) => `${IND[k].short} ${v.n} 案`).join("、");
+    return {
+      "meta.title": DATA.meta.title,
+      "meta.thesis": DATA.meta.thesis,
+      "target.wan": fmtWan(DATA.meta.target),
+      "a.count": a.count,
+      "a.totalWan": fmtWan(a.total),
+      "a.mix": mix,
+      "a.status": vsTarget(a.total),
+      "b.totalWan": fmtWan(b.total),
+      "b.renewalWan": fmtWan(b.renewal),
+      "b.rate": pct(state.renewalRate),
+      "b.count": b.count,
+      "b.status": vsTarget(b.total),
+      "std.totalWan": fmtWan(std.total),
+      "std.licenseWan": fmtWan(std.license),
+      "std.serviceWan": fmtWan(std.service),
+      "std.days": std.days,
+      "fa.leads": fa.byKey.lead.ceil,
+      "fa.opp": fa.byKey.opp.ceil,
+      "fa.poc": fa.byKey.poc.ceil,
+      "wd.days": wd.days,
+      "time.sign": shortDate(DATA.timeline.signTargetDate),
+      "time.buffer": wd.bufferDays,
+      "hero.title": CASE[DATA.meta.heroCaseId].title
+    };
+  }
+  function renderBinds() {
+    const B = computeBinds();
+    $$("[data-bind]").forEach(el => {
+      const v = B[el.getAttribute("data-bind")];
+      if (v === undefined) return;
+      if (typeof v === "object") {
+        el.textContent = v.text;
+        el.setAttribute("data-state", v.ok ? "ok" : "bad");
+      } else {
+        el.textContent = v;
+      }
     });
   }
 
-  bindAll(document);
-  renderM0();
+  // ---------- 1. 章節編號 ----------
+  const sections = $$(".slide");
+  function decorateSections() {
+    sections.forEach((s, i) => {
+      const eb = $(".eyebrow", s);
+      if (eb) eb.insertAdjacentHTML("afterbegin", `<span class="no">${String(i + 1).padStart(2, "0")}</span>`);
+    });
+  }
+
+  // ---------- 2. 產業地圖 ----------
+  function renderIndustries() {
+    const a = versionATotal();
+    const keys = Object.keys(DATA.scoreLabels);
+    const head = keys.map(k => `<th scope="col">${esc(DATA.scoreLabels[k].split("（")[0])}</th>`).join("");
+    const rows = DATA.industries.map(ind => {
+      const sel = state.industry === ind.id;
+      const total = keys.reduce((s, k) => s + ind.score[k], 0);
+      const nCases = DATA.cases.filter(c => c.industry === ind.id).length;
+      const nDeals = (a.byIndustry[ind.id] || { n: 0 }).n;
+      const cells = keys.map(k => {
+        const v = ind.score[k];
+        return `<td><span class="meter" aria-hidden="true"><span style="width:${(v / 5) * 100}%"></span></span><span class="meter-num">${v}</span></td>`;
+      }).join("");
+      return `<tr class="${sel ? "is-selected" : ""}">
+        <th scope="row"><button type="button" class="ind-btn" data-industry="${ind.id}" aria-pressed="${sel}">
+          <span class="ind-name">${esc(ind.name)}</span>${roleBadge(ind)}</button></th>
+        ${cells}<td class="num"><strong>${total}</strong></td><td class="num">${nDeals}</td><td class="num">${nCases}</td></tr>`;
+    }).join("");
+    $("#industry-map").innerHTML = `
+      <table class="tbl">
+        <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">痛點卡</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="foot-note">評分 1–5 為主觀假設；「導入阻力」分數越高代表阻力越低。點產業名稱可篩選痛點卡片。</p>`;
+
+    const ind = IND[state.industry];
+    const det = $("#industry-detail");
+    if (!ind) {
+      det.innerHTML = `<h3>怎麼看這張表</h3>
+        <ul class="plain">
+          <li>製造業：分數最高，作為主攻，A 版超過一半案數在這裡。</li>
+          <li>零售：決策快，但客單偏低，作為副攻。</li>
+          <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
+        </ul>
+        <p class="foot-note">點左側任一產業，查看切入理由與對應痛點流程。</p>`;
+      return;
+    }
+    const cases = DATA.cases.filter(c => c.industry === ind.id);
+    const nDeals = (a.byIndustry[ind.id] || { n: 0, amount: 0 });
+    det.innerHTML = `<h3>${esc(ind.name)} ${roleBadge(ind)}</h3>
+      <p>${esc(ind.pitch)} <span class="tag-assume">推論</span></p>
+      <h4>A 版規劃</h4>
+      <p>${nDeals.n} 案、${fmtWan(nDeals.amount)}${ind.abm ? "（ABM：鎖定少數目標客戶）" : ""}</p>
+      <h4>對應痛點流程（${cases.length}）</h4>
+      <ul>${cases.map(c => `<li><button type="button" class="link-btn" data-open-case="${c.id}">${esc(c.title)}</button> ${evBadge(c.evidence.level)}</li>`).join("")}</ul>`;
+  }
+
+  // ---------- 3. 痛點卡片 ----------
+  function filteredCases() {
+    return state.industry === "all" ? DATA.cases : DATA.cases.filter(c => c.industry === state.industry);
+  }
+  function renderCaseFilter() {
+    const opts = [{ id: "all", short: "全部" }, ...DATA.industries];
+    $("#case-filter").innerHTML = opts.map(o =>
+      `<button type="button" class="chip" data-filter="${o.id}" aria-pressed="${state.industry === o.id}">${esc(o.short)}</button>`
+    ).join("");
+  }
+  function renderCaseGrid() {
+    $("#case-grid").innerHTML = filteredCases().map(c => {
+      const hero = c.id === DATA.meta.heroCaseId;
+      return `<button type="button" class="case-card${hero ? " is-hero" : ""}" data-case="${c.id}" aria-expanded="${state.openCase === c.id}" aria-controls="case-detail">
+        <span class="case-top">${esc(IND[c.industry].short)}${hero ? ' <span class="badge hero-badge">主打</span>' : ""}</span>
+        <span class="case-title">${esc(c.title)}</span>
+        <span class="case-meta">${evBadge(c.evidence.level)}${prodBadge(c.productType)}<span>${c.estDays} 人天</span></span>
+      </button>`;
+    }).join("");
+  }
+  function renderCaseDetail() {
+    const c = CASE[state.openCase];
+    const el = $("#case-detail");
+    if (!c) {
+      el.innerHTML = `<p class="muted">點左側任一卡片，展開痛點、流程、報價與證據。</p>`;
+      return;
+    }
+    const q = configure({ caseId: c.id });
+    const hero = c.id === DATA.meta.heroCaseId;
+    const refs = c.evidence.refs.map(r => {
+      const s = SRC[r.sourceId];
+      const t = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>` : esc(s.title);
+      return `<li>${t}：${esc(r.note)}</li>`;
+    }).join("");
+    el.innerHTML = `
+      <div class="detail-head">
+        <h3>${esc(c.title)}</h3>${evBadge(c.evidence.level)}${prodBadge(c.productType)}
+        <span class="muted">${esc(IND[c.industry].name)}${hero ? "｜主打流程" : ""}${c.existingCustomerCandidate ? "｜適合既有客戶擴充" : ""}</span>
+      </div>
+      <p class="pain">${esc(c.painStory)}</p>
+      <div class="flows">
+        <div class="flow"><h4>現況：全靠人工</h4><ol>
+          ${c.asIs.map(s => `<li class="step step-manual"><span class="actor">人工</span><span>${esc(s)}</span></li>`).join("")}
+        </ol></div>
+        <div class="flow"><h4>導入後：機器人做、人覆核</h4><ol>
+          ${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}
+        </ol></div>
+      </div>
+      <div class="detail-foot">
+        <div class="box">
+          <p class="kpi-label">報價試算 ${ASSUME}</p>
+          <p class="quote-total">${fmtWan(q.total)}</p>
+          <p>授權 ${fmtWan(q.license)}（開發工具 + ${ROBOT[q.productType]}）+ 開發 ${q.days} 人天 ${fmtWan(q.service)}</p>
+          <p class="muted">${esc(c.productNote || "")}</p>
+          <p><button type="button" class="btn btn-ghost" data-goto-cfg="${c.id}">在組合器調整 →</button></p>
+        </div>
+        <div class="box evidence">
+          <p class="kpi-label">${evBadge(c.evidence.level)} ${esc(DATA.evidenceLevels[c.evidence.level])}</p>
+          <p>${esc(c.evidence.why)}</p>
+          <ul>${refs}</ul>
+        </div>
+      </div>`;
+  }
+
+  // ---------- 4. 組合器 ----------
+  function buildConfigurator() {
+    const groups = DATA.industries.map(ind => {
+      const opts = DATA.cases.filter(c => c.industry === ind.id).map(c => `<option value="${c.id}">${esc(c.title)}</option>`).join("");
+      return opts ? `<optgroup label="${esc(ind.name)}">${opts}</optgroup>` : "";
+    }).join("");
+    $("#cfg-form").innerHTML = `
+      <h3>報價組合器</h3>
+      <div class="field">
+        <label for="cfg-case">選擇流程</label>
+        <select id="cfg-case"><option value="">標準案（不指定流程）</option>${groups}</select>
+      </div>
+      <fieldset>
+        <legend>機器人（擇 1，必要）</legend>
+        <label><input type="radio" name="cfg-prod" value="semi"> 半自動　${fmtWan(P.semi)}／年</label>
+        <label><input type="radio" name="cfg-prod" value="full"> 全自動　${fmtWan(P.full)}／年</label>
+      </fieldset>
+      <div class="field">
+        <label for="cfg-extra">加購半自動機器人：<output id="cfg-extra-out" for="cfg-extra"></output> 套</label>
+        <input type="range" id="cfg-extra" min="0" max="5" step="1">
+      </div>
+      <div class="field">
+        <label for="cfg-days">開發人天：<output id="cfg-days-out" for="cfg-days"></output> 人天 ${ASSUME}</label>
+        <input type="range" id="cfg-days" min="0" max="60" step="1">
+      </div>
+      <button type="button" class="btn btn-ghost" id="cfg-reset">回到標準案</button>`;
+
+    $("#cfg-case").addEventListener("change", e => {
+      const c = CASE[e.target.value];
+      state.cfg = c ? { caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays } : defaultCfg();
+      update();
+    });
+    $$('input[name="cfg-prod"]').forEach(r => r.addEventListener("change", e => { state.cfg.productType = e.target.value; update(); }));
+    $("#cfg-extra").addEventListener("input", e => { state.cfg.extraSemi = +e.target.value; update(); });
+    $("#cfg-days").addEventListener("input", e => { state.cfg.days = +e.target.value; update(); });
+    $("#cfg-reset").addEventListener("click", () => { state.cfg = defaultCfg(); update(); });
+  }
+  function syncConfiguratorControls() {
+    $("#cfg-case").value = state.cfg.caseId;
+    $$('input[name="cfg-prod"]').forEach(r => { r.checked = r.value === state.cfg.productType; });
+    $("#cfg-extra").value = state.cfg.extraSemi;
+    $("#cfg-days").value = state.cfg.days;
+    $("#cfg-extra-out").textContent = state.cfg.extraSemi;
+    $("#cfg-days-out").textContent = state.cfg.days;
+  }
+  function renderConfigurator() {
+    syncConfiguratorControls();
+    const q = configure(state.cfg);
+    const c = CASE[q.caseId];
+    const rows = q.lines.map(l => `<tr class="${l.qty ? "" : "zero"}"><td>${esc(l.label)}</td><td class="num">${l.qty}</td><td class="num">${fmtMoney(l.unit)}</td><td class="num">${fmtMoney(l.amount)}</td></tr>`).join("");
+    const d = q.diffFromStandard;
+    const diff = d === 0 ? `<p class="diff">＝ 與標準案相同</p>`
+      : d > 0 ? `<p class="diff up">▲ 比標準案多 ${fmtMoney(d)}</p>`
+      : `<p class="diff down">▼ 比標準案少 ${fmtMoney(-d)}</p>`;
+    $("#cfg-result").innerHTML = `
+      <h3>${c ? esc(c.title) : "標準案"}${c ? " " + evBadge(c.evidence.level) : ""}</h3>
+      <table class="tbl">
+        <thead><tr><th>品項</th><th class="num">數量</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr><td colspan="3">授權小計（年訂閱）</td><td class="num">${fmtMoney(q.license)}</td></tr>
+          <tr><td colspan="3">開發小計（一次性）</td><td class="num">${fmtMoney(q.service)}</td></tr>
+        </tfoot>
+      </table>
+      <div class="total-row"><span class="kpi-label">報價合計（回簽即計入業績）</span><strong class="big">${fmtMoney(q.total)}</strong></div>
+      ${diff}
+      <p class="muted">約等於 ${fmtNum(q.total / q.standard, 2)} 個標準案${c ? `；人天依流程預估（假設）` : ""}</p>`;
+  }
+  function renderStdExplain() {
+    const s = DATA.standardCase;
+    const dev = P.dev * s.devToolCount, semi = P.semi * s.semiCount, days = P.day * s.days;
+    const total = standardCaseAmount();
+    $("#std-explain").innerHTML = `
+      <h3>標準案怎麼拆</h3>
+      <div class="stack" role="img" aria-label="標準案組成：開發工具 ${fmtWan(dev)}、半自動 ${fmtWan(semi)}、開發 ${s.days} 人天 ${fmtWan(days)}">
+        <span class="seg-dev" style="flex:${dev}"></span><span class="seg-semi" style="flex:${semi}"></span><span class="seg-days" style="flex:${days}"></span>
+      </div>
+      <ul class="legend">
+        <li><span><span class="sw seg-dev"></span>開發工具 × ${s.devToolCount}</span><strong>${fmtMoney(dev)}</strong></li>
+        <li><span><span class="sw seg-semi"></span>半自動機器人 × ${s.semiCount}</span><strong>${fmtMoney(semi)}</strong></li>
+        <li><span><span class="sw seg-days"></span>中小規模流程 ${s.days} 人天 × ${fmtMoney(P.day)}</span><strong>${fmtMoney(days)}</strong></li>
+        <li class="sum"><span>標準案合計</span><span>${fmtMoney(total)}</span></li>
+      </ul>
+      <h4>價目表</h4>
+      <table class="tbl">
+        <tbody>
+          <tr><td>RPA 開發工具使用者（年）</td><td class="num">${fmtMoney(P.dev)}</td></tr>
+          <tr><td>半自動機器人（年）</td><td class="num">${fmtMoney(P.semi)}</td></tr>
+          <tr><td>全自動機器人（年）</td><td class="num">${fmtMoney(P.full)}</td></tr>
+          <tr><td>開發專案（每人天）</td><td class="num">${fmtMoney(P.day)}</td></tr>
+        </tbody>
+      </table>`;
+  }
+
+  // ---------- 5. A／B ----------
+  function bars(items, max) {
+    return `<div class="bars">${items.map(it => `
+      <div class="bar-row"><span>${esc(it.label)}</span>
+        <span class="bar-track" aria-hidden="true"><span class="bar-fill" style="display:block;width:${(it.value / max) * 100}%"></span></span>
+        <span class="num">${esc(it.text)}</span></div>`).join("")}</div>`;
+  }
+  function targetBar(parts, total) {
+    const scale = Math.max(total, DATA.meta.target) * 1.04;
+    const segs = parts.map(p => `<span class="target-fill ${p.cls || ""}" style="display:block;width:${(p.value / scale) * 100}%"></span>`).join("");
+    return `<div class="target-bar" role="img" aria-label="合計 ${fmtWan(total)}，目標 ${fmtWan(DATA.meta.target)}">${segs}
+      <span class="target-marker" style="left:${(DATA.meta.target / scale) * 100}%"><span>目標 ${fmtWan(DATA.meta.target)}</span></span></div>`;
+  }
+  function renderA() {
+    const a = versionATotal();
+    const fd = flagshipDelayImpact();
+    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${esc(d.label)}${d.caseId ? `<br><span class="muted">${esc(CASE[d.caseId].title)}</span>` : ""}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.unit)}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const inds = Object.entries(a.byIndustry).map(([k, v]) => ({ label: IND[k].short, value: v.amount, text: `${fmtWan(v.amount)}｜${fmtPct(v.amount / a.total)}` }));
+    const maxInd = Math.max(...inds.map(i => i.value));
+    const mfg = a.byIndustry.manufacturing || { amount: 0 };
+    $("#ab-a").innerHTML = `
+      <div class="ab-grid">
+        <div class="panel">
+          <h3>A 版：從零開始，新簽 ${a.count} 案</h3>
+          <table class="tbl">
+            <thead><tr><th>產業</th><th>案型</th><th class="num">案數</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr><td colspan="2">合計</td><td class="num">${a.count}</td><td></td><td class="num">${fmtMoney(a.total)}</td></tr></tfoot>
+          </table>
+        </div>
+        <div class="panel">
+          <h3>各產業金額</h3>
+          ${bars(inds, maxInd)}
+          ${targetBar([{ value: a.total }], a.total)}
+          ${statusHtml(vsTarget(a.total))}
+          <h4>風險說明</h4>
+          <ul class="plain">
+            <li>全自動旗艦 ${a.deals.filter(d => d.type === "flagship").reduce((s, d) => s + d.n, 0)} 案佔 ${fmtPct(fd.share)}；若延後，需約 ${fd.standardCases} 個標準案補位。</li>
+            <li>製造業佔 ${fmtPct(mfg.amount / a.total)}，集中度高；以零售、高科技分散。</li>
+            <li>A 版以 12 月啟動暖名單為前提（見時間軸）。</li>
+          </ul>
+        </div>
+      </div>`;
+  }
+  function buildB() {
+    const [lo, hi] = DATA.versionB.renewalRange;
+    $("#ab-b").innerHTML = `
+      <div class="ab-grid">
+        <div class="panel">
+          <h3>續約率敏感度 ${ASSUME}</h3>
+          <div class="field">
+            <label for="rr">續約率：<output id="rr-out" for="rr"></output>（基準 ${pct(DATA.versionB.renewalRate)}）</label>
+            <input type="range" id="rr" min="${Math.round(lo * 100)}" max="${Math.round(hi * 100)}" step="1">
+          </div>
+          <div id="b-sens"></div>
+        </div>
+        <div class="panel" id="b-comp"></div>
+      </div>`;
+    $("#rr").addEventListener("input", e => { state.renewalRate = +e.target.value / 100; update(); });
+  }
+  function renderB() {
+    const b = versionBTotal(state.renewalRate);
+    $("#rr").value = Math.round(state.renewalRate * 100);
+    $("#rr-out").textContent = pct(state.renewalRate);
+    const rates = [...new Set([...DATA.versionB.sensitivityRates, state.renewalRate])].sort((x, y) => y - x);
+    const sens = renewalSensitivity(rates);
+    const rows = sens.map(s => {
+      const cur = Math.abs(s.rate - state.renewalRate) < 1e-9;
+      const after = s.shortfall === 0 ? `<span data-state="ok">✔ 已規劃足夠</span>` : `<span data-state="bad">差 ${fmtWan(s.shortfall)} → +${s.extraStandardCases} 標準案</span>`;
+      return `<tr class="${cur ? "is-current" : ""}"><td>${pct(s.rate)}</td><td class="num">${fmtWan(s.renewal)}</td><td class="num">${fmtWan(s.gap)}</td><td class="num">${s.standardCases} 案</td><td>${after}</td></tr>`;
+    }).join("");
+    $("#b-sens").innerHTML = `
+      <table class="tbl sens">
+        <thead><tr><th>續約率</th><th class="num">續約金額</th><th class="num">缺口</th><th class="num">約需標準案</th><th>加上已規劃新增 ${fmtWan(b.newTotal)} 後</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="foot-note">缺口 = 目標 − 續約金額；「約需標準案」= 缺口 ÷ 標準案金額，無條件進位。</p>`;
+
+    const SRC_LABEL = { existing: "既有客戶", new: "新客" };
+    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.unit)}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    $("#b-comp").innerHTML = `
+      <h3>B 版：續約保底 + 新增 ${b.count} 案</h3>
+      <table class="tbl">
+        <thead><tr><th>來源</th><th>項目</th><th class="num">案數</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
+        <tbody>
+          <tr><td>既有續約</td><td>${fmtWan(DATA.versionB.renewalBase)} × ${pct(state.renewalRate)}</td><td></td><td></td><td class="num">${fmtWan(b.renewal)}</td></tr>
+          ${dealRows}
+        </tbody>
+        <tfoot><tr><td colspan="4">合計</td><td class="num">${fmtMoney(b.total)}</td></tr></tfoot>
+      </table>
+      ${targetBar([{ value: b.renewal, cls: "renewal" }, { value: b.newTotal, cls: "newbiz" }], b.total)}
+      <ul class="legend">
+        <li><span><span class="sw seg-semi"></span>續約 ${fmtWan(b.renewal)}</span><span><span class="sw seg-dev"></span>新增 ${fmtWan(b.newTotal)}</span></li>
+      </ul>
+      ${statusHtml(vsTarget(b.total))}
+      <ul class="plain">
+        <li>新增以「既有客戶擴充（純人天）」為主：不需新授權採購流程，回簽較快。</li>
+        <li>續約率每降 5 個百分點，續約少 ${fmtWan(DATA.versionB.renewalBase * 0.05)}，約等於 ${fmtNum((DATA.versionB.renewalBase * 0.05) / standardCaseAmount(), 1)} 個標準案。</li>
+      </ul>`;
+  }
+  function renderABToggle() {
+    $$("[data-version]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.version === state.version)));
+    $("#ab-a").classList.toggle("is-hidden", state.version !== "A");
+    $("#ab-b").classList.toggle("is-hidden", state.version !== "B");
+  }
+
+  // ---------- 6. 漏斗 ----------
+  const RATE_DEFS = [
+    { key: "leadToOpp", label: "名單 → 有效商機", min: 5, max: 50, step: 1 },
+    { key: "oppToPoc", label: "商機 → Demo／PoC", min: 20, max: 90, step: 5 },
+    { key: "pocToWin", label: "PoC → 回簽", min: 20, max: 90, step: 5 },
+    { key: "existingOppToWin", label: "既有客戶擴充：商機 → 回簽", min: 30, max: 90, step: 5 }
+  ];
+  function buildFunnel() {
+    $("#funnel-rates").innerHTML = `
+      <h3>轉換率 ${ASSUME}</h3>
+      ${RATE_DEFS.map(r => `<div class="field">
+        <label for="rate-${r.key}">${esc(r.label)}：<output id="rate-${r.key}-out" for="rate-${r.key}"></output></label>
+        <input type="range" id="rate-${r.key}" data-rate="${r.key}" min="${r.min}" max="${r.max}" step="${r.step}">
+      </div>`).join("")}
+      <button type="button" class="btn btn-ghost" id="rate-reset">回到預設假設</button>
+      <p class="foot-note">調整後，摘要、漏斗、風險與假設表同步更新。客單價由案型組合帶出，不可調。</p>`;
+    $$("[data-rate]").forEach(inp => inp.addEventListener("input", e => {
+      state.funnel[e.target.dataset.rate] = +e.target.value / 100;
+      update();
+    }));
+    $("#rate-reset").addEventListener("click", () => { state.funnel = { ...DATA.funnel }; state.leads = null; update(); });
+
+    $("#funnel-fwd").innerHTML = `
+      <div class="panel">
+        <div class="field">
+          <label for="leads">名單數：<output id="leads-out" for="leads"></output> 份</label>
+          <input type="range" id="leads" min="0" max="1000" step="5">
+        </div>
+        <div id="fwd-result"></div>
+      </div>`;
+    $("#leads").addEventListener("input", e => { state.leads = +e.target.value; update(); });
+  }
+  function funnelRows(items) {
+    const top = Math.max(...items.map(i => i.value), 1);
+    return `<div class="funnel">${items.map((it, i) => `
+      ${i > 0 && it.rate != null ? `<p class="f-rate" aria-hidden="true">↓ ${pct(it.rate)}</p>` : ""}
+      <div class="f-row${it.win ? " win" : ""}">
+        <span><strong>${esc(it.label)}</strong></span>
+        <span class="f-bar-wrap" aria-hidden="true"><span class="f-bar" style="width:${Math.max(2, (it.value / top) * 100)}%"></span></span>
+        <span class="f-val">${esc(it.text)}${it.sub ? `<small>${esc(it.sub)}</small>` : ""}</span>
+      </div>`).join("")}</div>`;
+  }
+  const rawSub = s => (Number.isInteger(+s.raw.toFixed(9)) ? "" : `未進位 ${fmtNum(s.raw, 2)}`);
+  function renderFunnel() {
+    const f = state.funnel;
+    RATE_DEFS.forEach(r => {
+      $(`#rate-${r.key}`).value = Math.round(f[r.key] * 100);
+      $(`#rate-${r.key}-out`).textContent = pct(f[r.key]);
+    });
+    $$("[data-funnel-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.funnelMode === state.funnelMode)));
+    $("#funnel-back").classList.toggle("is-hidden", state.funnelMode !== "back");
+    $("#funnel-fwd").classList.toggle("is-hidden", state.funnelMode !== "fwd");
+
+    const a = versionATotal();
+    const fa = funnelA(f);
+    const fb = funnelB(f);
+    const k = fa.byKey;
+    const cov = { text: `${fmtNum(fa.coverage, 2)} 倍`, ok: fa.coverage >= fa.coverageTarget };
+    const bk = fb.fresh.byKey;
+    $("#funnel-back").innerHTML = `
+      <div class="funnel-cols">
+        <div class="panel">
+          <h3>A 版：回簽 ${a.count} 案，需要…</h3>
+          ${funnelRows([
+            { label: "名單", value: k.lead.raw, text: `${k.lead.ceil} 份`, sub: rawSub(k.lead) },
+            { label: "有效商機", value: k.opp.raw, text: `${k.opp.ceil} 個`, sub: rawSub(k.opp), rate: f.leadToOpp },
+            { label: "Demo／PoC", value: k.poc.raw, text: `${k.poc.ceil} 場`, sub: rawSub(k.poc), rate: f.oppToPoc },
+            { label: "回簽", value: a.count, text: `${a.count} 案`, rate: f.pocToWin, win: true }
+          ])}
+          <p class="coverage">商機加權覆蓋：${fmtNum(k.opp.raw, 1)} 個商機 × 平均客單 ${fmtWan(fa.avgTicket)} ÷ 目標 ${fmtWan(DATA.meta.target)} =
+            <strong data-state="${cov.ok ? "ok" : "bad"}">${cov.text}</strong>（目標 ${fa.coverageTarget} 倍 ${ASSUME}）</p>
+        </div>
+        <div class="panel">
+          <h3>B 版：新增案件需要…</h3>
+          <h4>既有客戶擴充</h4>
+          ${funnelRows([
+            { label: "擴充商機", value: fb.existing.byKey.opp.raw, text: `${fb.existing.byKey.opp.ceil} 個`, sub: rawSub(fb.existing.byKey.opp) },
+            { label: "回簽", value: fb.existing.deals, text: `${fb.existing.deals} 案`, rate: f.existingOppToWin, win: true }
+          ])}
+          <h4>新客</h4>
+          ${funnelRows([
+            { label: "名單", value: bk.lead.raw, text: `${bk.lead.ceil} 份`, sub: rawSub(bk.lead) },
+            { label: "有效商機", value: bk.opp.raw, text: `${bk.opp.ceil} 個`, sub: rawSub(bk.opp), rate: f.leadToOpp },
+            { label: "Demo／PoC", value: bk.poc.raw, text: `${bk.poc.ceil} 場`, sub: rawSub(bk.poc), rate: f.oppToPoc },
+            { label: "回簽", value: fb.fresh.deals, text: `${fb.fresh.deals} 案`, rate: f.pocToWin, win: true }
+          ])}
+        </div>
+      </div>`;
+
+    // 正向
+    const leads = state.leads ?? k.lead.ceil;
+    $("#leads").value = leads;
+    $("#leads-out").textContent = leads;
+    const fw = funnelForward({ leads, rates: f, avgTicket: a.avgTicket });
+    $("#fwd-result").innerHTML = `
+      ${funnelRows([
+        { label: "名單", value: fw.leads, text: `${fw.leads} 份` },
+        { label: "有效商機", value: fw.opp, text: `${fmtNum(fw.opp, 1)} 個`, rate: f.leadToOpp },
+        { label: "Demo／PoC", value: fw.poc, text: `${fmtNum(fw.poc, 1)} 場`, rate: f.oppToPoc },
+        { label: "預期回簽", value: fw.wins, text: `${fmtNum(fw.wins, 1)} 案`, rate: f.pocToWin, win: true }
+      ])}
+      <div class="total-row"><span class="kpi-label">預期業績（× 平均客單 ${fmtWan(fw.avgTicket)}，由 A 版案型組合帶出）</span><strong class="big">${fmtWan(fw.amount)}</strong></div>
+      ${statusHtml(vsTarget(fw.amount))}`;
+
+    // 備註
+    const pl = pocLoad(f);
+    const [abLo, abHi] = DATA.funnel.abmAccounts;
+    $("#funnel-notes").innerHTML = `
+      <div class="note"><h4>百貨／金融走 ABM</h4><p>鎖定 ${abLo}–${abHi} 家目標客戶，名單量不是重點，重點是關係人地圖與單點突破。</p></div>
+      <div class="note"><h4>PoC 團隊產能 ${ASSUME}</h4><p>A 版需 ${pl.poc} 場 Demo／PoC；若集中在 PoC 期約 ${fmtNum(pl.weeks, 1)} 週，平均每週 ${fmtNum(pl.perWeek, 1)} 場，需與團隊確認可支援量。</p></div>
+      <div class="note"><h4>Demo ≠ PoC</h4><p>Demo 用標準範本、半天內完成；PoC 用客戶真實資料，建議付費並可抵扣正式報價，篩出高意願案件。</p></div>`;
+  }
+
+  // ---------- 7. 時間軸 ----------
+  function renderTimeline() {
+    const t = DATA.timeline;
+    const start = Math.min(...t.phases.map(p => dayNum(p.start)));
+    const end = dayNum(t.quarter[1]) + 1;
+    const span = end - start;
+    const x = iso => ((dayNum(iso) - start) / span) * 100;
+    const xEnd = iso => ((dayNum(iso) + 1 - start) / span) * 100;
+
+    const months = [];
+    for (let n = start; n < end; n++) {
+      const iso = isoOf(n);
+      if (iso.endsWith("-01")) months.push(iso);
+    }
+    const monthHead = months.map(m => `<span style="left:${x(m)}%">${+m.slice(5, 7)} 月</span>`).join("");
+    const monthLines = months.map(m => `<span class="tl-month" style="left:${x(m)}%"></span>`).join("");
+    const rows = t.phases.map(p => `
+      <div class="tl-row"><span class="tl-label">${esc(p.label)}</span>
+        <span class="tl-track"><span class="tl-bar phase-${p.id}" title="${esc(p.label)} ${shortDate(p.start)}–${shortDate(p.end)}" style="left:${x(p.start)}%;width:${xEnd(p.end) - x(p.start)}%">${shortDate(p.start)}–${shortDate(p.end)}</span></span>
+      </div>`).join("");
+    const hw = t.holidayWindow;
+    $("#timeline").innerHTML = `
+      <div class="tl-body">
+        <div class="tl-row tl-head"><span class="tl-label muted">階段</span><span class="tl-track">${monthHead}</span></div>
+        ${rows}
+        <div class="tl-row tl-marks"><span class="tl-label muted">關鍵日</span><span class="tl-track">
+          <span class="tl-mark holiday" style="left:${x(hw[0])}%;top:0">春節空窗（暫定）<br>${shortDate(hw[0])}–${shortDate(hw[1])}・初一 ${shortDate(t.lunarNewYearDay1)}</span>
+          <span class="tl-mark align-right" style="left:${xEnd(t.signTargetDate)}%;top:0">內部回簽目標 ${shortDate(t.signTargetDate)}</span>
+          <span class="tl-mark align-right" style="left:100%;top:2.3rem">季末 ${shortDate(t.quarter[1])}</span>
+        </span></div>
+        <div class="tl-overlay" aria-hidden="true">
+          ${monthLines}
+          <span class="tl-holiday" style="left:${x(hw[0])}%;width:${xEnd(hw[1]) - x(hw[0])}%"></span>
+          <span class="tl-line" style="left:${xEnd(t.signTargetDate)}%"></span>
+          <span class="tl-line dashed" style="left:${x(t.quarter[0])}%"></span>
+        </div>
+      </div>
+      <p class="foot-note">虛線＝Q1 開始；斜線區＝春節空窗；粗線＝內部回簽目標。Q1 有效工作天 ${workingDays().days} 天（扣週末、春節與暫定假日）。</p>`;
+
+    $("#phase-cards").innerHTML = t.phases.map(p => `
+      <div class="phase-card"><h4>${esc(p.label)}</h4><p class="muted">${shortDate(p.start)}–${shortDate(p.end)}</p>
+        <ul>${(p.tasks || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
+  }
+
+  // ---------- 8. 情境攻略 ----------
+  function comboText(b) {
+    const parts = [];
+    if (b.dev) parts.push(`開發工具 ×${b.dev}`);
+    if (b.semi) parts.push(`半自動 ×${b.semi}`);
+    if (b.full) parts.push(`全自動 ×${b.full}`);
+    if (b.days) parts.push(`${b.days} 人天`);
+    return parts.join(" + ");
+  }
+  function renderScenarios() {
+    const amts = Object.fromEntries(scenarioAmounts().map(s => [s.id, s]));
+    $("#scenarios").innerHTML = DATA.scenarios.map(s => {
+      const m = amts[s.id];
+      return `<article class="scn">
+        <h3>${esc(s.title)}</h3>
+        <p class="amount">${fmtWan(m.main.total)}</p>
+        <dl>
+          <dt>適用情境</dt><dd>${esc(s.when)}</dd>
+          <dt>組合 ${ASSUME}</dt><dd>${esc(comboText(m.main))}${s.addOnRenewal ? "（續約之外）" : ""}</dd>
+          ${m.alt ? `<dt>替代方案</dt><dd>${esc(m.alt.label)}：${fmtWan(m.alt.total)}</dd>` : ""}
+          <dt>對應產業</dt><dd class="badges">${s.industries.map(i => `<span class="badge role">${esc(IND[i].short)}</span>`).join("")}</dd>
+          <dt>重點</dt><dd>${esc(s.note)}</dd>
+        </dl>
+      </article>`;
+    }).join("");
+  }
+
+  // ---------- 9. 風險 ----------
+  function riskImpact(r) {
+    if (r.calc === "flagshipDelay") {
+      const f = flagshipDelayImpact();
+      return `A 版少 ${fmtWan(f.flagship)}，剩 ${fmtWan(f.without)}，距目標差 ${fmtWan(f.shortfall)} → 約需 ${f.standardCases} 個標準案補位`;
+    }
+    if (r.calc === "renewalDrop") {
+      const s = renewalSensitivity([r.rate])[0];
+      const exp = dealAmount("expansion");
+      return s.shortfall === 0
+        ? `續約率 ${pct(r.rate)}：續約 ${fmtWan(s.renewal)}，已規劃新增足以補上`
+        : `續約率 ${pct(r.rate)}：續約 ${fmtWan(s.renewal)}，加上已規劃新增仍差 ${fmtWan(s.shortfall)} → 再 +${s.extraStandardCases} 個標準案或 ${Math.ceil(s.shortfall / exp)} 個擴充案`;
+    }
+    if (r.calc === "pocLoad") {
+      const p = pocLoad(state.funnel);
+      return `A 版需 ${p.poc} 場 Demo／PoC，PoC 期約 ${fmtNum(p.weeks, 1)} 週，平均每週 ${fmtNum(p.perWeek, 1)} 場`;
+    }
+    if (r.calc === "licenseOnly") {
+      const lite = dealAmount("starterLite");
+      return `純授權每案約 ${fmtWan(lite)}，只有標準案的 ${fmtPct(lite / standardCaseAmount())}，同樣目標需要更多案數`;
+    }
+    return "";
+  }
+  function renderRisks() {
+    $("#risks").innerHTML = DATA.risks.map(r => `
+      <article class="risk">
+        <h3>${esc(r.title)}</h3>
+        <dl class="risk-dl"><dt>觸發</dt><dd>${esc(r.trigger)}</dd>
+        <dt>影響</dt><dd class="impact">${esc(riskImpact(r))}</dd>
+        <dt>備援</dt><dd class="response">${esc(r.response)}</dd></dl>
+      </article>`).join("");
+  }
+
+  // ---------- 10. 假設與來源 ----------
+  function renderSources() {
+    const list = collectAssumptions({ funnel: state.funnel, renewalRate: state.renewalRate });
+    const groups = {};
+    list.forEach(a => { (groups[a.group] = groups[a.group] || []).push(a); });
+    $("#assumptions").innerHTML = `<h3>假設面板（${list.length} 項）</h3><div class="as-cols">${
+      Object.entries(groups).map(([g, items]) => `<div class="as-group"><h4>${esc(g)}</h4><dl>${
+        items.map(a => `<dt>${esc(a.label)}</dt><dd class="${a.wrap ? "wrap" : ""}">${esc(a.value)}${a.changed ? '<span class="tag-changed">已調整</span>' : ""}</dd>`).join("")
+      }</dl></div>`).join("")}</div>`;
+
+    const ev = evidenceSummary();
+    const citedBy = id => DATA.cases.filter(c => c.evidence.refs.some(r => r.sourceId === id));
+    $("#sources").innerHTML = `
+      <h3>證據等級與來源</h3>
+      <div class="ev-legend">${Object.entries(DATA.evidenceLevels).map(([lv, d]) => `<p>${evBadge(lv)} ${ev[lv]} 張：${esc(d)}</p>`).join("")}</div>
+      <ul class="src-list">${DATA.sources.map(s => {
+        const cs = citedBy(s.id);
+        const t = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>` : `<strong>${esc(s.title)}</strong>`;
+        return `<li>${t}：${esc(s.summary)}${cs.length ? ` <span class="cited">→ ${cs.map(c => esc(c.title)).join("、")}</span>` : ""}</li>`;
+      }).join("")}</ul>
+      <p class="foot-note">公開案例皆為「同類型案例」，用於佐證痛點存在；不代表任何特定潛在客戶一定有此痛點，亦不涉及富士軟片內部客戶資料。</p>`;
+  }
+
+  // ---------- 更新（保留焦點）----------
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg"];
+  function update() {
+    const act = document.activeElement;
+    let restore = null;
+    if (act) for (const a of FOCUS_ATTRS) if (act.hasAttribute && act.hasAttribute(a)) { restore = `[${a}="${act.getAttribute(a)}"]`; break; }
+
+    renderBinds();
+    renderIndustries();
+    renderCaseFilter();
+    renderCaseGrid();
+    renderCaseDetail();
+    renderConfigurator();
+    renderA();
+    renderB();
+    renderABToggle();
+    renderFunnel();
+    renderRisks();
+    renderSources();
+
+    if (restore && !document.body.contains(act)) {
+      const el = $(restore);
+      if (el) el.focus({ preventScroll: true });
+    }
+  }
+
+  // ---------- 導覽 ----------
+  let current = 0;
+  function go(i) {
+    current = Math.max(0, Math.min(sections.length - 1, i));
+    const s = sections[current];
+    s.scrollIntoView({ behavior: reducedMotion.matches ? "auto" : "smooth", block: "start" });
+    s.focus({ preventScroll: true });
+    markCurrent();
+  }
+  function buildDots() {
+    $("#dots").innerHTML = sections.map((s, i) =>
+      `<a class="dot" href="#${s.id}" data-goto="${i}" aria-label="第 ${i + 1} 章：${esc(s.dataset.title)}"><span class="dot-label">${i + 1}. ${esc(s.dataset.title)}</span></a>`).join("");
+  }
+  function markCurrent() {
+    $$(".dot").forEach((d, i) => d.setAttribute("aria-current", String(i === current)));
+    $("#progress-bar").style.width = `${((current + 1) / sections.length) * 100}%`;
+  }
+  function detectCurrent() {
+    const y = window.scrollY + window.innerHeight * 0.4;
+    let idx = 0;
+    sections.forEach((s, i) => { if (s.offsetTop <= y) idx = i; });
+    if (idx !== current) { current = idx; markCurrent(); }
+  }
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; detectCurrent(); });
+  }, { passive: true });
+
+  const help = $("#help");
+  function toggleHelp() {
+    if (help.open) help.close(); else help.showModal();
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === "?") { e.preventDefault(); toggleHelp(); return; }
+    if (help.open) return;
+    const tag = (e.target.tagName || "").toUpperCase();
+    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+    const onControl = tag === "BUTTON" || tag === "A" || tag === "SUMMARY";
+    let handled = true;
+    switch (e.key) {
+      case "ArrowRight": case "PageDown": go(current + 1); break;
+      case "ArrowLeft": case "PageUp": go(current - 1); break;
+      case " ":
+        if (onControl) { handled = false; break; }
+        e.shiftKey ? go(current - 1) : go(current + 1); break;
+      case "Home": go(0); break;
+      case "End": go(sections.length - 1); break;
+      default:
+        if (/^[0-9]$/.test(e.key)) go(e.key === "0" ? 9 : +e.key - 1);
+        else handled = false;
+    }
+    if (handled) e.preventDefault();
+  });
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-funnel-mode]");
+    if (!t) return;
+    const d = t.dataset;
+    if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
+    if (d.industry) {
+      state.industry = state.industry === d.industry ? "all" : d.industry;
+      syncOpenCaseToFilter();
+    } else if (d.filter) {
+      state.industry = d.filter;
+      syncOpenCaseToFilter();
+    } else if (d.case) {
+      state.openCase = state.openCase === d.case ? null : d.case;
+    } else if (d.openCase) {
+      state.openCase = d.openCase;
+      update();
+      go(sections.findIndex(s => s.id === "s-cases"));
+      return;
+    } else if (d.gotoCfg) {
+      const c = CASE[d.gotoCfg];
+      state.cfg = { caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays };
+      update();
+      go(sections.findIndex(s => s.id === "s-pricing"));
+      return;
+    } else if (d.version) {
+      state.version = d.version;
+    } else if (d.funnelMode) {
+      state.funnelMode = d.funnelMode;
+    }
+    update();
+  });
+  function syncOpenCaseToFilter() {
+    const list = filteredCases();
+    if (!list.some(c => c.id === state.openCase)) state.openCase = list.length ? list[0].id : null;
+  }
+
+  // ---------- 初始化 ----------
+  decorateSections();
+  buildDots();
+  buildConfigurator();
+  buildB();
+  buildFunnel();
+  renderStdExplain();
+  renderTimeline();
+  renderScenarios();
+  update();
+  detectCurrent();
+  markCurrent();
 })();
 
 </script>

@@ -9,16 +9,193 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#s-summary">跳到內容</a>
+
+<nav class="dots" id="dots" aria-label="章節導覽"></nav>
+<div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+
 <main id="app">
-  <section class="slide" id="s-summary">
-    <h1 data-bind="meta.title"></h1>
-    <p class="note">M0 驗算檢視（骨架將於 M1 建立）</p>
-    <table class="check">
-      <thead><tr><th>項目</th><th>計算結果</th></tr></thead>
-      <tbody id="m0-table"></tbody>
-    </table>
+
+  <!-- 1. 開場摘要 -->
+  <section class="slide" id="s-summary" data-title="開場摘要" tabindex="-1" aria-labelledby="h-summary">
+    <header class="slide-head">
+      <p class="eyebrow">開場摘要</p>
+      <h1 id="h-summary" data-bind="meta.title"></h1>
+      <p class="lead">先找到產業既定流程裡的痛點，再用「標準案」組合與成案率回推，讓 <strong data-bind="target.wan"></strong> 有一條可執行、可檢查的路徑。</p>
+    </header>
+    <div class="versions">
+      <article class="vcard vcard-a">
+        <p class="vcard-tag">A 版　從零開始</p>
+        <p class="big" data-bind="a.totalWan"></p>
+        <p>新簽 <strong data-bind="a.count"></strong> 案：<span data-bind="a.mix"></span></p>
+        <p class="status" data-bind="a.status"></p>
+      </article>
+      <article class="vcard vcard-b">
+        <p class="vcard-tag">B 版　續約保底 + 新增</p>
+        <p class="big" data-bind="b.totalWan"></p>
+        <p>續約 <strong data-bind="b.renewalWan"></strong>（續約率 <span data-bind="b.rate"></span>，<span class="tag-assume">假設</span>）+ 新增 <strong data-bind="b.count"></strong> 案</p>
+        <p class="status" data-bind="b.status"></p>
+      </article>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <p class="kpi-label">標準案怎麼拆</p>
+        <p class="kpi-value" data-bind="std.totalWan"></p>
+        <p class="kpi-sub">授權 <span data-bind="std.licenseWan"></span> + 開發 <span data-bind="std.days"></span> 人天 <span data-bind="std.serviceWan"></span></p>
+      </div>
+      <div class="kpi">
+        <p class="kpi-label">A 版所需名單量 <span class="tag-assume">假設</span></p>
+        <p class="kpi-value"><span data-bind="fa.leads"></span> 份</p>
+        <p class="kpi-sub">→ 商機 <span data-bind="fa.opp"></span> → Demo／PoC <span data-bind="fa.poc"></span> → 回簽 <span data-bind="a.count"></span></p>
+      </div>
+      <div class="kpi">
+        <p class="kpi-label">Q1 有效時程 <span class="tag-assume">假設</span></p>
+        <p class="kpi-value"><span data-bind="wd.days"></span> 個工作天</p>
+        <p class="kpi-sub">季初至內部回簽目標 <span data-bind="time.sign"></span>，扣除春節空窗（暫定）</p>
+      </div>
+    </div>
+    <p class="thesis" data-bind="meta.thesis"></p>
+    <p class="hero-line">主打流程：<strong data-bind="hero.title"></strong>　<span class="muted">案件業績以「回簽報價單」即計入</span></p>
+    <p class="hint no-print">按 → 或空白鍵翻頁，按 ? 看快捷鍵</p>
   </section>
+
+  <!-- 2. 產業與痛點地圖 -->
+  <section class="slide" id="s-industry" data-title="產業與痛點地圖" tabindex="-1" aria-labelledby="h-industry">
+    <header class="slide-head">
+      <p class="eyebrow">產業與痛點地圖</p>
+      <h2 id="h-industry">先選對產業，再選對流程</h2>
+      <p class="lead">評分是我依「成交速度、市場規模、客單、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看對應的痛點流程。</p>
+    </header>
+    <div class="industry-layout">
+      <div id="industry-map" class="industry-map"></div>
+      <aside id="industry-detail" class="panel industry-detail" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <!-- 3. 痛點互動卡片 -->
+  <section class="slide" id="s-cases" data-title="痛點卡片" tabindex="-1" aria-labelledby="h-cases">
+    <header class="slide-head">
+      <p class="eyebrow">痛點互動卡片</p>
+      <h2 id="h-cases">從一個人工步驟，看到一張報價單</h2>
+      <p class="lead">每張卡片：痛點、現況 vs 導入後流程、對應產品與報價、證據等級。公開案例皆為「同類型案例」，不代表特定客戶一定有此痛點。</p>
+    </header>
+    <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
+    <div class="cases-layout">
+      <div class="case-grid" id="case-grid"></div>
+      <div class="panel case-detail" id="case-detail" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 4. 計價與組合器 -->
+  <section class="slide" id="s-pricing" data-title="計價與組合器" tabindex="-1" aria-labelledby="h-pricing">
+    <header class="slide-head">
+      <p class="eyebrow">計價與組合器</p>
+      <h2 id="h-pricing">選一個流程，報價就出來</h2>
+      <p class="lead">必要組合 = 開發工具 1 套 + 機器人（全自動或半自動擇 1）；其餘依使用量加購。授權為年訂閱，開發為一次性人天。</p>
+    </header>
+    <div class="pricing-layout">
+      <form class="panel cfg-controls" id="cfg-form" aria-label="報價組合器" onsubmit="return false"></form>
+      <div class="panel cfg-result" id="cfg-result" aria-live="polite"></div>
+      <aside class="panel std-explain" id="std-explain"></aside>
+    </div>
+  </section>
+
+  <!-- 5. A / B 業績拆解 -->
+  <section class="slide" id="s-ab" data-title="A／B 業績拆解" tabindex="-1" aria-labelledby="h-ab">
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">A／B 業績拆解</p>
+        <h2 id="h-ab">兩種起點，同一個目標</h2>
+      </div>
+      <div class="toggle" role="group" aria-label="切換版本">
+        <button type="button" class="toggle-btn" data-version="A" aria-pressed="true">A 版　從零開始</button>
+        <button type="button" class="toggle-btn" data-version="B" aria-pressed="false">B 版　續約 + 新增</button>
+      </div>
+    </header>
+    <div id="ab-a" class="ab-panel"></div>
+    <div id="ab-b" class="ab-panel"></div>
+  </section>
+
+  <!-- 6. 成案率回推與漏斗 -->
+  <section class="slide" id="s-funnel" data-title="成案率回推" tabindex="-1" aria-labelledby="h-funnel">
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">成案率回推與漏斗</p>
+        <h2 id="h-funnel">要簽幾案，就倒推要幾份名單</h2>
+      </div>
+      <div class="toggle" role="group" aria-label="切換漏斗模式">
+        <button type="button" class="toggle-btn" data-funnel-mode="back" aria-pressed="true">反向：由目標回推</button>
+        <button type="button" class="toggle-btn" data-funnel-mode="fwd" aria-pressed="false">正向：由名單試算</button>
+      </div>
+    </header>
+    <div class="funnel-layout">
+      <div class="panel funnel-rates" id="funnel-rates"></div>
+      <div class="funnel-main">
+        <div id="funnel-back" class="funnel-panel"></div>
+        <div id="funnel-fwd" class="funnel-panel"></div>
+      </div>
+    </div>
+    <div class="notes" id="funnel-notes"></div>
+  </section>
+
+  <!-- 7. Q1 時間軸 -->
+  <section class="slide" id="s-timeline" data-title="Q1 時間軸" tabindex="-1" aria-labelledby="h-timeline">
+    <header class="slide-head">
+      <p class="eyebrow">Q1 時間軸</p>
+      <h2 id="h-timeline">以回簽日倒推，避開春節空窗</h2>
+      <p class="lead">A 版以 12 月啟動暖名單為前提。內部回簽目標 <strong data-bind="time.sign"></strong>，距季末留 <strong data-bind="time.buffer"></strong> 天緩衝。日期皆為暫定 <span class="tag-assume">假設</span>，春節放假以人事行政總處公告為準。</p>
+    </header>
+    <div class="panel timeline" id="timeline"></div>
+    <div class="phase-cards" id="phase-cards"></div>
+  </section>
+
+  <!-- 8. 特定情境／產品組合攻略 -->
+  <section class="slide" id="s-scenarios" data-title="情境攻略" tabindex="-1" aria-labelledby="h-scenarios">
+    <header class="slide-head">
+      <p class="eyebrow">特定情境／產品組合攻略</p>
+      <h2 id="h-scenarios">什麼客戶，給什麼組合</h2>
+      <p class="lead">同一套價目表，依客戶階段組出不同報價；金額由價目表即時算出，人天為假設。</p>
+    </header>
+    <div class="scenario-grid" id="scenarios"></div>
+  </section>
+
+  <!-- 9. 風險與備援 -->
+  <section class="slide" id="s-risks" data-title="風險與備援" tabindex="-1" aria-labelledby="h-risks">
+    <header class="slide-head">
+      <p class="eyebrow">風險與備援</p>
+      <h2 id="h-risks">先想好哪裡會破，再準備怎麼補</h2>
+    </header>
+    <div class="risk-grid" id="risks"></div>
+  </section>
+
+  <!-- 10. 假設與來源 -->
+  <section class="slide" id="s-sources" data-title="假設與來源" tabindex="-1" aria-labelledby="h-sources">
+    <header class="slide-head">
+      <p class="eyebrow">假設與來源</p>
+      <h2 id="h-sources">所有假設都攤開，所有案例都標證據</h2>
+      <p class="lead">下表由程式自動彙整；在前面章節調整的值會即時反映並標示「已調整」。</p>
+    </header>
+    <div class="sources-layout">
+      <div class="panel" id="assumptions"></div>
+      <div class="panel" id="sources"></div>
+    </div>
+  </section>
+
 </main>
+
+<dialog id="help" aria-labelledby="h-help">
+  <h2 id="h-help">快捷鍵</h2>
+  <dl class="keys">
+    <dt><kbd>→</kbd> <kbd>PageDown</kbd> <kbd>空白鍵</kbd></dt><dd>下一章</dd>
+    <dt><kbd>←</kbd> <kbd>PageUp</kbd></dt><dd>上一章</dd>
+    <dt><kbd>1</kbd>～<kbd>9</kbd>、<kbd>0</kbd></dt><dd>跳到第 1～9 章、第 10 章</dd>
+    <dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>第一章／最後一章</dd>
+    <dt><kbd>?</kbd></dt><dd>開關本說明</dd>
+    <dt><kbd>Tab</kbd></dt><dd>在卡片、按鈕、滑桿間移動；滑桿用方向鍵調整</dd>
+  </dl>
+  <form method="dialog"><button class="btn" type="submit">關閉（Esc）</button></form>
+</dialog>
+
 <script>
 <!--DATA-->
 </script>

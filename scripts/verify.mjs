@@ -66,6 +66,39 @@ const fw = C.funnelForward({ leads: FA.byKey.lead.ceil });
 check("正推 180 名單 → 成交案數", fw.wins, 9, near(1e-9));
 check("正推金額 = A 版合計", Math.round(fw.amount), A.total);
 
+// 調整轉換率後漏斗須同步（funnelA 接受覆寫值）
+const FA2 = C.funnelA({ ...DATA.funnel, leadToOpp: 0.1 });
+check("轉換率覆寫：名單 10% → 名單需求加倍", FA2.byKey.lead.ceil, 360);
+
+// ---- 1b. 衍生計算（M1–M4 新增；數值由資料推導並經人工驗算）----
+const WD = C.workingDays();
+check("Q1 有效工作天（1/1–3/20，扣週末、春節空窗、元旦、228 補假）", WD.days, 47);
+check("回簽目標距季末天數", WD.bufferDays, 11);
+const FD = C.flagshipDelayImpact();
+check("旗艦延後：剩餘金額", FD.without, 3_940_000);
+check("旗艦延後：缺口", FD.shortfall, 1_060_000);
+check("旗艦延後：約需標準案", FD.standardCases, 3);
+const R90 = C.renewalSensitivity([0.9])[0];
+check("續約 90%：扣已規劃新增後仍差", R90.shortfall, 60_000);
+check("續約 90%：再加標準案", R90.extraStandardCases, 1);
+const R100 = C.renewalSensitivity([1.0])[0];
+check("續約 100%：已規劃新增足夠", R100.shortfall, 0);
+const PL = C.pocLoad();
+check("PoC 期週數", Math.round(PL.weeks * 100) / 100, 3.71);
+check("PoC 每週場次", Math.round(PL.perWeek * 10) / 10, 4.8);
+const SA = Object.fromEntries(C.scenarioAmounts().map(s => [s.id, s]));
+check("情境：入門包首購", SA.starter.main.total, 440_000);
+check("情境：入門包純授權", SA.starter.alt.total, 240_000);
+check("情境：標準案", SA.standard.main.total, 500_000);
+check("情境：全自動升級（全自動 + 15 人天）", SA["full-upgrade"].main.total, 700_000);
+check("情境：純人天擴充", SA.expansion.main.total, 300_000);
+check("情境：續約 + 加購（半自動 + 5 人天）", SA["renewal-plus"].main.total, 164_000);
+check("情境標準案 = 標準案金額", SA.standard.main.total, C.standardCaseAmount());
+check("情境入門包 = 案型 starter", SA.starter.main.total, C.dealAmount("starter"));
+check("情境擴充 = 案型 expansion", SA.expansion.main.total, C.dealAmount("expansion"));
+check("fmtWan(5,116,000)", C.fmtWan(5_116_000), "511.6 萬");
+check("fmtWan(5,140,000)", C.fmtWan(5_140_000), "514 萬");
+
 // ---- 2. 卡片完整性 ----
 const ids = new Set();
 const levels = Object.keys(DATA.evidenceLevels);
@@ -88,6 +121,15 @@ for (const d of DATA.versionA.deals) {
   assert(`A 版產業不存在：${d.industry}`, industryIds.has(d.industry));
   if (d.caseId) assert(`A 版 caseId 不存在：${d.caseId}`, ids.has(d.caseId));
 }
+
+for (const s of DATA.scenarios) {
+  for (const i of s.industries) assert(`情境 ${s.id} 產業不存在：${i}`, industryIds.has(i));
+}
+const riskCalcs = new Set(["flagshipDelay", "renewalDrop", "pocLoad", "licenseOnly"]);
+for (const r of DATA.risks) assert(`風險 ${r.id} calc 無效：${r.calc}`, riskCalcs.has(r.calc));
+const phaseIds = new Set(DATA.timeline.phases.map(p => p.id));
+assert("時程缺少 poc 階段（pocLoad 需要）", phaseIds.has("poc"));
+for (const p of DATA.timeline.phases) assert(`階段 ${p.id} 起訖顛倒`, C.dayNum(p.start) <= C.dayNum(p.end));
 
 // ---- 3. 來源引用 ----
 const srcIds = new Set(DATA.sources.map(s => s.id));
@@ -122,7 +164,7 @@ for (const f of scanFiles) {
 const tpl = readFileSync(join(root, "src/index.template.html"), "utf8").replace(/<!--(STYLE|DATA|CALC|APP)-->/g, "");
 const tplText = tpl.replace(/<[^>]+>/g, " "); // 只看文案，不看標籤屬性
 const hardNumbers = ["5,116,000", "5116000", "511.6", "5,140,000", "5140000", "514", "180", "36", "4.09",
-  "1,176,000", "500,000", "3,800,000", "1,340,000"];
+  "1,176,000", "500,000", "3,800,000", "1,340,000", "47"];
 for (const n of hardNumbers) {
   const re = new RegExp(`(?<![\\d.,])${n.replace(/[.,]/g, m => "\\" + m)}(?![\\d.,])`);
   assert(`模板文案寫死數字 ${n}（請改用 data-bind）`, !re.test(tplText));

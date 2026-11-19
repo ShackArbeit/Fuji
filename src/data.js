@@ -7,7 +7,8 @@ export const DATA = {
     title: "2027 Q1 業績 500 萬達成規劃",
     target: 5_000_000,
     interviewDate: "2026-11-27",
-    heroCaseId: "mfg-delivery-followup" // 預設主打流程；Shack 尚無偏好，隨時可改這一行
+    heroCaseId: "mfg-delivery-followup", // 預設主打流程；Shack 尚無偏好，隨時可改這一行
+    thesis: "這個職位的關鍵，是先找到產業既定流程裡的痛點；計價、業績拆解與漏斗回推，則用來證明這份規劃有數字、可執行。"
   },
 
   price: { dev: 176_000, semi: 64_000, full: 400_000, day: 20_000 },
@@ -55,16 +56,25 @@ export const DATA = {
     oppToPoc:  0.50,        // 商機 → Demo/PoC
     pocToWin:  0.50,        // PoC → 回簽
     existingOppToWin: 0.60, // 既有客戶擴充：商機 → 回簽
-    coverageTarget: 4       // 商機加權覆蓋倍數（目標 3–4 倍）
+    coverageTarget: 4,      // 商機加權覆蓋倍數（目標 3–4 倍）
+    abmAccounts: [10, 15]   // 百貨／金融 ABM 鎖定家數
   },
 
+  // score 為主觀假設（1–5，resistance 越高代表阻力越低）；pitch 為推論，需 Discovery 驗證
   industries: [
-    { id: "manufacturing", name: "製造業供應鏈",   role: "主攻",       score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 } },
-    { id: "retail",        name: "傳統零售／電商", role: "副攻",       score: { speed: 4, size: 4, ticket: 2, quantifiable: 4, resistance: 4 } },
-    { id: "hightech",      name: "高科技",         role: "選擇性",     score: { speed: 2, size: 3, ticket: 5, quantifiable: 3, resistance: 2 } },
-    { id: "department",    name: "百貨",           role: "單點 ABM",   score: { speed: 3, size: 1, ticket: 3, quantifiable: 4, resistance: 3 } },
-    { id: "finance",       name: "金融／保險",     role: "長線／擴充", score: { speed: 1, size: 2, ticket: 5, quantifiable: 4, resistance: 1 } }
-  ], // score 為主觀假設（1–5，resistance 越高代表阻力越低）
+    { id: "manufacturing", name: "製造業供應鏈",   short: "製造",   role: "主攻",       abm: false, score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 },
+      pitch: "跨 ERP、Email、Excel 的重複作業多，工時與錯誤率容易量化；富士官網與公開報導都有同類型案例可引用。" },
+    { id: "retail",        name: "傳統零售／電商", short: "零售",   role: "副攻",       abm: false, score: { speed: 4, size: 4, ticket: 2, quantifiable: 4, resistance: 4 },
+      pitch: "多平台、多門市的資料搬運量大、決策快；客單偏低，以標準案與入門包為主。" },
+    { id: "hightech",      name: "高科技",         short: "高科技", role: "選擇性",     abm: false, score: { speed: 2, size: 3, ticket: 5, quantifiable: 3, resistance: 2 },
+      pitch: "客單潛力高，但大廠常有自建 RPA 團隊；切入點是授權與特定報表流程，少賣人天。" },
+    { id: "department",    name: "百貨",           short: "百貨",   role: "單點 ABM",   abm: true,  score: { speed: 3, size: 1, ticket: 3, quantifiable: 4, resistance: 3 },
+      pitch: "市場集中、家數少，適合鎖定少數目標的 ABM；以專櫃營業額與抽成結算切入。" },
+    { id: "finance",       name: "金融／保險",     short: "金融",   role: "長線／擴充", abm: true,  score: { speed: 1, size: 2, ticket: 5, quantifiable: 4, resistance: 1 },
+      pitch: "客單高，但法遵與資安審查期長，Q1 新案不易回簽；以既有客戶擴充為主、新案長線經營。" }
+  ],
+
+  scoreShort: { speed: "速度", size: "規模", ticket: "客單", quantifiable: "可量化", resistance: "低阻力" },
 
   scoreLabels: {
     speed: "成交速度",
@@ -79,15 +89,52 @@ export const DATA = {
     quarter: ["2027-01-01", "2027-03-31"],
     lunarNewYearDay1: "2027-02-06",
     holidayWindow: ["2027-02-04", "2027-02-14"], // 暫定
+    otherHolidays: ["2027-01-01", "2027-03-01"], // 暫定：元旦、228 補假（以公告為準）
     signTargetDate: "2027-03-20", // 內部回簽目標（留 10 天緩衝）
     phases: [
-      { id: "warm",  label: "暖名單啟動（Q1 前）", start: "2026-12-01", end: "2026-12-31" },
-      { id: "disc",  label: "Discovery + Demo",   start: "2027-01-04", end: "2027-01-29" },
-      { id: "push",  label: "春節前簽核推進",       start: "2027-02-01", end: "2027-02-03" },
-      { id: "poc",   label: "PoC 與報價",           start: "2027-02-15", end: "2027-03-12" },
-      { id: "close", label: "回簽衝刺",             start: "2027-03-08", end: "2027-03-31" }
+      { id: "warm",  label: "暖名單啟動（Q1 前）", start: "2026-12-01", end: "2026-12-31",
+        tasks: ["盤點既有客戶與暖名單", "名單分級，預約 1 月 Discovery"] },
+      { id: "disc",  label: "Discovery + Demo",   start: "2027-01-04", end: "2027-01-29",
+        tasks: ["訪談：筆數、工時、例外比例", "標準範本 Demo，篩選 PoC 流程"] },
+      { id: "push",  label: "春節前簽核推進",       start: "2027-02-01", end: "2027-02-03",
+        tasks: ["送出報價、確認預算", "鎖定簽核關係人"] },
+      { id: "poc",   label: "PoC 與報價",           start: "2027-02-15", end: "2027-03-12",
+        tasks: ["真實資料 PoC（建議付費可抵扣）", "效益試算與正式報價"] },
+      { id: "close", label: "回簽衝刺",             start: "2027-03-08", end: "2027-03-31",
+        tasks: ["追蹤法務／採購流程", "內部回簽目標日前完成主要案件"] }
     ]
   },
+
+  // 特定情境／產品組合攻略（§7-8）；bundle 為「這一筆」報價內容，人天為假設
+  scenarios: [
+    { id: "starter", title: "入門包首購", when: "第一次接觸 RPA、預算未編列，先證明一個流程有效",
+      bundle: { dev: 1, semi: 1, days: 10 }, alt: { label: "純授權版（客戶自行開發）", bundle: { dev: 1, semi: 1, days: 0 } },
+      industries: ["department", "retail"], note: "降低首購門檻，之後以人天擴充第二個流程" },
+    { id: "standard", title: "標準案", when: "流程明確、每日筆數多、跨兩套以上系統",
+      bundle: { dev: 1, semi: 1, days: 13 }, industries: ["manufacturing", "retail", "hightech"],
+      note: "業績主力；Discovery 先確認筆數、工時、例外比例" },
+    { id: "full-upgrade", title: "全自動升級", when: "既有半自動流程已穩定，需要無人值守排程（夜間批次、每日報表）",
+      bundle: { full: 1, days: 15 }, industries: ["manufacturing", "finance"],
+      note: "客戶已有開發工具，只加購全自動機器人與人天" },
+    { id: "expansion", title: "既有客戶純人天擴充", when: "既有客戶已有授權，想把機器人用到第二、第三個流程",
+      bundle: { days: 15 }, industries: ["manufacturing", "finance"],
+      note: "不需新授權採購流程，回簽速度快" },
+    { id: "renewal-plus", title: "續約 + 加購", when: "年約到期續約時，順勢盤點新流程",
+      bundle: { semi: 1, days: 5 }, industries: ["manufacturing", "retail", "finance"], addOnRenewal: true,
+      note: "金額為續約以外的加購部分" }
+  ],
+
+  // 風險與備援（§7-9）；calc 指定影響試算方式
+  risks: [
+    { id: "flagship-delay", title: "全自動旗艦延後", trigger: "三方比對例外多、客戶內部審查拉長", calc: "flagshipDelay",
+      response: "以標準案補位；旗艦改為分階段（先半自動上線，Q2 升級全自動）" },
+    { id: "renewal-drop", title: "續約率下滑", trigger: "既有客戶預算縮減或流程停用", calc: "renewalDrop", rate: 0.9,
+      response: "續約前 60 天盤點使用率；以既有客戶擴充 + 新客標準案補缺口" },
+    { id: "poc-capacity", title: "PoC 產能不足", trigger: "同時進行的 PoC 超過團隊可支援場次", calc: "pocLoad",
+      response: "Demo 用標準範本；PoC 只給高意願案件，採付費可抵扣" },
+    { id: "hightech-diy", title: "高科技大廠自建能力強", trigger: "客戶已有 RPA 團隊，傾向自行開發", calc: "licenseOnly",
+      response: "賣授權與加購機器人、少賣人天；以教育訓練與顧問支援補位" }
+  ],
 
   // 證據等級說明（§6.1）
   evidenceLevels: {

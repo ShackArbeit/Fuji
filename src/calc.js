@@ -13,11 +13,20 @@ export function dealBreakdown(typeKey) {
   const { price } = DATA;
   const license = t.noLicense ? 0 : price.dev + (t.fullAuto ? price.full : price.semi);
   const service = t.days * price.day;
-  return { typeKey, label: t.label, license, service, days: t.days, total: license + service };
+  return { typeKey, label: t.label, license, service, days: t.days, fullAuto: t.fullAuto, noLicense: !!t.noLicense, total: license + service };
 }
 
 export function dealAmount(typeKey) {
   return dealBreakdown(typeKey).total;
+}
+
+// 任意組合：{ dev, semi, full, days }
+export function bundleAmount(b = {}) {
+  const { price } = DATA;
+  const dev = b.dev || 0, semi = b.semi || 0, full = b.full || 0, days = b.days || 0;
+  const license = dev * price.dev + semi * price.semi + full * price.full;
+  const service = days * price.day;
+  return { dev, semi, full, days, license, service, total: license + service };
 }
 
 function sumDeals(deals, groupKey) {
@@ -66,21 +75,7 @@ export function versionBTotal(rate = DATA.versionB.renewalRate) {
   };
 }
 
-// 由成交案數反推各階段所需量。stages 由「最接近成交」往上排。
-// 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
-export function funnelBack({ deals, rates }) {
-  const stages = rates || defaultStages();
-  let raw = deals;
-  const out = [];
-  for (const s of stages) {
-    raw = raw / s.rate;
-    out.push({ key: s.key, label: s.label, rate: s.rate, raw, ceil: Math.ceil(raw - 1e-9) });
-  }
-  return { deals, stages: out, byKey: Object.fromEntries(out.map(o => [o.key, o])) };
-}
-
-function defaultStages() {
-  const f = DATA.funnel;
+function defaultStages(f = DATA.funnel) {
   return [
     { key: "poc",  label: "Demo／PoC", rate: f.pocToWin },
     { key: "opp",  label: "有效商機",  rate: f.oppToPoc },
@@ -88,41 +83,65 @@ function defaultStages() {
   ];
 }
 
-export function funnelA() {
-  const a = versionATotal();
-  const back = funnelBack({ deals: a.count });
-  const opp = back.byKey.opp.raw;
-  const coverage = (opp * a.avgTicket) / DATA.meta.target;
-  return { ...back, avgTicket: a.avgTicket, coverage, coverageTarget: DATA.funnel.coverageTarget };
+const ceil = v => Math.ceil(v - 1e-9);
+
+// 由成交案數反推各階段所需量。rates 由「最接近成交」往上排；預設用 DATA.funnel。
+// 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
+export function funnelBack({ deals, rates }) {
+  const stages = rates || defaultStages();
+  let raw = deals;
+  const out = [];
+  for (const s of stages) {
+    raw = raw / s.rate;
+    out.push({ key: s.key, label: s.label, rate: s.rate, raw, ceil: ceil(raw) });
+  }
+  return { deals, stages: out, byKey: Object.fromEntries(out.map(o => [o.key, o])) };
 }
 
-export function funnelB() {
-  const f = DATA.funnel;
+export function funnelA(f = DATA.funnel) {
+  const a = versionATotal();
+  const back = funnelBack({ deals: a.count, rates: defaultStages(f) });
+  const opp = back.byKey.opp.raw;
+  const coverage = (opp * a.avgTicket) / DATA.meta.target;
+  return { ...back, avgTicket: a.avgTicket, coverage, coverageTarget: f.coverageTarget };
+}
+
+export function funnelB(f = DATA.funnel) {
   const nOf = src => DATA.versionB.deals.filter(d => d.source === src).reduce((a, d) => a + d.n, 0);
   const existing = funnelBack({
     deals: nOf("existing"),
     rates: [{ key: "opp", label: "擴充商機", rate: f.existingOppToWin }]
   });
-  const fresh = funnelBack({ deals: nOf("new") });
+  const fresh = funnelBack({ deals: nOf("new"), rates: defaultStages(f) });
   return { existing, fresh };
 }
 
-// 由名單正推（供滑桿）
+// 由名單正推（供滑桿）；客單價由 A 版案型組合帶出，不自由調整
 export function funnelForward({ leads, rates = {}, avgTicket }) {
   const f = { ...DATA.funnel, ...rates };
   const ticket = avgTicket ?? versionATotal().avgTicket;
   const opp = leads * f.leadToOpp;
   const poc = opp * f.oppToPoc;
   const wins = poc * f.pocToWin;
-  return { leads, opp, poc, wins, winsFloor: Math.floor(wins + 1e-9), amount: wins * ticket, avgTicket: ticket, rates: f };
+  const amount = wins * ticket;
+  return { leads, opp, poc, wins, winsFloor: Math.floor(wins + 1e-9), amount, avgTicket: ticket, rates: f, gapToTarget: DATA.meta.target - amount };
 }
 
 export function renewalSensitivity(rates = DATA.versionB.sensitivityRates) {
   const std = standardCaseAmount();
+  const planned = versionBTotal().newTotal;
   return rates.map(rate => {
     const renewal = Math.round(DATA.versionB.renewalBase * rate);
     const gap = Math.max(0, DATA.meta.target - renewal);
-    return { rate, renewal, gap, standardCasesRaw: gap / std, standardCases: Math.ceil(gap / std - 1e-9) };
+    const shortfall = Math.max(0, gap - planned); // 已規劃新增之外仍不足
+    return {
+      rate, renewal, gap,
+      standardCasesRaw: gap / std,
+      standardCases: ceil(gap / std),
+      planned,
+      shortfall,
+      extraStandardCases: ceil(shortfall / std)
+    };
   });
 }
 
@@ -152,34 +171,97 @@ export function evidenceSummary() {
   return out;
 }
 
-// 自動彙整所有「假設」
-export function collectAssumptions() {
-  const f = DATA.funnel;
+// ---- 日期（以 UTC 日序計，避免時區誤差）----
+export function dayNum(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return Math.round(Date.UTC(y, m - 1, d) / 86_400_000);
+}
+export function isoOf(n) {
+  return new Date(n * 86_400_000).toISOString().slice(0, 10);
+}
+
+// Q1 有效工作天：季初 → 內部回簽目標，扣除週末、春節空窗與其他假日（皆為暫定假設）
+export function workingDays({ start, end } = {}) {
+  const t = DATA.timeline;
+  const s = dayNum(start || t.quarter[0]);
+  const e = dayNum(end || t.signTargetDate);
+  const hw = [dayNum(t.holidayWindow[0]), dayNum(t.holidayWindow[1])];
+  const off = new Set((t.otherHolidays || []).map(dayNum));
+  let days = 0;
+  for (let n = s; n <= e; n++) {
+    const dow = new Date(n * 86_400_000).getUTCDay();
+    if (dow === 0 || dow === 6) continue;
+    if (n >= hw[0] && n <= hw[1]) continue;
+    if (off.has(n)) continue;
+    days++;
+  }
+  return { days, calendarDays: e - s + 1, bufferDays: dayNum(t.quarter[1]) - e };
+}
+
+export function phaseWeeks(phaseId) {
+  const p = DATA.timeline.phases.find(x => x.id === phaseId);
+  return (dayNum(p.end) - dayNum(p.start) + 1) / 7;
+}
+
+// ---- 風險影響試算 ----
+export function flagshipDelayImpact() {
+  const a = versionATotal();
+  const flagship = a.deals.filter(d => d.type === "flagship").reduce((s, d) => s + d.amount, 0);
+  const without = a.total - flagship;
+  const shortfall = Math.max(0, DATA.meta.target - without);
+  return { flagship, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), share: flagship / a.total };
+}
+
+export function pocLoad(f = DATA.funnel) {
+  const poc = funnelA(f).byKey.poc;
+  const weeks = phaseWeeks("poc");
+  return { poc: poc.ceil, pocRaw: poc.raw, weeks, perWeek: poc.raw / weeks };
+}
+
+export function scenarioAmounts() {
+  return DATA.scenarios.map(s => ({
+    id: s.id,
+    main: bundleAmount(s.bundle),
+    alt: s.alt ? { label: s.alt.label, ...bundleAmount(s.alt.bundle) } : null
+  }));
+}
+
+// 自動彙整所有「假設」；overrides 可帶入 UI 目前調整值（funnel、renewalRate）
+export function collectAssumptions(overrides = {}) {
+  const f = { ...DATA.funnel, ...(overrides.funnel || {}) };
+  const rr = overrides.renewalRate ?? DATA.versionB.renewalRate;
   const pct = v => Math.round(v * 100) + "%";
+  const changed = (k, v) => DATA.funnel[k] !== v;
   const list = [
-    { group: "漏斗轉換率", label: "名單 → 有效商機", value: pct(f.leadToOpp) },
-    { group: "漏斗轉換率", label: "商機 → Demo／PoC", value: pct(f.oppToPoc) },
-    { group: "漏斗轉換率", label: "PoC → 回簽", value: pct(f.pocToWin) },
-    { group: "漏斗轉換率", label: "既有客戶擴充：商機 → 回簽", value: pct(f.existingOppToWin) },
+    { group: "漏斗轉換率", label: "名單 → 有效商機", value: pct(f.leadToOpp), changed: changed("leadToOpp", f.leadToOpp) },
+    { group: "漏斗轉換率", label: "商機 → Demo／PoC", value: pct(f.oppToPoc), changed: changed("oppToPoc", f.oppToPoc) },
+    { group: "漏斗轉換率", label: "PoC → 回簽", value: pct(f.pocToWin), changed: changed("pocToWin", f.pocToWin) },
+    { group: "漏斗轉換率", label: "既有客戶擴充：商機 → 回簽", value: pct(f.existingOppToWin), changed: changed("existingOppToWin", f.existingOppToWin) },
     { group: "漏斗轉換率", label: "商機加權覆蓋倍數目標", value: f.coverageTarget + " 倍" },
-    { group: "續約", label: "基準續約率", value: pct(DATA.versionB.renewalRate) }
+    { group: "續約", label: "續約率（基準）", value: pct(rr), changed: rr !== DATA.versionB.renewalRate }
   ];
-  for (const [k, t] of Object.entries(DATA.dealTypes)) {
+  for (const t of Object.values(DATA.dealTypes)) {
     list.push({ group: "案型人天", label: t.label, value: t.days + " 人天" });
+  }
+  for (const s of DATA.scenarios) {
+    if (s.bundle.days) list.push({ group: "情境組合人天", label: s.title, value: s.bundle.days + " 人天" });
   }
   for (const c of DATA.cases) {
     list.push({ group: "流程預估人天", label: c.title, value: c.estDays + " 人天" });
   }
+  const scoreGroup = "產業評分（" + Object.values(DATA.scoreShort).join("・") + "，主觀 1–5）";
   for (const ind of DATA.industries) {
-    const s = Object.entries(ind.score).map(([k, v]) => `${DATA.scoreLabels[k]} ${v}`).join("、");
-    list.push({ group: "產業評分（主觀 1–5）", label: ind.name, value: s });
+    list.push({ group: scoreGroup, label: ind.name, value: Object.values(ind.score).join("・") });
   }
   const t = DATA.timeline;
-  list.push({ group: "時程", label: "春節初一", value: t.lunarNewYearDay1 });
-  list.push({ group: "時程", label: "春節空窗（暫定）", value: t.holidayWindow.join(" ～ ") });
-  list.push({ group: "時程", label: "內部回簽目標", value: t.signTargetDate });
-  for (const p of t.phases) list.push({ group: "時程", label: p.label, value: `${p.start} ～ ${p.end}` });
-  for (const a of DATA.assumptions) list.push({ group: "其他", label: a.label, value: a.value, note: a.note });
+  const md = iso => { const p = iso.split("-"); return `${+p[1]}/${+p[2]}`; };
+  const g = "時程（暫定，以公告為準）";
+  list.push({ group: g, label: "春節初一", value: md(t.lunarNewYearDay1) });
+  list.push({ group: g, label: "春節空窗", value: `${md(t.holidayWindow[0])}–${md(t.holidayWindow[1])}` });
+  list.push({ group: g, label: "其他假日", value: (t.otherHolidays || []).map(md).join("、") });
+  list.push({ group: g, label: "內部回簽目標", value: md(t.signTargetDate) });
+  for (const p of t.phases) list.push({ group: g, label: p.label, value: `${md(p.start)}–${md(p.end)}` });
+  for (const a of DATA.assumptions) list.push({ group: "其他", label: a.label, value: a.value, note: a.note, wrap: true });
   return list;
 }
 
@@ -188,6 +270,12 @@ export function fmtMoney(n) {
   return Math.round(n).toLocaleString("en-US");
 }
 export function fmtWan(n, digits = 1) {
-  const v = n / 10_000;
+  const v = Math.round(n) / 10_000;
   return (Number.isInteger(v) ? String(v) : v.toFixed(digits)) + " 萬";
+}
+export function fmtPct(v, digits = 0) {
+  return (v * 100).toFixed(digits) + "%";
+}
+export function fmtNum(v, digits = 1) {
+  return Number.isInteger(v) ? String(v) : (Math.round(v * 10 ** digits) / 10 ** digits).toFixed(digits);
 }
