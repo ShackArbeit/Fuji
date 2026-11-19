@@ -1,0 +1,12 @@
+{
+  "name": "rpa-plan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "2027 Q1 業績 500 萬達成規劃（RPA Pre-Sales 二面簡報網頁）",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "verify": "node scripts/verify.mjs",
+    "check": "npm run verify && npm run build"
+  }
+}
