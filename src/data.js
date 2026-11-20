@@ -25,7 +25,7 @@ export const DATA = {
     expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
   },
 
-  // A 版：從零 500 萬（共 9 案、511.6 萬）；每案對應一家具名客戶（見 Industry.md）
+  // A 版：從零 500 萬（共 10 案、561.6 萬；2026-11-20 新增公部門第 10 案）；每案對應一家具名客戶（見 Industry.md）
   versionA: {
     deals: [
       { industry: "manufacturing", type: "standard", n: 1, caseId: "porite-delivery" },
@@ -36,7 +36,8 @@ export const DATA = {
       { industry: "retail",        type: "standard", n: 1, caseId: "ginza-store-daily" },
       { industry: "hightech",      type: "standard", n: 1, caseId: "coretronic-quality-report" },
       { industry: "finance",       type: "standard", n: 1, caseId: "yungda-commission" },
-      { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" }
+      { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" },
+      { industry: "government",    type: "standard", n: 1, caseId: "ntpc-traffic-adjudication" } // 以決標／簽約日視同回簽
     ]
   },
 
@@ -75,7 +76,9 @@ export const DATA = {
     { id: "department",    name: "百貨",           short: "百貨",   role: "單點 ABM",   abm: true,  score: { speed: 3, size: 1, ticket: 3, quantifiable: 4, resistance: 3 },
       pitch: "市場集中、家數少，適合鎖定少數目標的 ABM；以專櫃營業額與抽成結算切入。" },
     { id: "finance",       name: "金融／保險",     short: "金融",   role: "長線／擴充", abm: true,  score: { speed: 1, size: 2, ticket: 5, quantifiable: 4, resistance: 1 },
-      pitch: "客單高，但法遵與資安審查期長，Q1 新案不易回簽；以既有客戶擴充為主、新案長線經營。" }
+      pitch: "客單高，但法遵與資安審查期長，Q1 新案不易回簽；以既有客戶擴充為主、新案長線經營。" },
+    { id: "government",    name: "政府／公部門",   short: "公部門", role: "單點突破", abm: true,  score: { speed: 2, size: 3, ticket: 3, quantifiable: 4, resistance: 2 },
+      pitch: "公文與案件作業量大、規則明確；同性質機關已有導入 RPA 的公開案例。1 月新年度預算可動用，但須走採購程序，以決標／簽約日視同回簽。" }
   ],
 
   scoreShort: { speed: "速度", size: "規模", ticket: "客單", quantifiable: "可量化", resistance: "低阻力" },
@@ -115,7 +118,7 @@ export const DATA = {
       bundle: { dev: 1, semi: 1, days: 10 }, alt: { label: "最低授權組合（開發工具＋半自動，客戶自行開發）", bundle: { dev: 1, semi: 1, days: 0 } },
       industries: ["department", "retail"], note: "降低首購門檻，之後以人天擴充第二個流程" },
     { id: "standard", title: "標準案", when: "流程明確、每日筆數多、跨兩套以上系統",
-      bundle: { dev: 1, semi: 1, days: 13 }, industries: ["manufacturing", "retail", "hightech"],
+      bundle: { dev: 1, semi: 1, days: 13 }, industries: ["manufacturing", "retail", "hightech", "government"],
       note: "業績主力；Discovery 先確認筆數、工時、例外比例" },
     { id: "full-upgrade", title: "全自動升級", when: "既有半自動流程已穩定，需要無人值守排程（夜間批次、每日報表）",
       bundle: { full: 1, days: 15 }, industries: ["manufacturing", "finance"],
@@ -137,7 +140,9 @@ export const DATA = {
     { id: "poc-capacity", title: "PoC 產能不足", trigger: "同時進行的 PoC 超過團隊可支援場次", calc: "pocLoad",
       response: "Demo 用標準範本；PoC 只給高意願案件，採付費可抵扣" },
     { id: "hightech-diy", title: "高科技大廠自建能力強", trigger: "客戶已有 RPA 團隊，傾向自行開發", calc: "licenseOnly",
-      response: "賣授權與加購機器人、少賣人天；以教育訓練與顧問支援補位" }
+      response: "賣授權與加購機器人、少賣人天；以教育訓練與顧問支援補位" },
+    { id: "gov-procurement", title: "公部門採購時程延後", trigger: "預算未編列，或採購程序（報價、決標）拉長到 Q2", calc: "govDelay",
+      response: "12 月先確認是否已編列預算；以公開取得報價等簡便程序進行；公部門案列為業績緩衝，不當主力" }
   ],
 
   // 資訊標示（取代原證據等級）：每一段內容標明可信度
@@ -356,6 +361,30 @@ export const DATA = {
       productNote: "入門包：先拿一館試點"
     },
     {
+      id: "ntpc-traffic-adjudication", industry: "government", customer: "新北市政府交通事件裁決處", customerSource: "new",
+      title: "線上申辦案件收件入案 + 電子公文點收",
+      background: [
+        { text: "負責交通違規案件的收件審查、入案、裁罰、申訴與催收；內部設有案件管理、違規裁罰、違規申訴、積案催收等課室", sourceId: "ntpc-org" },
+        { text: "2024 年線上申辦（申訴、罰單繳納、裁決書開立、駕照吊扣銷、退款申請等）達 84,975 件，較前一年增加 9,915 件", sourceId: "ntpc-news" },
+        { text: "同類型案例：臺北市交通事件裁決所已導入 RPA 處理電子公文點收，報導估計每日省 1–2 小時（廠商相關報導）", sourceId: "tpe-adjudication" }
+      ],
+      challenge: [
+        "線上申辦量逐年成長，收件後仍可能需人工審查、比對車號／駕照資料再入案",
+        "每日電子公文需依課室、類型人工篩選點收；量大時易延誤或分錯",
+        "裁決作業規則明確、格式固定，適合 RPA；但涉及裁罰判斷的部分必須保留人工"
+      ],
+      toBe: [
+        { actor: "robot", text: "定時讀取線上申辦案件，比對車號、駕照等資料完整性" },
+        { actor: "robot", text: "資料齊全者自動入案並分派課室；缺件者產生補件通知草稿" },
+        { actor: "robot", text: "依課室、公文類型與標題篩選並點收電子公文" },
+        { actor: "human", text: "承辦人審核申訴內容與裁罰判斷（不自動裁決）" }
+      ],
+      benefit: { count: 84975, unit: "件線上申辦", per: "year", minutes: 3, autoRate: 0.6,
+        quality: "尖峰期不必加派人力；同類型機關（臺北市裁決所）已有導入先例，可降低決策阻力" },
+      productType: "semi", estDays: 13,
+      productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）"
+    },
+    {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
       industryNote: "專業服務（地政士）",
       title: "第二流程：謄本調閱 + 案件進度通知",
@@ -429,6 +458,14 @@ export const DATA = {
       urls: ["https://money.udn.com/money/amp/story/5613/9306733"] },
     { id: "skm-news", title: "數位時代、旺得富｜新光三越", summary: "15 據點 20 館、2023 營業額約 945 億元、品牌大量汰換",
       urls: ["https://www.bnext.com.tw/article/78195/skm-2024-strategy", "https://wantrich.chinatimes.com/news/20260917900505-420501"] },
+    { id: "ntpc-news", title: "Yahoo 股市｜新北交通違規裁決線上服務", summary: "2024 年線上申辦 84,975 件，較前一年增加 9,915 件",
+      urls: ["https://tw.stock.yahoo.com/news/%E4%BA%A4%E9%80%9A-%E6%96%B0%E5%8C%97%E4%BA%A4%E9%80%9A%E9%81%95%E8%A6%8F%E8%A3%81%E6%B1%BA%E6%8F%90%E4%BE%9B%E7%B7%9A%E4%B8%8A%E6%9C%8D%E5%8B%99-2024%E5%B9%B4%E6%9C%8D%E5%8B%99%E9%87%8F%E6%BF%80%E5%A2%9E%E8%BF%91%E8%90%AC%E4%BB%B6-052726666.html"] },
+    { id: "ntpc-org", title: "新北市政府人事處｜組織職掌資料", summary: "交通事件裁決處各課室職掌（案件管理、裁罰、申訴、催收）",
+      urls: ["https://www.personnel.ntpc.gov.tw/userfiles/1190200/files/13-1_1150201.pdf"] },
+    { id: "tpe-adjudication", title: "科技新報｜臺北市交通事件裁決所導入 RPA", summary: "電子公文點收自動化，報導估計每日省 1–2 小時（廠商相關報導）",
+      urls: ["https://technews.tw/?p=1370099"] },
+    { id: "tpe-health", title: "INSIDE｜臺北市衛生局 RPA 抗疫", summary: "疫苗預約資料設定由七、八小時縮短到不到一小時（公部門導入背景參考）",
+      urls: ["https://www.inside.com.tw/article/29933-UiPATH"] },
     { id: "benq-uipath", title: "INSIDE｜明基材料導入 UiPath", summary: "同仁自行開發，代表大廠自建能力強（高科技風險參考）",
       urls: ["https://www.inside.com.tw/article/35338-MetaAge"] },
     { id: "dept-share", title: "NOWnews｜2025 百貨市占", summary: "市場集中，前三為新光三越、遠東百貨、遠東 SOGO（ABM 參考）",

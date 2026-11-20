@@ -245,6 +245,15 @@ export function flagshipDelayImpact() {
   return { flagship, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), share: flagship / a.total };
 }
 
+// 公部門案延後到 Q2（Q1 不認列）
+export function govDelayImpact() {
+  const a = versionATotal();
+  const gov = a.deals.filter(d => d.industry === "government").reduce((s, d) => s + d.amount, 0);
+  const without = a.total - gov;
+  const shortfall = Math.max(0, DATA.meta.target - without);
+  return { gov, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), surplus: Math.max(0, without - DATA.meta.target) };
+}
+
 // 旗艦改分階段：先以半自動標準案上線（Q1 只認列標準案金額）
 export function flagshipPhasedImpact() {
   const a = versionATotal();

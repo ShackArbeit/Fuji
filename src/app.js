@@ -138,9 +138,10 @@
     if (!ind) {
       det.innerHTML = `<h3>怎麼看這張表</h3>
         <ul class="plain">
-          <li>製造業：分數最高，作為主攻，A 版超過一半案數在這裡。</li>
+          <li>製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
           <li>零售：決策快，但客單偏低，作為副攻。</li>
           <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
+          <li>公部門：作業量大、規則明確，但須走採購程序，A 版只放 1 案當業績緩衝。</li>
         </ul>
         <p class="foot-note">點左側任一產業，查看切入理由與目標客戶。</p>`;
       return;
@@ -640,6 +641,12 @@
     if (r.calc === "licenseOnly") {
       const lite = dealAmount("starterLite");
       return `只賣最低授權組合（開發工具＋半自動）每案約 ${fmtWan(lite)}，只有標準案的 ${fmtPct(lite / standardCaseAmount())}，同樣目標需要更多案數`;
+    }
+    if (r.calc === "govDelay") {
+      const g = govDelayImpact();
+      return g.shortfall === 0
+        ? `A 版少 ${fmtWan(g.gov)}，剩 ${fmtWan(g.without)}，仍達標（超出 ${fmtWan(g.surplus)}）：公部門案是緩衝，不是主力`
+        : `A 版少 ${fmtWan(g.gov)}，剩 ${fmtWan(g.without)}，距目標差 ${fmtWan(g.shortfall)} → 約需 ${g.standardCases} 個標準案補位`;
     }
     return "";
   }

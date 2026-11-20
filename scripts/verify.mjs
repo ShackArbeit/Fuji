@@ -29,8 +29,9 @@ check("入門包（最低授權組合：開發工具 + 半自動）", C.dealAmou
 check("既有客戶擴充（15 人天）", C.dealAmount("expansion"), 300_000);
 
 const A = C.versionATotal();
-check("A 版合計", A.total, 5_116_000);
-check("A 版案數", A.count, 9);
+// 2026-11-20 Shack 同意：A 版新增公部門第 10 案（新北市交通事件裁決處），取代 CLAUDE.md §4 的 9 案／5,116,000 種子值
+check("A 版合計", A.total, 5_616_000);
+check("A 版案數", A.count, 10);
 assert("A 版未達目標", A.total >= DATA.meta.target);
 
 const B = C.versionBTotal(0.95);
@@ -40,10 +41,10 @@ check("B 版合計", B.total, 5_140_000);
 check("B 版新增案數", B.count, 4);
 
 const FA = C.funnelA();
-check("A 漏斗 PoC", FA.byKey.poc.ceil, 18);
-check("A 漏斗 有效商機", FA.byKey.opp.ceil, 36);
-check("A 漏斗 名單", FA.byKey.lead.ceil, 180);
-check("A 覆蓋倍數 ≈ 4.09", Math.round(FA.coverage * 100) / 100, 4.09);
+check("A 漏斗 PoC", FA.byKey.poc.ceil, 20);
+check("A 漏斗 有效商機", FA.byKey.opp.ceil, 40);
+check("A 漏斗 名單", FA.byKey.lead.ceil, 200);
+check("A 覆蓋倍數 ≈ 4.49", Math.round(FA.coverage * 100) / 100, 4.49);
 
 const FB = C.funnelB();
 check("B 擴充商機（未進位）", FB.existing.byKey.opp.raw, 10 / 3, near(1e-9));
@@ -64,21 +65,21 @@ check("組合器 旗艦流程（30 人天全自動）", C.configure({ caseId: "s
 check("組合器 既有授權沿用（純人天 15）", C.configure({ caseId: "lin-land-expansion" }).total, 300_000);
 check("組合器 加購 1 半自動差距", C.configure({ extraSemi: 1 }).diffFromStandard, 64_000);
 const fw = C.funnelForward({ leads: FA.byKey.lead.ceil });
-check("正推 180 名單 → 成交案數", fw.wins, 9, near(1e-9));
+check("正推 200 名單 → 成交案數", fw.wins, 10, near(1e-9));
 check("正推金額 = A 版合計", Math.round(fw.amount), A.total);
 
 // 調整轉換率後漏斗須同步（funnelA 接受覆寫值）
 const FA2 = C.funnelA({ ...DATA.funnel, leadToOpp: 0.1 });
-check("轉換率覆寫：名單 10% → 名單需求加倍", FA2.byKey.lead.ceil, 360);
+check("轉換率覆寫：名單 10% → 名單需求加倍", FA2.byKey.lead.ceil, 400);
 
 // ---- 1b. 衍生計算（M1–M4 新增；數值由資料推導並經人工驗算）----
 const WD = C.workingDays();
 check("Q1 有效工作天（1/1–3/25，扣週末、春節空窗、元旦、228 補假）", WD.days, 51);
 check("回簽目標距季末天數", WD.bufferDays, 6);
 const FD = C.flagshipDelayImpact();
-check("旗艦延後：剩餘金額", FD.without, 3_940_000);
-check("旗艦延後：缺口", FD.shortfall, 1_060_000);
-check("旗艦延後：約需標準案", FD.standardCases, 3);
+check("旗艦延後：剩餘金額", FD.without, 4_440_000);
+check("旗艦延後：缺口", FD.shortfall, 560_000);
+check("旗艦延後：約需標準案", FD.standardCases, 2);
 const R90 = C.renewalSensitivity([0.9])[0];
 check("續約 90%：扣已規劃新增後仍差", R90.shortfall, 60_000);
 check("續約 90%：再加標準案", R90.extraStandardCases, 1);
@@ -86,7 +87,10 @@ const R100 = C.renewalSensitivity([1.0])[0];
 check("續約 100%：已規劃新增足夠", R100.shortfall, 0);
 const PL = C.pocLoad();
 check("PoC 期週數", Math.round(PL.weeks * 100) / 100, 3.71);
-check("PoC 每週場次", Math.round(PL.perWeek * 10) / 10, 4.8);
+check("PoC 每週場次", Math.round(PL.perWeek * 10) / 10, 5.4);
+const GD = C.govDelayImpact();
+check("公部門延後：剩餘金額", GD.without, 5_116_000);
+check("公部門延後：仍達標（缺口 0）", GD.shortfall, 0);
 const SA = Object.fromEntries(C.scenarioAmounts().map(s => [s.id, s]));
 check("情境：入門包首購", SA.starter.main.total, 440_000);
 check("情境：入門包最低授權組合", SA.starter.alt.total, 240_000);
@@ -144,7 +148,7 @@ for (const d of DATA.versionB.deals) {
 // 效益試算（Industry.md 第 2–7 節）
 const expSaved = {
   "porite-delivery": 98, "teco-drawing-sync": 60, "tpi-stock-alert": 36, "skfiber-invoice-3way": 160,
-  "yuan-omni-orders": 120, "ginza-store-daily": 31.2, "coretronic-quality-report": 56, "yungda-commission": 48,
+  "yuan-omni-orders": 120, "ginza-store-daily": 31.2, "ntpc-traffic-adjudication": 212.4, "coretronic-quality-report": 56, "yungda-commission": 48,
   "skm-concession": 40, "lin-land-expansion": 38.9, "lens-dual-erp-recon": 12.8
 };
 for (const [id, h] of Object.entries(expSaved)) {
@@ -154,18 +158,18 @@ check("主打案例報價 = 標準案", C.configure({ caseId: DATA.meta.heroCase
 
 // 列印附錄（情境對照表）
 const FP = C.flagshipPhasedImpact();
-check("旗艦分階段：A 版業績", FP.total, 4_440_000);
-check("旗艦分階段：缺口", FP.shortfall, 560_000);
-check("旗艦分階段：補標準案", FP.standardCases, 2);
+check("旗艦分階段：A 版業績", FP.total, 4_940_000);
+check("旗艦分階段：缺口", FP.shortfall, 60_000);
+check("旗艦分階段：補標準案", FP.standardCases, 1);
 const GRID = C.leadsNeededGrid([0.1, 0.2], [0.5]);
-check("名單量表：預設情境", GRID[1].cells[0].leads, 180);
-check("名單量表：名單→商機 10%", GRID[0].cells[0].leads, 360);
-check("正向表：180 名單 = A 版業績", Math.round(C.forwardTable([180])[0].amount), 5_116_000);
+check("名單量表：預設情境", GRID[1].cells[0].leads, 200);
+check("名單量表：名單→商機 10%", GRID[0].cells[0].leads, 400);
+check("正向表：200 名單 = A 版業績", Math.round(C.forwardTable([200])[0].amount), 5_616_000);
 
 for (const s of DATA.scenarios) {
   for (const i of s.industries) assert(`情境 ${s.id} 產業不存在：${i}`, industryIds.has(i));
 }
-const riskCalcs = new Set(["flagshipDelay", "renewalDrop", "pocLoad", "licenseOnly"]);
+const riskCalcs = new Set(["flagshipDelay", "renewalDrop", "pocLoad", "licenseOnly", "govDelay"]);
 for (const r of DATA.risks) assert(`風險 ${r.id} calc 無效：${r.calc}`, riskCalcs.has(r.calc));
 const phaseIds = new Set(DATA.timeline.phases.map(p => p.id));
 assert("時程缺少 poc 階段（pocLoad 需要）", phaseIds.has("poc"));
@@ -207,7 +211,7 @@ for (const f of scanFiles) {
 // 白名單：目前無例外。若未來需要，請在此註明原因。
 const tpl = readFileSync(join(root, "src/index.template.html"), "utf8").replace(/<!--(STYLE|DATA|CALC|APP)-->/g, "");
 const tplText = tpl.replace(/<[^>]+>/g, " "); // 只看文案，不看標籤屬性
-const hardNumbers = ["5,116,000", "5116000", "511.6", "5,140,000", "5140000", "514", "180", "36", "4.09",
+const hardNumbers = ["5,616,000", "5616000", "561.6", "4.49", "5,116,000", "5116000", "511.6", "5,140,000", "5140000", "514", "180", "36", "4.09",
   "1,176,000", "500,000", "3,800,000", "1,340,000", "51"];
 for (const n of hardNumbers) {
   const re = new RegExp(`(?<![\\d.,])${n.replace(/[.,]/g, m => "\\" + m)}(?![\\d.,])`);
