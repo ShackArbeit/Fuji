@@ -189,12 +189,15 @@
       el.innerHTML = `<p class="muted">點左側任一客戶卡片，展開背景、挑戰、解決方案、效益與報價。</p>`;
       return;
     }
+    el.innerHTML = caseDetailHtml(c);
+  }
+  function caseDetailHtml(c) {
     const q = configure({ caseId: c.id });
     const bf = benefit(c.id);
     const hero = c.id === DATA.meta.heroCaseId;
     const deals = dealsForCase(c.id);
     const dealText = deals.map(d => `${d.version} 版：${d.label} ${fmtWan(d.amount)}`).join("；");
-    el.innerHTML = `
+    return `
       <div class="detail-head">
         <h3>${esc(customerName(c))}</h3>${srcBadge(c.customerSource)}${prodBadge(c.productType)}
         <span class="muted">${esc(c.industryNote || IND[c.industry].name)}｜${esc(c.title)}${hero ? "｜主打" : ""}</span>
@@ -677,6 +680,70 @@
       <p class="foot-note">客戶背景皆取自公開資訊；「挑戰／流程現況」為外部觀察推估，不代表該公司一定有此問題，亦不涉及富士軟片內部客戶資料。</p>`;
   }
 
+  // ---------- 列印附錄（PDF 備援，以預設假設計算）----------
+  function renderAppendix() {
+    const T = DATA.meta.target;
+    const b = versionBTotal();
+    const sensRates = [1.0, 0.98, 0.95, 0.93, 0.9, 0.88, 0.85];
+    const sens = renewalSensitivity(sensRates).map(s => {
+      const total = s.renewal + s.planned;
+      const st = vsTarget(total);
+      return `<tr><td>${pct(s.rate)}</td><td class="num">${fmtWan(s.renewal)}</td><td class="num">${fmtWan(total)}</td>
+        <td><span data-state="${st.ok ? "ok" : "bad"}">${st.ok ? "✔ 達標" : `差 ${fmtWan(s.shortfall)} → +${s.extraStandardCases} 標準案`}</span></td></tr>`;
+    }).join("");
+
+    const leadRates = [0.1, 0.15, 0.2, 0.25, 0.3];
+    const winRates = [0.3, 0.4, 0.5, 0.6];
+    const grid = leadsNeededGrid(leadRates, winRates).map(r => `<tr><th>${pct(r.leadToOpp)}</th>${r.cells.map(c =>
+      `<td class="num${r.leadToOpp === DATA.funnel.leadToOpp && c.pocToWin === DATA.funnel.pocToWin ? " hl" : ""}">${c.leads}</td>`).join("")}</tr>`).join("");
+
+    const fwd = forwardTable([100, 140, 180, 220, 260]).map(f => {
+      const st = vsTarget(f.amount);
+      return `<tr><td class="num">${f.leads}</td><td class="num">${fmtNum(f.wins, 1)}</td><td class="num">${fmtWan(f.amount)}</td>
+        <td><span data-state="${st.ok ? "ok" : "bad"}">${st.ok ? "✔" : "✘"} ${esc(st.text.replace(/^[✔✘] /, ""))}</span></td></tr>`;
+    }).join("");
+
+    const fd = flagshipDelayImpact();
+    const fp = flagshipPhasedImpact();
+    const a = versionATotal();
+    const risk = [
+      ["A 版基準", a.total, 0],
+      ["旗艦延後到 Q2（Q1 不認列）", fd.without, fd.standardCases],
+      ["旗艦改分階段（Q1 先半自動上線）", fp.total, fp.standardCases]
+    ].map(([label, total, n]) => `<tr><td>${esc(label)}</td><td class="num">${fmtWan(total)}</td><td class="num">${total >= T ? "—" : fmtWan(T - total)}</td><td class="num">${n ? `+${n} 標準案` : "—"}</td></tr>`).join("");
+
+    const combos = [
+      ["標準案（開發工具 + 半自動 + 13 人天）", configure({}).total],
+      ["標準案 + 加購 1 套半自動", configure({ extraSemi: 1 }).total],
+      ["全自動 + 30 人天（旗艦）", configure({ productType: "full", days: 30 }).total],
+      ["入門包（10 人天）", dealAmount("starter")],
+      ["入門包（純授權）", dealAmount("starterLite")],
+      ["既有授權沿用：純人天 15", configure({ existingLicense: true, days: 15 }).total]
+    ].map(([l, v]) => `<tr><td>${esc(l)}</td><td class="num">${fmtMoney(v)}</td></tr>`).join("");
+
+    $("#ap-scenarios").innerHTML = `
+      <p class="eyebrow">附錄 A</p>
+      <h2>動態情境對照表</h2>
+      <p class="muted">網頁中可即時調整的數字，在此以靜態表格呈現；皆以預設假設計算，轉換率、人天為假設。</p>
+      <div class="ap-grid">
+        <div class="panel"><h3>B 版：續約率敏感度（已規劃新增 ${fmtWan(b.newTotal)}）</h3>
+          <table class="tbl"><thead><tr><th>續約率</th><th class="num">續約</th><th class="num">B 版合計</th><th>結果</th></tr></thead><tbody>${sens}</tbody></table></div>
+        <div class="panel"><h3>A 版：所需名單量（列 = 名單→商機，欄 = PoC→回簽）</h3>
+          <table class="tbl"><thead><tr><th></th>${winRates.map(w => `<th class="num">${pct(w)}</th>`).join("")}</tr></thead><tbody>${grid}</tbody></table>
+          <p class="foot-note">商機→PoC 維持 ${pct(DATA.funnel.oppToPoc)}；底色為預設情境；回簽 ${a.count} 案。</p></div>
+        <div class="panel"><h3>正向試算：名單數 → 預期業績（平均客單 ${fmtWan(a.avgTicket)}）</h3>
+          <table class="tbl"><thead><tr><th class="num">名單</th><th class="num">預期回簽</th><th class="num">預期業績</th><th>對目標</th></tr></thead><tbody>${fwd}</tbody></table></div>
+        <div class="panel"><h3>旗艦案風險情境（新纖）</h3>
+          <table class="tbl"><thead><tr><th>情境</th><th class="num">A 版業績</th><th class="num">缺口</th><th class="num">補位</th></tr></thead><tbody>${risk}</tbody></table>
+          <h3 style="margin-top:.6rem">常見報價組合（組合器）</h3>
+          <table class="tbl"><tbody>${combos}</tbody></table></div>
+      </div>`;
+
+    $("#ap-cases").innerHTML = `<div class="ap-title"><p class="eyebrow">附錄 B</p><h2>客戶案例完整內容（${DATA.cases.length} 家）</h2>
+      <p class="muted">背景＝公開事實（附來源）；挑戰＝推估，需 Discovery 驗證；效益＝試算假設，非客戶實績。</p></div>` +
+      DATA.cases.map(c => `<article class="ap-case">${caseDetailHtml(c)}</article>`).join("");
+  }
+
   // ---------- 更新（保留焦點）----------
   const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg"];
   function update() {
@@ -806,6 +873,7 @@
   renderStdExplain();
   renderTimeline();
   renderScenarios();
+  renderAppendix();
   update();
   detectCurrent();
   markCurrent();

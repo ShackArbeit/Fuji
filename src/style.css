@@ -400,3 +400,23 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 #s-cases .case-card { padding: .22rem .65rem; line-height: 1.38; }
 #s-cases .case-grid { gap: .28rem; }
 #s-cases { gap: .9rem; }
+
+/* ---- 列印附錄（螢幕不顯示）---- */
+.print-appendix { display: none; }
+@media print {
+  .print-appendix { display: block; break-before: page; page-break-before: always; }
+  .ap-page { break-after: page; page-break-after: always; }
+  .ap-page h2 { margin-bottom: .2rem; }
+  .ap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 1.2rem; margin-top: .6rem; }
+  .ap-grid .panel { padding: .5rem .8rem; }
+  .ap-grid h3 { font-size: 1.1rem; margin-bottom: .3rem; }
+  .ap-grid .tbl th, .ap-grid .tbl td { padding: .15rem .4rem; }
+  .ap-grid .tbl td.hl { background: var(--primary-soft); font-weight: 800; }
+  .ap-case { break-inside: avoid; page-break-inside: avoid; border: 1px solid var(--line); border-radius: 8px; padding: .6rem .8rem; margin-bottom: 4mm; }
+  .ap-case .case-sections { grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: .4rem .6rem; }
+  .ap-case .sec { padding: .35rem .5rem; }
+  .ap-case .sec-stack { gap: .4rem; }
+  .ap-case .sec-stack { grid-column: auto; }
+  .ap-case .detail-head h3 { font-size: 1.25rem; }
+  .ap-title { margin-bottom: 3mm; }
+}

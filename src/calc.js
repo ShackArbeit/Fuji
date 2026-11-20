@@ -245,6 +245,30 @@ export function flagshipDelayImpact() {
   return { flagship, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), share: flagship / a.total };
 }
 
+// 旗艦改分階段：先以半自動標準案上線（Q1 只認列標準案金額）
+export function flagshipPhasedImpact() {
+  const a = versionATotal();
+  const flagship = a.deals.filter(d => d.type === "flagship").reduce((s, d) => s + d.amount, 0);
+  const phased = a.deals.filter(d => d.type === "flagship").reduce((s, d) => s + dealAmount("standard") * d.n, 0);
+  const total = a.total - flagship + phased;
+  const shortfall = Math.max(0, DATA.meta.target - total);
+  return { total, phased, shortfall, standardCases: ceil(shortfall / standardCaseAmount()) };
+}
+
+// 列印附錄：轉換率情境（A 版所需名單量），其餘轉換率維持預設
+export function leadsNeededGrid(leadRates, winRates) {
+  return leadRates.map(lr => ({
+    leadToOpp: lr,
+    cells: winRates.map(wr => ({ pocToWin: wr, leads: funnelA({ ...DATA.funnel, leadToOpp: lr, pocToWin: wr }).byKey.lead.ceil }))
+  }));
+}
+
+// 列印附錄：名單數 → 預期回簽與業績（預設轉換率、A 版平均客單）
+export function forwardTable(leadsList) {
+  const avgTicket = versionATotal().avgTicket;
+  return leadsList.map(leads => funnelForward({ leads, avgTicket }));
+}
+
 export function pocLoad(f = DATA.funnel) {
   const poc = funnelA(f).byKey.poc;
   const weeks = phaseWeeks("poc");

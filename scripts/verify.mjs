@@ -152,6 +152,16 @@ for (const [id, h] of Object.entries(expSaved)) {
 }
 check("主打案例報價 = 標準案", C.configure({ caseId: DATA.meta.heroCaseId }).total, C.standardCaseAmount());
 
+// 列印附錄（情境對照表）
+const FP = C.flagshipPhasedImpact();
+check("旗艦分階段：A 版業績", FP.total, 4_440_000);
+check("旗艦分階段：缺口", FP.shortfall, 560_000);
+check("旗艦分階段：補標準案", FP.standardCases, 2);
+const GRID = C.leadsNeededGrid([0.1, 0.2], [0.5]);
+check("名單量表：預設情境", GRID[1].cells[0].leads, 180);
+check("名單量表：名單→商機 10%", GRID[0].cells[0].leads, 360);
+check("正向表：180 名單 = A 版業績", Math.round(C.forwardTable([180])[0].amount), 5_116_000);
+
 for (const s of DATA.scenarios) {
   for (const i of s.industries) assert(`情境 ${s.id} 產業不存在：${i}`, industryIds.has(i));
 }
