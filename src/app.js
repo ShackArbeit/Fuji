@@ -639,7 +639,7 @@
     }
     if (r.calc === "licenseOnly") {
       const lite = dealAmount("starterLite");
-      return `純授權每案約 ${fmtWan(lite)}，只有標準案的 ${fmtPct(lite / standardCaseAmount())}，同樣目標需要更多案數`;
+      return `只賣最低授權組合（開發工具＋半自動）每案約 ${fmtWan(lite)}，只有標準案的 ${fmtPct(lite / standardCaseAmount())}，同樣目標需要更多案數`;
     }
     return "";
   }
@@ -717,7 +717,7 @@
       ["標準案 + 加購 1 套半自動", configure({ extraSemi: 1 }).total],
       ["全自動 + 30 人天（旗艦）", configure({ productType: "full", days: 30 }).total],
       ["入門包（10 人天）", dealAmount("starter")],
-      ["入門包（純授權）", dealAmount("starterLite")],
+      ["入門包（最低授權組合：開發工具＋半自動）", dealAmount("starterLite")],
       ["既有授權沿用：純人天 15", configure({ existingLicense: true, days: 15 }).total]
     ].map(([l, v]) => `<tr><td>${esc(l)}</td><td class="num">${fmtMoney(v)}</td></tr>`).join("");
 

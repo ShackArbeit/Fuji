@@ -25,7 +25,7 @@ check("標準案金額", C.standardCaseAmount(), 500_000);
 check("標準案 = dealAmount(standard)", C.dealAmount("standard"), 500_000);
 check("全自動旗艦", C.dealAmount("flagship"), 1_176_000);
 check("入門包（10 人天）", C.dealAmount("starter"), 440_000);
-check("入門包（純授權）", C.dealAmount("starterLite"), 240_000);
+check("入門包（最低授權組合：開發工具 + 半自動）", C.dealAmount("starterLite"), 240_000);
 check("既有客戶擴充（15 人天）", C.dealAmount("expansion"), 300_000);
 
 const A = C.versionATotal();
@@ -89,7 +89,7 @@ check("PoC 期週數", Math.round(PL.weeks * 100) / 100, 3.71);
 check("PoC 每週場次", Math.round(PL.perWeek * 10) / 10, 4.8);
 const SA = Object.fromEntries(C.scenarioAmounts().map(s => [s.id, s]));
 check("情境：入門包首購", SA.starter.main.total, 440_000);
-check("情境：入門包純授權", SA.starter.alt.total, 240_000);
+check("情境：入門包最低授權組合", SA.starter.alt.total, 240_000);
 check("情境：標準案", SA.standard.main.total, 500_000);
 check("情境：全自動升級（全自動 + 15 人天）", SA["full-upgrade"].main.total, 700_000);
 check("情境：純人天擴充", SA.expansion.main.total, 300_000);
@@ -138,7 +138,7 @@ for (const d of DATA.versionB.deals) {
     assert(`B 版擴充案須為富士既有 RPA 客戶：${d.caseId}`, c.customerSource === "fuji-rpa");
     check(`B 版擴充卡片報價一致：${d.caseId}`, C.configure({ caseId: d.caseId }).total, C.dealAmount("expansion"));
   }
-  if (d.type === "starterLite") assert(`B 版純授權案卡片須標 altDealType：${d.caseId}`, c.altDealType === "starterLite");
+  if (d.type === "starterLite") assert(`B 版最低授權組合案卡片須標 altDealType：${d.caseId}`, c.altDealType === "starterLite");
 }
 
 // 效益試算（Industry.md 第 2–7 節）

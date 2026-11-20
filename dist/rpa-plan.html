@@ -648,7 +648,7 @@ const DATA = {
   // 案型（供組合器與 A/B 使用）；days 為假設
   dealTypes: {
     starter:     { label: "入門包",               fullAuto: false, days: 10 },  // 24 萬授權 + 10 人天 = 44 萬（A 版百貨用）
-    starterLite: { label: "入門包（純授權）",     fullAuto: false, days: 0 },   // 24 萬（B 版新客用）
+    starterLite: { label: "入門包（最低授權組合）", fullAuto: false, days: 0 },   // 開發工具 + 半自動 = 24 萬（必要組合，不含開發；B 版新客用）
     standard:    { label: "標準案",               fullAuto: false, days: 13 },  // 50 萬
     flagship:    { label: "全自動旗艦",           fullAuto: true,  days: 30 },  // 57.6 萬授權 + 60 萬 = 117.6 萬
     expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
@@ -679,7 +679,7 @@ const DATA = {
       { source: "existing", type: "expansion",   n: 1, caseId: "lin-land-expansion" },   // 既有 RPA 客戶擴充 30 萬
       { source: "existing", type: "expansion",   n: 1, caseId: "lens-dual-erp-recon" },  // 既有 RPA 客戶擴充 30 萬
       { source: "new",      type: "standard",    n: 1, caseId: "porite-delivery" },      // 新 RPA 客戶標準案 50 萬
-      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" }     // 入門包（純授權）24 萬
+      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" }     // 入門包（最低授權組合：開發工具 + 半自動）24 萬
     ]
   },
 
@@ -741,7 +741,7 @@ const DATA = {
   // 特定情境／產品組合攻略（§7-8）；bundle 為「這一筆」報價內容，人天為假設
   scenarios: [
     { id: "starter", title: "入門包首購", when: "第一次接觸 RPA、預算未編列，先證明一個流程有效",
-      bundle: { dev: 1, semi: 1, days: 10 }, alt: { label: "純授權版（客戶自行開發）", bundle: { dev: 1, semi: 1, days: 0 } },
+      bundle: { dev: 1, semi: 1, days: 10 }, alt: { label: "最低授權組合（開發工具＋半自動，客戶自行開發）", bundle: { dev: 1, semi: 1, days: 0 } },
       industries: ["department", "retail"], note: "降低首購門檻，之後以人天擴充第二個流程" },
     { id: "standard", title: "標準案", when: "流程明確、每日筆數多、跨兩套以上系統",
       bundle: { dev: 1, semi: 1, days: 13 }, industries: ["manufacturing", "retail", "hightech"],
@@ -916,9 +916,9 @@ const DATA = {
         { actor: "human", text: "會計確認訂金、尾款等特殊交易後才入帳" }
       ],
       benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
-        quality: "重點是日報準時、帳實一致；B 版可只賣純授權讓客戶自建" },
+        quality: "重點是日報準時、帳實一致；B 版可只賣最低授權組合（開發工具＋半自動）讓客戶自建" },
       productType: "semi", estDays: 13,
-      productNote: "A 版含開發；B 版改賣入門包（純授權）",
+      productNote: "A 版含開發；B 版改賣入門包（最低授權組合：開發工具＋半自動，不含開發）",
       altDealType: "starterLite"
     },
     {
@@ -2052,7 +2052,7 @@ function fmtNum(v, digits = 1) {
     }
     if (r.calc === "licenseOnly") {
       const lite = dealAmount("starterLite");
-      return `純授權每案約 ${fmtWan(lite)}，只有標準案的 ${fmtPct(lite / standardCaseAmount())}，同樣目標需要更多案數`;
+      return `只賣最低授權組合（開發工具＋半自動）每案約 ${fmtWan(lite)}，只有標準案的 ${fmtPct(lite / standardCaseAmount())}，同樣目標需要更多案數`;
     }
     return "";
   }
@@ -2130,7 +2130,7 @@ function fmtNum(v, digits = 1) {
       ["標準案 + 加購 1 套半自動", configure({ extraSemi: 1 }).total],
       ["全自動 + 30 人天（旗艦）", configure({ productType: "full", days: 30 }).total],
       ["入門包（10 人天）", dealAmount("starter")],
-      ["入門包（純授權）", dealAmount("starterLite")],
+      ["入門包（最低授權組合：開發工具＋半自動）", dealAmount("starterLite")],
       ["既有授權沿用：純人天 15", configure({ existingLicense: true, days: 15 }).total]
     ].map(([l, v]) => `<tr><td>${esc(l)}</td><td class="num">${fmtMoney(v)}</td></tr>`).join("");
 
