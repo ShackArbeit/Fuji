@@ -60,7 +60,8 @@ for (const s of C.renewalSensitivity()) {
 
 // 組合器 / 正推 一致性
 check("組合器預設 = 標準案", C.configure({}).total, 500_000);
-check("組合器 旗艦流程（30 人天全自動）", C.configure({ caseId: "mfg-invoice-3way" }).total, 1_176_000);
+check("組合器 旗艦流程（30 人天全自動）", C.configure({ caseId: "skfiber-invoice-3way" }).total, 1_176_000);
+check("組合器 既有授權沿用（純人天 15）", C.configure({ caseId: "lin-land-expansion" }).total, 300_000);
 check("組合器 加購 1 半自動差距", C.configure({ extraSemi: 1 }).diffFromStandard, 64_000);
 const fw = C.funnelForward({ leads: FA.byKey.lead.ceil });
 check("正推 180 名單 → 成交案數", fw.wins, 9, near(1e-9));
@@ -100,27 +101,56 @@ check("fmtWan(5,116,000)", C.fmtWan(5_116_000), "511.6 萬");
 check("fmtWan(5,140,000)", C.fmtWan(5_140_000), "514 萬");
 
 // ---- 2. 卡片完整性 ----
+// 具名客戶卡片（Industry.md）：五段式欄位齊全
 const ids = new Set();
-const levels = Object.keys(DATA.evidenceLevels);
 const industryIds = new Set(DATA.industries.map(i => i.id));
+const custSources = new Set(Object.keys(DATA.customerSources));
 for (const c of DATA.cases) {
   assert(`卡片 id 重複：${c.id}`, !ids.has(c.id)); ids.add(c.id);
-  assert(`卡片 ${c.id} 缺 evidence.level`, c.evidence && levels.includes(c.evidence.level));
-  assert(`卡片 ${c.id} 缺 evidence.why`, c.evidence && !!c.evidence.why);
+  assert(`卡片 ${c.id} 缺 customer`, typeof c.customer === "string" && c.customer.length > 0);
+  assert(`卡片 ${c.id} customerSource 無效`, custSources.has(c.customerSource));
+  assert(`卡片 ${c.id} 缺背景（公開事實）`, Array.isArray(c.background) && c.background.length > 0);
+  assert(`卡片 ${c.id} 背景每點都要有來源`, c.background.every(b => b.text && b.sourceId));
+  assert(`卡片 ${c.id} 缺挑戰（推估）`, Array.isArray(c.challenge) && c.challenge.length > 0);
   assert(`卡片 ${c.id} 缺 human 覆核點`, Array.isArray(c.toBe) && c.toBe.some(s => s.actor === "human"));
+  assert(`卡片 ${c.id} 缺效益假設`, c.benefit && ["day", "month", "year"].includes(c.benefit.per) && c.benefit.autoRate > 0 && c.benefit.autoRate <= 1);
+  assert(`卡片 ${c.id} 日計效益需有 workDays`, c.benefit.per !== "day" || c.benefit.workDays > 0);
   assert(`卡片 ${c.id} 缺 estDays`, Number.isFinite(c.estDays) && c.estDays > 0);
   assert(`卡片 ${c.id} productType 無效`, ["semi", "full"].includes(c.productType));
   assert(`卡片 ${c.id} 產業不存在`, industryIds.has(c.industry));
-  assert(`卡片 ${c.id} As-Is 應為 3–5 步`, c.asIs.length >= 3 && c.asIs.length <= 5);
 }
-const required = ["mfg-delivery-followup", "mfg-order-to-sales", "mfg-dual-erp-sync", "mfg-stock-alert", "mfg-invoice-3way",
-  "retail-multiplatform-orders", "retail-store-inventory", "hightech-yield-report", "fin-reconciliation", "ins-commission-check", "dept-concession-settlement"];
-for (const id of required) assert(`缺少必要卡片 ${id}`, ids.has(id));
 assert("heroCaseId 不存在於 cases", ids.has(DATA.meta.heroCaseId));
+
+// A／B 版每案都對應一家客戶，且卡片報價 = 案型金額（避免卡片與業績表矛盾）
 for (const d of DATA.versionA.deals) {
   assert(`A 版產業不存在：${d.industry}`, industryIds.has(d.industry));
-  if (d.caseId) assert(`A 版 caseId 不存在：${d.caseId}`, ids.has(d.caseId));
+  assert(`A 版 caseId 不存在：${d.caseId}`, ids.has(d.caseId));
+  if (ids.has(d.caseId)) {
+    check(`A 版卡片報價一致：${d.caseId}`, C.configure({ caseId: d.caseId }).total, C.dealAmount(d.type));
+    assert(`A 版產業與卡片不符：${d.caseId}`, DATA.cases.find(c => c.id === d.caseId).industry === d.industry);
+  }
 }
+for (const d of DATA.versionB.deals) {
+  assert(`B 版 caseId 不存在：${d.caseId}`, ids.has(d.caseId));
+  const c = DATA.cases.find(x => x.id === d.caseId);
+  if (!c) continue;
+  if (d.type === "expansion") {
+    assert(`B 版擴充案須為富士既有 RPA 客戶：${d.caseId}`, c.customerSource === "fuji-rpa");
+    check(`B 版擴充卡片報價一致：${d.caseId}`, C.configure({ caseId: d.caseId }).total, C.dealAmount("expansion"));
+  }
+  if (d.type === "starterLite") assert(`B 版純授權案卡片須標 altDealType：${d.caseId}`, c.altDealType === "starterLite");
+}
+
+// 效益試算（Industry.md 第 2–7 節）
+const expSaved = {
+  "porite-delivery": 98, "teco-drawing-sync": 60, "tpi-stock-alert": 36, "skfiber-invoice-3way": 160,
+  "yuan-omni-orders": 120, "ginza-store-daily": 31.2, "coretronic-quality-report": 56, "yungda-commission": 48,
+  "skm-concession": 40, "lin-land-expansion": 38.9, "lens-dual-erp-recon": 12.8
+};
+for (const [id, h] of Object.entries(expSaved)) {
+  if (ids.has(id)) check(`效益：${id} 每月節省小時`, Math.round(C.benefit(id).savedHours * 10) / 10, h);
+}
+check("主打案例報價 = 標準案", C.configure({ caseId: DATA.meta.heroCaseId }).total, C.standardCaseAmount());
 
 for (const s of DATA.scenarios) {
   for (const i of s.industries) assert(`情境 ${s.id} 產業不存在：${i}`, industryIds.has(i));
@@ -134,11 +164,15 @@ for (const p of DATA.timeline.phases) assert(`階段 ${p.id} 起訖顛倒`, C.da
 // ---- 3. 來源引用 ----
 const srcIds = new Set(DATA.sources.map(s => s.id));
 for (const c of DATA.cases) {
-  for (const r of c.evidence.refs || []) assert(`卡片 ${c.id} 引用不存在的來源 ${r.sourceId}`, srcIds.has(r.sourceId));
-  if (c.evidence.level === "A" || c.evidence.level === "A-") {
-    const external = (c.evidence.refs || []).filter(r => r.sourceId !== "rpa-md");
-    assert(`卡片 ${c.id} 等級 ${c.evidence.level} 但無外部來源`, external.length > 0);
+  for (const b of c.background) {
+    assert(`卡片 ${c.id} 引用不存在的來源 ${b.sourceId}`, srcIds.has(b.sourceId));
+    const s = DATA.sources.find(x => x.id === b.sourceId);
+    assert(`卡片 ${c.id} 的公開事實須引用有網址的來源（${b.sourceId}）`, s && s.urls.length > 0);
   }
+}
+for (const s of DATA.sources) {
+  assert(`來源 ${s.id} 缺 urls 陣列`, Array.isArray(s.urls));
+  for (const u of s.urls) assert(`來源 ${s.id} 網址需為 https`, /^https:\/\//.test(u));
 }
 
 // ---- 4. 禁止外部資源 ----
@@ -180,7 +214,7 @@ for (const r of results) {
   const v = typeof r.actual === "number" ? r.actual.toLocaleString("en-US", { maximumFractionDigits: 4 }) : r.actual;
   console.log(`  ${r.ok ? "✔" : "✘"} ${r.name}：${v}`);
 }
-console.log(`  卡片 ${DATA.cases.length} 張；證據等級`, C.evidenceSummary());
+console.log(`  客戶卡片 ${DATA.cases.length} 張；客戶來源`, C.customerSourceSummary());
 console.log(`  假設項目 ${C.collectAssumptions().length} 筆`);
 if (failures.length) {
   console.error(`\n✘ verify 失敗（${failures.length} 項）：`);

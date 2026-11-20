@@ -55,7 +55,7 @@
       </div>
     </div>
     <p class="thesis" data-bind="meta.thesis"></p>
-    <p class="hero-line">主打流程：<strong data-bind="hero.title"></strong>　<span class="muted">案件業績以「回簽報價單」即計入</span></p>
+    <p class="hero-line">主打案例：<strong data-bind="hero.title"></strong>　<span class="muted">案件業績以「回簽報價單」即計入</span></p>
     <p class="hint no-print">按 → 或空白鍵翻頁，按 ? 看快捷鍵</p>
   </section>
 
@@ -64,7 +64,7 @@
     <header class="slide-head">
       <p class="eyebrow">產業與痛點地圖</p>
       <h2 id="h-industry">先選對產業，再選對流程</h2>
-      <p class="lead">評分是我依「成交速度、市場規模、客單、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看對應的痛點流程。</p>
+      <p class="lead">評分是我依「成交速度、市場規模、客單、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看目標客戶。</p>
     </header>
     <div class="industry-layout">
       <div id="industry-map" class="industry-map"></div>
@@ -73,13 +73,15 @@
   </section>
 
   <!-- 3. 痛點互動卡片 -->
-  <section class="slide" id="s-cases" data-title="痛點卡片" tabindex="-1" aria-labelledby="h-cases">
-    <header class="slide-head">
-      <p class="eyebrow">痛點互動卡片</p>
-      <h2 id="h-cases">從一個人工步驟，看到一張報價單</h2>
-      <p class="lead">每張卡片：痛點、現況 vs 導入後流程、對應產品與報價、證據等級。公開案例皆為「同類型案例」，不代表特定客戶一定有此痛點。</p>
+  <section class="slide" id="s-cases" data-title="客戶案例" tabindex="-1" aria-labelledby="h-cases">
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">客戶案例卡片</p>
+        <h2 id="h-cases">一家公司、一個流程、一張報價單</h2>
+        <p class="lead">每張卡片＝一家實際公司：背景（公開事實）→ 挑戰（推估，需 Discovery 驗證）→ 解決方案 → 效益（試算假設）→ 報價。</p>
+      </div>
+      <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
     </header>
-    <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
     <div class="cases-layout">
       <div class="case-grid" id="case-grid"></div>
       <div class="panel case-detail" id="case-detail" aria-live="polite"></div>
@@ -172,7 +174,7 @@
   <section class="slide" id="s-sources" data-title="假設與來源" tabindex="-1" aria-labelledby="h-sources">
     <header class="slide-head">
       <p class="eyebrow">假設與來源</p>
-      <h2 id="h-sources">所有假設都攤開，所有案例都標證據</h2>
+      <h2 id="h-sources">所有假設都攤開，所有客戶資訊都標來源</h2>
       <p class="lead">下表由程式自動彙整；在前面章節調整的值會即時反映並標示「已調整」。</p>
     </header>
     <div class="sources-layout">

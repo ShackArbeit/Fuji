@@ -7,7 +7,7 @@ export const DATA = {
     title: "2027 Q1 業績 500 萬達成規劃",
     target: 5_000_000,
     interviewDate: "2026-11-27",
-    heroCaseId: "mfg-delivery-followup", // 預設主打流程；Shack 尚無偏好，隨時可改這一行
+    heroCaseId: "porite-delivery", // 主打：台灣保來得｜供應商交期追蹤（標準案）
     thesis: "這個職位的關鍵，是先找到產業既定流程裡的痛點；計價、業績拆解與漏斗回推，則用來證明這份規劃有數字、可執行。"
   },
 
@@ -25,15 +25,18 @@ export const DATA = {
     expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
   },
 
-  // A 版：從零 500 萬（共 9 案、511.6 萬）
+  // A 版：從零 500 萬（共 9 案、511.6 萬）；每案對應一家具名客戶（見 Industry.md）
   versionA: {
     deals: [
-      { industry: "manufacturing", type: "standard", n: 3 },
-      { industry: "manufacturing", type: "flagship", n: 1, caseId: "mfg-invoice-3way" },
-      { industry: "retail",        type: "standard", n: 2 },
-      { industry: "hightech",      type: "standard", n: 1 },
-      { industry: "finance",       type: "standard", n: 1 },
-      { industry: "department",    type: "starter",  n: 1 }
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "porite-delivery" },
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "teco-drawing-sync" },
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "tpi-stock-alert" },
+      { industry: "manufacturing", type: "flagship", n: 1, caseId: "skfiber-invoice-3way" },
+      { industry: "retail",        type: "standard", n: 1, caseId: "yuan-omni-orders" },
+      { industry: "retail",        type: "standard", n: 1, caseId: "ginza-store-daily" },
+      { industry: "hightech",      type: "standard", n: 1, caseId: "coretronic-quality-report" },
+      { industry: "finance",       type: "standard", n: 1, caseId: "yungda-commission" },
+      { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" }
     ]
   },
 
@@ -44,9 +47,10 @@ export const DATA = {
     renewalRange: [0.85, 1.0],
     sensitivityRates: [1.0, 0.95, 0.9, 0.85],
     deals: [
-      { source: "existing", type: "expansion",   n: 2 }, // 既有客戶擴充 2 × 30 萬
-      { source: "new",      type: "standard",    n: 1 }, // 新客標準案 50 萬
-      { source: "new",      type: "starterLite", n: 1 }  // 新客入門包 24 萬
+      { source: "existing", type: "expansion",   n: 1, caseId: "lin-land-expansion" },   // 既有 RPA 客戶擴充 30 萬
+      { source: "existing", type: "expansion",   n: 1, caseId: "lens-dual-erp-recon" },  // 既有 RPA 客戶擴充 30 萬
+      { source: "new",      type: "standard",    n: 1, caseId: "porite-delivery" },      // 新 RPA 客戶標準案 50 萬
+      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" }     // 入門包（純授權）24 萬
     ]
   },
 
@@ -63,9 +67,9 @@ export const DATA = {
   // score 為主觀假設（1–5，resistance 越高代表阻力越低）；pitch 為推論，需 Discovery 驗證
   industries: [
     { id: "manufacturing", name: "製造業供應鏈",   short: "製造",   role: "主攻",       abm: false, score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 },
-      pitch: "跨 ERP、Email、Excel 的重複作業多，工時與錯誤率容易量化；富士官網與公開報導都有同類型案例可引用。" },
+      pitch: "跨 ERP、Email、Excel 的重複作業多，效益容易量化；富士既有文件方案客戶多（保來得、東元、新纖），RPA 是它們數位化的下一步，交叉銷售成交最快。" },
     { id: "retail",        name: "傳統零售／電商", short: "零售",   role: "副攻",       abm: false, score: { speed: 4, size: 4, ticket: 2, quantifiable: 4, resistance: 4 },
-      pitch: "多平台、多門市的資料搬運量大、決策快；客單偏低，以標準案與入門包為主。" },
+      pitch: "多通路、多門市的資料搬運量大、決策快；客單偏低，以標準案與入門包為主。" },
     { id: "hightech",      name: "高科技",         short: "高科技", role: "選擇性",     abm: false, score: { speed: 2, size: 3, ticket: 5, quantifiable: 3, resistance: 2 },
       pitch: "客單潛力高，但大廠常有自建 RPA 團隊；切入點是授權與特定報表流程，少賣人天。" },
     { id: "department",    name: "百貨",           short: "百貨",   role: "單點 ABM",   abm: true,  score: { speed: 3, size: 1, ticket: 3, quantifiable: 4, resistance: 3 },
@@ -126,7 +130,7 @@ export const DATA = {
 
   // 風險與備援（§7-9）；calc 指定影響試算方式
   risks: [
-    { id: "flagship-delay", title: "全自動旗艦延後", trigger: "三方比對例外多、客戶內部審查拉長", calc: "flagshipDelay",
+    { id: "flagship-delay", title: "全自動旗艦延後", trigger: "新纖三方比對例外多、客戶內部審查拉長", calc: "flagshipDelay",
       response: "以標準案補位；旗艦改為分階段（先半自動上線，Q2 升級全自動）" },
     { id: "renewal-drop", title: "續約率下滑", trigger: "既有客戶預算縮減或流程停用", calc: "renewalDrop", rate: 0.9,
       response: "續約前 60 天盤點使用率；以既有客戶擴充 + 新客標準案補缺口" },
@@ -136,344 +140,301 @@ export const DATA = {
       response: "賣授權與加購機器人、少賣人天；以教育訓練與顧問支援補位" }
   ],
 
-  // 證據等級說明（§6.1）
-  evidenceLevels: {
-    "A":  "有公開 RPA 案例，該流程痛點有文字證據",
-    "A-": "有公開案例，但解法非 RPA（僅作痛點佐證）",
-    "B":  "只有產業結構資料或自備流程清單，痛點為推論，需 Discovery 驗證"
+  // 資訊標示（取代原證據等級）：每一段內容標明可信度
+  infoTags: {
+    fact:   "公開事實",   // 有公開來源（富士官網、新聞、公司官網）
+    guess:  "推估",       // 依產業常見痛點 × 該公司營運型態推論，需 Discovery 驗證
+    assume: "試算假設"    // 效益數字為假設，非客戶實績
   },
 
-  // 痛點卡片（§6.3）。內容為 Claude Code 草擬、待 Shack 審；estDays 皆為假設。
-  // 公開案例一律以「同類型案例」措辭引用，不代表特定潛在客戶一定有此痛點。
+  // 客戶來源
+  customerSources: {
+    "fuji-rpa":   "富士既有 RPA 客戶",
+    "fuji-other": "富士既有客戶（非 RPA）",
+    "new":        "集團外新客"
+  },
+
+  // 具名客戶案例卡片（內容來源：Industry.md）。
+  // background = 公開事實（附 sourceId）；challenge = 推估；toBe = 解決方案（human = 人工覆核點）；
+  // benefit = 效益試算假設：月工時 = count × minutes ÷ 60 × 每月次數（per: day×workDays／month×1／year÷12），節省 = 月工時 × autoRate
   cases: [
     {
-      id: "mfg-delivery-followup",
-      industry: "manufacturing",
+      id: "porite-delivery", industry: "manufacturing", customer: "台灣保來得", customerSource: "fuji-other",
       title: "供應商交期追蹤",
-      painStory: "採購每天早上逐一寄信問交期，再把回覆抄回 Excel 和 ERP，逾期常常是產線缺料時才發現。",
-      asIs: [
-        "從 ERP 匯出未交貨採購單",
-        "依供應商整理待追蹤清單",
-        "逐封寄送交期確認信",
-        "讀回信、手動回填新交期",
-        "人工判斷逾期並通知生管"
+      background: [
+        { text: "粉末冶金大廠，富士官網形容為全球前三大；2010 年起量產 SOFC 燃料電池連接板", sourceId: "fbtw-mfg" },
+        { text: "報導指出 SOFC 連接板主要供應美商 Bloom Energy（約占營收四成），汽車引擎／變速箱粉末冶金件為第二大業務，並規劃產能倍增", sourceId: "porite-news" },
+        { text: "富士既有客戶：kintone 處理請購、採購與不良品管制；Apeos 事務機由 130 台減至 30 台以下", sourceId: "fbtw-mfg" }
+      ],
+      challenge: [
+        "產能倍增、料件多（粉末原料、模具、外包加工），交期延誤直接影響出貨給國際車廠",
+        "請購、採購已上 kintone，但「追交期」可能仍是：匯出未交單 → 逐家寄信 → 讀回信 → 手動更新",
+        "資料已數位化、規則明確，正是 RPA 最容易接手的一段"
       ],
       toBe: [
-        { actor: "robot", text: "每日定時抓取未交貨採購單" },
-        { actor: "robot", text: "依供應商批次寄送確認信" },
-        { actor: "robot", text: "擷取回覆日期並回填追蹤表／ERP" },
+        { actor: "robot", text: "每日抓取未交貨採購單，對 7 天內到期項目批次寄送交期確認信" },
+        { actor: "robot", text: "擷取回覆交期，回填 kintone／ERP" },
         { actor: "robot", text: "標記逾期與未回覆項目" },
-        { actor: "human", text: "採購確認異常交期、與生管協調排程" }
+        { actor: "human", text: "採購只處理延後、未回覆的異常，並與生管協調排程" }
       ],
-      productType: "full",
-      productNote: "全自動候選：每日排程無人值守執行",
-      estDays: 13,
-      evidence: {
-        level: "A",
-        why: "同類型案例（亞旭電腦）有公開 RPA 導入報導，痛點與流程相符。",
-        refs: [{ sourceId: "ithome-asia", note: "採購交期變更人工約 3 小時，人機協作約 35 分鐘（年份待核對）" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 80, unit: "筆", per: "day", workDays: 21, minutes: 5, autoRate: 0.7,
+        quality: "逾期提早 7 天預警，降低缺料停線風險" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；穩定後可升級全自動排程（第二階段）"
     },
     {
-      id: "mfg-order-to-sales",
-      industry: "manufacturing",
-      title: "請購／訂單 → ERP 轉單",
-      painStory: "業助一天要把上百筆訂單一筆筆轉成銷貨單，同樣的點選動作重複數百次，月底還容易漏單。",
-      asIs: [
-        "收到客戶訂單或內部請購",
-        "人工核對品項、數量、價格",
-        "在 ERP 逐筆建立 PO／銷貨單",
-        "回頭標記已處理"
+      id: "teco-drawing-sync", industry: "manufacturing", customer: "東元電機", customerSource: "fuji-other",
+      title: "工程圖面發行 → ERP 料號同步與通知",
+      background: [
+        { text: "1956 年成立，從馬達起家，擴展到重電、家電與資訊產品", sourceId: "fbtw-mfg" },
+        { text: "富士既有客戶：DocuWorks 整合多格式設計檔，50 頁圖面處理由約 50 分鐘縮短到 5 分鐘內", sourceId: "fbtw-mfg" }
+      ],
+      challenge: [
+        "圖面數位化後，瓶頸移到「發行之後」：上傳文件庫、ERP 更新料號版次、寄信通知各部門",
+        "料號多、版次變更頻繁，人工更新易漏改，造成用錯舊版圖面"
       ],
       toBe: [
-        { actor: "robot", text: "讀取訂單／請購資料" },
-        { actor: "robot", text: "依規則在 ERP 建立 PO 或銷貨單" },
-        { actor: "robot", text: "產出轉單結果與異常清單" },
-        { actor: "human", text: "業助覆核價格或數量異常的單據" }
+        { actor: "robot", text: "監看已核准資料夾，讀取圖號、版次、料號" },
+        { actor: "robot", text: "登入 ERP 更新料號版次與圖面連結" },
+        { actor: "robot", text: "依料號寄送變更通知給採購、生管、品保" },
+        { actor: "human", text: "變更影響在途訂單或庫存時，由工程與生管判斷" }
       ],
-      productType: "semi",
-      productNote: "半自動：由業助觸發、在旁覆核",
-      estDays: 13,
-      evidence: {
-        level: "A",
-        why: "同類型案例（隆輝）有公開 RPA 報導，量化描述轉單重複操作。",
-        refs: [{ sourceId: "cio-zeus", note: "一天 200 筆訂單轉銷貨，需重複 600 次以上操作" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
+        quality: "版次錯誤歸零；延伸既有 DocuWorks 投資" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；與既有 DocuWorks 串接"
     },
     {
-      id: "mfg-dual-erp-sync",
-      industry: "manufacturing",
-      title: "兩套 ERP 資料同步",
-      painStory: "集團內兩套 ERP 不互通，同一張訂單要在兩邊各打一次，打錯就對不起帳。",
-      asIs: [
-        "在 A 系統建立訂單",
-        "人工在 B 系統重打一次",
-        "定期人工比對兩邊差異",
-        "發現不一致再回頭修正"
-      ],
-      toBe: [
-        { actor: "robot", text: "偵測 A 系統新增／異動訂單" },
-        { actor: "robot", text: "自動在 B 系統建立對應資料" },
-        { actor: "robot", text: "每日產出兩系統差異報表" },
-        { actor: "human", text: "承辦人處理差異與主檔不一致" }
-      ],
-      productType: "semi",
-      productNote: "半自動：承辦人觸發同步並處理差異",
-      estDays: 13,
-      evidence: {
-        level: "A",
-        why: "台灣富士軟片資訊官網有同類型 RPA 案例（工業鏡頭廠）。",
-        refs: [{ sourceId: "fbtw-lens", note: "兩套 ERP 重複登打，節省約 80% 訂單處理時間" }]
-      },
-      existingCustomerCandidate: false
-    },
-    {
-      id: "mfg-stock-alert",
-      industry: "manufacturing",
+      id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
       title: "安全庫存警示 + 盤點差異比對",
-      painStory: "1 月年度盤點後，帳面與實盤差異要人工逐料號比對；平時低於安全庫存也常靠經驗發現。",
-      asIs: [
-        "匯出 ERP 庫存與盤點表",
-        "用 Excel 逐料號比對差異",
-        "人工檢查是否低於安全庫存",
-        "寄信通知採購與倉管"
+      background: [
+        { text: "主要製造銷售滾動軸承與碳鉻鋼珠；與日本 NTN 合作，自稱東南亞最大軸承製造商之一", sourceId: "tpi-reg" },
+        { text: "規模：員工約 950 人、實收資本額約 12.57 億元（資料年份較早，待更新）", sourceId: "tpi-reg" }
+      ],
+      challenge: [
+        "軸承規格、料號多，原料鋼材與成品都要控管安全庫存，常靠經驗或週報才發現低庫存",
+        "1 月年度盤點後，帳面與實盤差異要用 Excel 逐料號比對"
       ],
       toBe: [
-        { actor: "robot", text: "定時匯出庫存與盤點資料" },
-        { actor: "robot", text: "比對差異並標記低於安全庫存料號" },
-        { actor: "robot", text: "寄送警示清單給負責人" },
-        { actor: "human", text: "倉管確認盤差原因、決定是否調帳" }
+        { actor: "robot", text: "每日匯出 ERP 庫存，比對安全庫存設定" },
+        { actor: "robot", text: "寄送低庫存清單給採購與倉管" },
+        { actor: "robot", text: "盤點期比對盤點表與帳面，產出差異清單" },
+        { actor: "human", text: "倉管確認盤差原因，主管決定是否調帳（不自動調帳）" }
       ],
-      productType: "semi",
-      productNote: "半自動起步，穩定後可升級全自動排程",
-      estDays: 9,
-      evidence: {
-        level: "B",
-        why: "僅有自備流程清單（RPA.md 優先順序第 7），痛點為推論，需 Discovery 驗證。",
-        refs: [{ sourceId: "rpa-md", note: "§3.6 庫存資料同步與安全庫存警示" }]
-      },
-      existingCustomerCandidate: true
+      benefit: { count: 6, unit: "人天（2 人 × 3 天）", per: "month", minutes: 480, autoRate: 0.75,
+        quality: "Q1 正逢年度盤點，是切入時機" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案"
     },
     {
-      id: "mfg-invoice-3way",
-      industry: "manufacturing",
-      title: "發票 OCR + 三方比對（旗艦）",
-      painStory: "會計每月要把供應商發票、採購單、收貨單三份資料對齊，數量或單價差一點就得來回追。",
-      asIs: [
-        "從 Email／紙本取得供應商發票",
-        "人工登打發票欄位",
-        "到 ERP 調閱 PO 與收貨紀錄",
-        "逐項比對料號、數量、單價",
-        "差異案件寄信給採購或倉庫"
+      id: "skfiber-invoice-3way", industry: "manufacturing", customer: "台灣新光合成纖維", customerSource: "fuji-other",
+      title: "供應商發票 OCR + 三方比對（旗艦）",
+      background: [
+        { text: "1967 年成立，隸屬新光集團；產品涵蓋 PET 粒、聚酯絲／棉、工程塑膠、薄膜與再生聚酯，生產基地含中壢、觀音、泰國、揚州", sourceId: "skfiber-news" },
+        { text: "富士既有客戶：DocuWorks 整合採購文件與多種電子簽章格式（可串接 DocuSign、Adobe Sign）", sourceId: "fbtw-mfg" }
+      ],
+      challenge: [
+        "原料與耗材供應商多、發票量大，會計須比對發票、採購單、收貨單三份資料",
+        "有差異就在採購、倉庫、供應商之間來回確認；採購文件已數位化，代表資料拿得到"
       ],
       toBe: [
         { actor: "robot", text: "收取發票並以 OCR 擷取欄位" },
-        { actor: "robot", text: "從 ERP 取得 PO 與收貨紀錄" },
-        { actor: "robot", text: "三方比對，相符項目標記待付款" },
-        { actor: "robot", text: "差異案件分派給採購／倉儲" },
-        { actor: "human", text: "會計覆核後才放行付款（不自動付款）" }
+        { actor: "robot", text: "從 ERP 取得採購單與收貨紀錄，三方比對" },
+        { actor: "robot", text: "相符項目標記待付款；差異自動分派採購／倉儲" },
+        { actor: "human", text: "會計確認後才放行付款（不自動付款）" }
       ],
-      productType: "full",
-      productNote: "全自動旗艦：需例外處理與 OCR 搭配",
-      estDays: 30,
-      evidence: {
-        level: "B",
-        why: "自備流程清單（RPA.md）列為優先順序第 1，但尚無具名公開案例，需 Discovery 驗證。",
-        refs: [{ sourceId: "rpa-md", note: "§3.12 供應商發票與三方比對；§8 優先順序第 1" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 3000, unit: "張發票", per: "month", minutes: 4, autoRate: 0.8,
+        quality: "付款前把關，減少溢付與重複付款" },
+      productType: "full", estDays: 30,
+      productNote: "全自動旗艦（含 OCR 與例外處理）；延後時可先半自動上線"
     },
     {
-      id: "retail-multiplatform-orders",
-      industry: "retail",
-      title: "多平台訂單彙整 + 物流單號回填",
-      painStory: "訂單分散在多個電商平台，每天要下載、整理格式再匯入 ERP，出貨後還得把物流單號一個個貼回平台。",
-      asIs: [
-        "逐一登入各平台下載訂單",
-        "人工轉換成 ERP 匯入格式",
-        "匯入 ERP 並處理錯誤",
-        "出貨後手動回填物流單號"
+      id: "yuan-omni-orders", industry: "retail", customer: "阿原（YUAN）", customerSource: "new",
+      title: "多通路訂單彙整 → ERP + 物流單號回填",
+      background: [
+        { text: "台灣手工皂與保養品牌，淡水、永康街、台南等地設有門市，並經營官方線上商城；momo 亦有販售", sourceId: "yuan-news" },
+        { text: "自有製造：新北石門「北海明珠創生基地」2026 年 3 月取得化妝品 GMP 證明", sourceId: "yuan-news" }
+      ],
+      challenge: [
+        "官網、電商平台、門市訂單分散在多個後台，每天分別下載、轉成 ERP 格式",
+        "出貨後要把物流單號逐筆貼回各平台；檔期活動訂單暴增時易延遲出錯"
       ],
       toBe: [
-        { actor: "robot", text: "定時下載各平台訂單" },
-        { actor: "robot", text: "轉換格式並匯入 ERP" },
+        { actor: "robot", text: "定時下載各通路訂單，轉成 ERP 格式匯入" },
         { actor: "robot", text: "出貨後回填物流單號到各平台" },
-        { actor: "human", text: "客服處理異常訂單、取消與退款" }
+        { actor: "robot", text: "產出每日各通路銷售彙整" },
+        { actor: "human", text: "客服處理取消、退款、地址異常（不自動退款）" }
       ],
-      productType: "full",
-      productNote: "全自動或半自動，視訂單量與平台數決定",
-      estDays: 14,
-      evidence: {
-        level: "B",
-        why: "自備流程清單列為優先順序第 3，但無具名公開案例，痛點為推論。",
-        refs: [{ sourceId: "rpa-md", note: "§4.1 多平台訂單彙整、§4.5 物流單號回寫" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 150, unit: "筆訂單", per: "day", workDays: 30, minutes: 2, autoRate: 0.8,
+        quality: "檔期不必加派人手，出貨延遲減少" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；通路超過 4 個時人天可能增加"
     },
     {
-      id: "retail-store-inventory",
-      industry: "retail",
-      title: "門市庫存／盤點彙整",
-      painStory: "各分店用試算表回報庫存，總部再靠 Email 收齊、手動合併，數字常常慢一天又對不上。",
-      asIs: [
-        "各門市填寫庫存試算表",
-        "Email 寄回總部",
-        "總部人工合併多份檔案",
-        "比對異常再回頭詢問門市"
+      id: "ginza-store-daily", industry: "retail", customer: "銀座白石", customerSource: "fuji-other",
+      title: "門市銷售／庫存日報彙整",
+      background: [
+        { text: "日本集團旗下婚戒珠寶品牌，台灣 6 間分店，販售半訂製鑽戒、對戒與飾品", sourceId: "fbtw-retail" },
+        { text: "富士既有客戶：原用試算表 + Email 彙總庫存，導入 Ragic 雲端資料庫後可即時查庫存、簽核電子化", sourceId: "fbtw-retail" }
+      ],
+      challenge: [
+        "庫存已上雲，但每日銷售日報可能仍要人工：POS 匯出 → 對應 Ragic 庫存 → 整理給總部與會計",
+        "婚戒訂製有「訂金 → 製作 → 尾款」時間差，對帳較複雜"
       ],
       toBe: [
-        { actor: "robot", text: "收取各門市回報檔案" },
-        { actor: "robot", text: "合併成總表並檢查缺報門市" },
-        { actor: "robot", text: "標記庫存異常品項" },
-        { actor: "human", text: "營運人員確認異常並決定調撥" }
+        { actor: "robot", text: "每晚匯出各店 POS 銷售，寫入 Ragic 並比對庫存異動" },
+        { actor: "robot", text: "產出總部日報與會計分錄底稿" },
+        { actor: "human", text: "會計確認訂金、尾款等特殊交易後才入帳" }
       ],
-      productType: "semi",
-      productNote: "半自動：總部人員觸發彙整",
-      estDays: 10,
-      evidence: {
-        level: "A-",
-        why: "富士官網同類型案例證實痛點存在，但當時解法是雲端資料庫而非 RPA。",
-        refs: [{ sourceId: "fbtw-retail", note: "銀座白石 6 間分店庫存用試算表 + Email 彙總" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
+        quality: "重點是日報準時、帳實一致；B 版可只賣純授權讓客戶自建" },
+      productType: "semi", estDays: 13,
+      productNote: "A 版含開發；B 版改賣入門包（純授權）",
+      altDealType: "starterLite"
     },
     {
-      id: "hightech-yield-report",
-      industry: "hightech",
-      title: "每日良率／OEE 報表與異常通報",
-      painStory: "工程師每天早上先花時間從 MES 撈資料做良率報表，真正分析異常的時間反而被壓縮。",
-      asIs: [
-        "登入 MES 匯出前一日資料",
-        "Excel 整理良率與 OEE",
-        "人工判斷是否超出管制界限",
-        "寄報表與異常通知"
+      id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
+      title: "每日品質／測試報表彙整與異常通報（首期）",
+      background: [
+        { text: "台灣首家 LCD 背光模組廠，以投影機、顯示器與背光模組聞名，旗下有奧圖碼及多家中光電智能子公司", sourceId: "fbtw-it" },
+        { text: "富士既有客戶：導入設備集中管理、影像備份（追蹤文件處理防個資外洩）與無紙化傳真", sourceId: "fbtw-it" }
+      ],
+      challenge: [
+        "測試站多，品質工程師每天先從 MES／測試系統匯出資料、用 Excel 做良率報表再寄出",
+        "大廠常有自建 IT 能力，切入點選「單一報表、唯讀系統」的小範圍首期"
       ],
       toBe: [
-        { actor: "robot", text: "每日唯讀擷取 MES 資料" },
-        { actor: "robot", text: "產出良率／OEE 報表" },
-        { actor: "robot", text: "超出門檻自動通報負責工程師" },
+        { actor: "robot", text: "唯讀擷取前一日測試資料（不寫回生產系統）" },
+        { actor: "robot", text: "產出良率／不良分類報表" },
+        { actor: "robot", text: "超出門檻時通報負責工程師" },
         { actor: "human", text: "工程師判斷異常原因與處置" }
       ],
-      productType: "full",
-      productNote: "全自動：唯讀 MES，不寫回生產系統",
-      estDays: 25,
-      evidence: {
-        level: "B",
-        why: "僅有自備流程清單；大廠自建能力強（見明基材料案例），需 Discovery 驗證是否外包。",
-        refs: [
-          { sourceId: "rpa-md", note: "§6.3 良率及不良品資料彙整" },
-          { sourceId: "benq-uipath", note: "大廠自建 RPA 能力強的背景參考" }
-        ]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 5, unit: "份報表", per: "day", workDays: 21, minutes: 40, autoRate: 0.8,
+        quality: "釋放工程師做真正的異常分析" },
+      productType: "semi", estDays: 13,
+      productNote: "首期半自動驗證；後續以加購機器人授權為主，少賣人天"
     },
     {
-      id: "fin-reconciliation",
-      industry: "finance",
-      title: "外匯／交易對帳",
-      painStory: "對帳單一天上萬筆，人工逐筆勾稽，差異要層層追；量大又不能錯。",
-      asIs: [
-        "下載或收取對帳單",
-        "人工登打或整理欄位",
-        "與內部交易紀錄逐筆勾稽",
-        "整理差異並通知承辦"
+      id: "yungda-commission", industry: "finance", customer: "永達保險經紀人", customerSource: "new",
+      title: "多家保險公司佣金明細對帳",
+      background: [
+        { text: "台灣大型保險經紀人公司；報導指出 2025 年新契約保費約 39 億元，2026 年目標 60 億元", sourceId: "yungda-news" }
+      ],
+      challenge: [
+        "代理多家保險公司商品，各家佣金明細格式不同（Excel、PDF、系統下載）",
+        "每月人工整理成統一格式、與應收佣金比對，差異逐家追討；業績成長代表對帳量跟著上升"
       ],
       toBe: [
-        { actor: "robot", text: "收取對帳單並 OCR 擷取" },
-        { actor: "robot", text: "依規則與內部紀錄比對" },
-        { actor: "robot", text: "產出差異清單並通知承辦" },
-        { actor: "human", text: "承辦人判斷差異、執行調整（風險判斷不自動化）" }
+        { actor: "robot", text: "首期 3–5 家：收取明細、辨識格式轉統一欄位" },
+        { actor: "robot", text: "與內部應收佣金比對，標記差異並產出追討清單" },
+        { actor: "human", text: "財務確認差異後才入帳、分配業務員佣金" }
       ],
-      productType: "full",
-      productNote: "全自動：量大、規則明確",
-      estDays: 25,
-      evidence: {
-        level: "A",
-        why: "台灣富士軟片資訊官網有同類型 RPA 案例（國際商業銀行）。",
-        refs: [{ sourceId: "fbtw-bank", note: "外匯對帳單日處理最高 14,000 筆，降低約 85% 工時" }]
-      },
-      existingCustomerCandidate: true
+      benefit: { count: 20, unit: "家保險公司", per: "month", minutes: 180, autoRate: 0.8,
+        quality: "月結提早 2–3 天，業務員佣金發放更準時" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案（首期）；金融資安審查期長，Q1 回簽有風險"
     },
     {
-      id: "ins-commission-check",
-      industry: "finance",
-      title: "保經代佣金對帳",
-      painStory: "每家保險公司的佣金明細格式都不一樣，每月要人工整理成同一張表，再跟應收對帳。",
-      asIs: [
-        "收取多家保險公司佣金明細",
-        "人工轉換成統一格式",
-        "與內部保單應收比對",
-        "整理差異並追討"
+      id: "skm-concession", industry: "department", customer: "新光三越（單一館試點）", customerSource: "new",
+      title: "專櫃營業額彙整 + 抽成試算",
+      background: [
+        { text: "台灣百貨龍頭之一，全台 15 個據點（20 館），2023 年營業額約 945 億元", sourceId: "skm-news" },
+        { text: "品牌汰換頻繁，報導指出上半年完成 530 個品牌調整與替換", sourceId: "skm-news" }
+      ],
+      challenge: [
+        "專櫃多、各品牌合約抽成條件不同（保底、級距、檔期折扣分攤）",
+        "每月從 POS 匯出營業額、對照合約用 Excel 試算、產出對帳單；品牌常汰換，條件常變"
       ],
       toBe: [
-        { actor: "robot", text: "收取並辨識各家明細格式" },
-        { actor: "robot", text: "轉換成統一格式彙整" },
-        { actor: "robot", text: "與應收比對、標記差異" },
-        { actor: "human", text: "財務確認差異後才入帳" }
+        { actor: "robot", text: "彙整單一館各櫃 POS 營業額" },
+        { actor: "robot", text: "套用合約抽成規則試算，產出對帳單草稿" },
+        { actor: "human", text: "財務覆核保底、檔期分攤等特殊條件後才寄出" }
       ],
-      productType: "full",
-      productNote: "全自動：每月固定批次",
-      estDays: 20,
-      evidence: {
-        level: "B",
-        why: "推論：保險業有導入 RPA 的公開報導，但無此流程的具名案例，需 Discovery 驗證。",
-        refs: [{ sourceId: "fubon-like", note: "保險業 RPA 應用於保單資料處理與報表（背景參考）" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
+        quality: "試點成功可複製到其他館（ABM 擴充故事）" },
+      productType: "semi", estDays: 10,
+      productNote: "入門包：先拿一館試點"
     },
     {
-      id: "dept-concession-settlement",
-      industry: "department",
-      title: "專櫃營業額彙整 + 抽成計算",
-      painStory: "櫃位多、合約抽成條件各不相同，每月結算要人工套公式，一個條件看錯就要重算。",
-      asIs: [
-        "匯出 POS 各櫃營業額",
-        "對照合約抽成條件",
-        "Excel 逐櫃計算抽成",
-        "產出對帳單寄給品牌"
+      id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
+      industryNote: "專業服務（地政士）",
+      title: "第二流程：謄本調閱 + 案件進度通知",
+      background: [
+        { text: "民國 71 年成立，服務上市建設公司、土地開發商與建築融資業者，每年平均約 4,000 件案件", sourceId: "fbtw-consult" },
+        { text: "富士既有 RPA 客戶：資料登打導入 RPA + AI／OCR 後，流程由 5 個步驟簡化為 2 個步驟", sourceId: "fbtw-consult" }
+      ],
+      challenge: [
+        "第一個流程（資料登打）已自動化；每件案子仍要多次上地政系統查進度、調謄本，再通知客戶",
+        "案件量逐年增加，這段仍是人工"
       ],
       toBe: [
-        { actor: "robot", text: "彙整各櫃 POS 營業額" },
-        { actor: "robot", text: "套用合約抽成規則試算" },
-        { actor: "robot", text: "產出對帳單草稿" },
-        { actor: "human", text: "財務覆核特殊合約條件後才寄出" }
+        { actor: "robot", text: "每日依案件清單查詢進度、下載最新謄本並歸檔" },
+        { actor: "robot", text: "狀態變更時寄送進度通知給客戶窗口" },
+        { actor: "human", text: "登記補正、異常狀態由地政士判斷處理" }
       ],
-      productType: "semi",
-      productNote: "半自動：月結時由財務觸發",
-      estDays: 20,
-      evidence: {
-        level: "B",
-        why: "無公開案例；自備流程清單列為優先順序第 5，需 Discovery 驗證。",
-        refs: [
-          { sourceId: "rpa-md", note: "§5.1 專櫃營業額彙整、§5.2 抽成計算" },
-          { sourceId: "dept-share", note: "百貨市場集中，適合單點 ABM（背景參考）" }
-        ]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 4000, unit: "件案件", per: "year", minutes: 10, autoRate: 0.7,
+        quality: "客戶已看到第一個機器人的效益，擴充阻力低" },
+      productType: "semi", estDays: 15, existingLicense: true,
+      productNote: "既有授權沿用，純人天擴充"
+    },
+    {
+      id: "lens-dual-erp-recon", industry: "manufacturing", customer: "工業鏡頭廠（富士官網案例）", customerSource: "fuji-rpa",
+      title: "第二流程：雙 ERP 月結庫存差異比對",
+      background: [
+        { text: "世界級工業鏡頭廠，美洲、歐洲、亞洲共 24 個據點；客戶名稱未公開，不臆測身分", sourceId: "fbtw-it" },
+        { text: "富士既有 RPA 客戶：在地 ERP 單據同步到日本母公司 ERP，節省約 80% 訂單處理時間", sourceId: "fbtw-it" }
+      ],
+      challenge: [
+        "單據已同步，但月結時兩套 ERP 的庫存與金額可能仍需人工核對",
+        "任一筆同步失敗都會造成差異，月結時才發現"
+      ],
+      toBe: [
+        { actor: "robot", text: "月結前匯出兩邊庫存與交易明細" },
+        { actor: "robot", text: "比對差異並產出差異報告" },
+        { actor: "human", text: "會計與倉管確認差異原因、決定調整" }
+      ],
+      benefit: { count: 1, unit: "次月結核對（約 16 小時）", per: "month", minutes: 960, autoRate: 0.8,
+        quality: "月結提早 1–2 天" },
+      productType: "semi", estDays: 15, existingLicense: true,
+      productNote: "既有授權沿用，純人天擴充"
     }
   ],
 
   // 額外手動假設（其餘由 calc.collectAssumptions() 自動彙整）
   assumptions: [
     { key: "poc-capacity", label: "PoC 團隊產能", value: "Q1 可同時支援的 PoC 場次需與主管確認", note: "Demo 用標準範本；PoC 用真實資料，建議付費並可抵扣" },
-    { key: "warm-start", label: "暖名單啟動", value: "A 版以 12 月啟動暖名單為前提", note: "" }
+    { key: "warm-start", label: "暖名單啟動", value: "A 版以 12 月啟動暖名單為前提", note: "" },
+    { key: "fte-hours", label: "1 人力當量", value: "每月 168 小時", note: "效益試算換算人力用" }
   ],
 
-  // 證據來源（paraphrase 摘要）
+  // 資料來源（paraphrase 摘要；urls 可多個）
   sources: [
-    { id: "ithome-asia",   title: "iThome：亞旭電腦 RPA 人機協作",      summary: "採購交期變更在 B2B 平台與 ERP 間來回，人工約 3 小時、RPA 人機協作約 35 分鐘（年份待核對）", url: "https://www.ithome.com.tw/news/140424" },
-    { id: "cio-zeus",      title: "CIO Taiwan：隆輝訂單轉銷貨",          summary: "一天 200 筆訂單轉銷貨，需重複 600 次以上操作", url: "https://www.cio.com.tw/the-xinli-information-systalk-rpa-helps-taiwans-zeus-safety-helmet-operating-process-automation-more-intelligent/" },
-    { id: "fbtw-lens",     title: "富士軟片資訊案例：工業鏡頭廠",        summary: "兩套 ERP 重複登打，節省約 80% 訂單處理時間", url: "https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/it" },
-    { id: "fbtw-bank",     title: "富士軟片資訊案例：國際商業銀行",      summary: "外匯對帳單日處理最高 14,000 筆，降低約 85% 工時", url: "https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/banking-finance-and-insurance" },
-    { id: "fbtw-retail",   title: "富士軟片資訊案例：銀座白石",          summary: "6 間分店庫存用試算表 + Email 彙總（解法為雲端資料庫，非 RPA）", url: "https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/retail" },
-    { id: "benq-uipath",   title: "INSIDE：明基材料導入 UiPath",         summary: "讓同仁自行開發，標題載六成部門導入（代表大廠自建能力強）", url: "https://www.inside.com.tw/article/35338-MetaAge" },
-    { id: "cathay-rpa",    title: "數位時代：國泰金控 RPA",              summary: "2018 年於銀行、人壽、產險導入 RPA，並設機器人管理辦公室", url: "https://www.bnext.com.tw/article/65346/cathay-financial-low-code-no-code" },
-    { id: "fubon-like",    title: "經濟日報：遠雄人壽 RPA",              summary: "RPA 用於保單資料處理、文件審核、報表，採公民開發", url: "https://money.udn.com/money/story/5613/9273082" },
-    { id: "iii-survey",    title: "INSIDE：資策會 RPA 調查",             summary: "67% 企業電子化系統搭配人工；採購 27% 仍用傳真電話（年份較早）", url: "https://www.inside.com.tw/article/14830-iii-robotic-process-automation" },
-    { id: "dept-share",    title: "NOWnews：2025 百貨市占",              summary: "市占前三為新光三越、遠東百貨、遠東 SOGO；三井升至第四", url: "https://www.nownews.com/news/6866139" },
-    { id: "fbtw-position", title: "商業周刊廣編：富士軟片資訊自述",      summary: "約四分之一企業辦公室使用其事務機；紙本數位化 + RPA 雙軌（2024 廣編企劃，公司自述）", url: "https://www.businessweekly.com.tw/business/indep/1004443" },
-    { id: "rpa-md",        title: "自備資料：五大產業 RPA 流程盤點（RPA.md）", summary: "自行整理的流程清單與優先順序，非客戶實績；用於推論，需 Discovery 驗證", url: "" }
+    { id: "fbtw-mfg", title: "富士官網｜製造業案例", summary: "台灣保來得、東元電機、台灣新光合成纖維（文件與流程方案）",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/manufacturing"] },
+    { id: "fbtw-it", title: "富士官網｜IT 案例", summary: "中強光電（設備管理）；工業鏡頭廠（RPA 雙 ERP 同步，省約 80% 時間）",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/it"] },
+    { id: "fbtw-retail", title: "富士官網｜零售案例", summary: "銀座白石 6 店，Ragic 雲端庫存與電子簽核",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/retail"] },
+    { id: "fbtw-consult", title: "富士官網｜專業服務案例", summary: "林懇伶地政士事務所，RPA + AI／OCR，流程 5 步驟變 2 步驟",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/consultancy"] },
+    { id: "porite-news", title: "經濟日報、工商時報｜台灣保來得", summary: "SOFC 連接板供應 Bloom Energy、產能倍增與擴廠",
+      urls: ["https://money.udn.com/money/story/8521/8954654", "https://www.ctee.com.tw/news/20240823700194-439901"] },
+    { id: "tpi-reg", title: "公司登記資料｜東培工業", summary: "軸承與鋼珠製造；員工與資本額資料年份較早",
+      urls: ["https://twincn.com/item.aspx?no=07220508"] },
+    { id: "skfiber-news", title: "1111、自由時報｜新光合纖", summary: "公司沿革、產品線、生產基地與減碳聚酯廠",
+      urls: ["https://www.1111.com.tw/news/jobns/167846", "https://ec.ltn.com.tw/article/breakingnews/4767947"] },
+    { id: "yuan-news", title: "Bella、蕃薯藤｜阿原", summary: "門市據點、官方商城、石門基地 GMP",
+      urls: ["https://www.bella.tw/articles/skincare/51003/taiwan-skincare-yuan-yongkang-store-design", "https://n.yam.com/Article/20260310753158"] },
+    { id: "yungda-news", title: "經濟日報｜永達保經", summary: "2025 新契約保費約 39 億元、2026 目標 60 億元",
+      urls: ["https://money.udn.com/money/amp/story/5613/9306733"] },
+    { id: "skm-news", title: "數位時代、旺得富｜新光三越", summary: "15 據點 20 館、2023 營業額約 945 億元、品牌大量汰換",
+      urls: ["https://www.bnext.com.tw/article/78195/skm-2024-strategy", "https://wantrich.chinatimes.com/news/20260917900505-420501"] },
+    { id: "benq-uipath", title: "INSIDE｜明基材料導入 UiPath", summary: "同仁自行開發，代表大廠自建能力強（高科技風險參考）",
+      urls: ["https://www.inside.com.tw/article/35338-MetaAge"] },
+    { id: "dept-share", title: "NOWnews｜2025 百貨市占", summary: "市場集中，前三為新光三越、遠東百貨、遠東 SOGO（ABM 參考）",
+      urls: ["https://www.nownews.com/news/6866139"] },
+    { id: "fbtw-position", title: "商業周刊廣編｜富士軟片資訊自述", summary: "約四分之一企業辦公室使用其事務機；紙本數位化 + RPA 雙軌（公司自述）",
+      urls: ["https://www.businessweekly.com.tw/business/indep/1004443"] },
+    { id: "rpa-md", title: "自備資料｜RPA.md", summary: "流程盤點與效益試算示範，非客戶實績", urls: [] }
   ]
 };

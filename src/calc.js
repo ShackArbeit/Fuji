@@ -146,15 +146,17 @@ export function renewalSensitivity(rates = DATA.versionB.sensitivityRates) {
 }
 
 // 報價組合器
-export function configure({ caseId, productType, extraSemi = 0, days } = {}) {
+export function configure({ caseId, productType, extraSemi = 0, days, existingLicense } = {}) {
   const c = caseId ? DATA.cases.find(x => x.id === caseId) : null;
   if (caseId && !c) throw new Error("未知流程：" + caseId);
   const type = productType || (c ? c.productType : "semi");
   const d = days ?? (c ? c.estDays : DATA.standardCase.days);
+  const reuse = existingLicense ?? !!(c && c.existingLicense); // 既有授權沿用 → 只算人天與加購
+  const base = reuse ? 0 : 1;
   const { price } = DATA;
   const lines = [
-    { key: "dev",   label: "RPA 開發工具使用者", qty: 1, unit: price.dev, kind: "license" },
-    { key: "robot", label: type === "full" ? "全自動機器人" : "半自動機器人", qty: 1, unit: type === "full" ? price.full : price.semi, kind: "license" },
+    { key: "dev",   label: "RPA 開發工具使用者", qty: base, unit: price.dev, kind: "license" },
+    { key: "robot", label: type === "full" ? "全自動機器人" : "半自動機器人", qty: base, unit: type === "full" ? price.full : price.semi, kind: "license" },
     { key: "extra", label: "加購半自動機器人", qty: extraSemi, unit: price.semi, kind: "license" },
     { key: "days",  label: "流程開發（人天）", qty: d, unit: price.day, kind: "service" }
   ].map(l => ({ ...l, amount: l.qty * l.unit }));
@@ -162,12 +164,43 @@ export function configure({ caseId, productType, extraSemi = 0, days } = {}) {
   const service = lines.filter(l => l.kind === "service").reduce((a, l) => a + l.amount, 0);
   const total = license + service;
   const std = standardCaseAmount();
-  return { caseId: c ? c.id : null, productType: type, days: d, extraSemi, lines, license, service, total, standard: std, diffFromStandard: total - std };
+  return { caseId: c ? c.id : null, productType: type, days: d, extraSemi, existingLicense: reuse, lines, license, service, total, standard: std, diffFromStandard: total - std };
 }
 
-export function evidenceSummary() {
-  const out = { "A": 0, "A-": 0, "B": 0 };
-  for (const c of DATA.cases) out[c.evidence.level] = (out[c.evidence.level] || 0) + 1;
+// 客戶來源統計（取代原證據等級統計）
+export function customerSourceSummary() {
+  const out = Object.fromEntries(Object.keys(DATA.customerSources).map(k => [k, 0]));
+  for (const c of DATA.cases) out[c.customerSource] = (out[c.customerSource] || 0) + 1;
+  return out;
+}
+
+// 效益試算（皆為假設）：月工時 = count × minutes ÷ 60 × 每月次數；節省 = 月工時 × autoRate
+export const FTE_HOURS = 168;
+export function benefit(caseId) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  if (!c) throw new Error("未知案例：" + caseId);
+  const b = c.benefit;
+  const perMonth = b.per === "day" ? b.workDays : b.per === "year" ? 1 / 12 : 1;
+  const monthlyHours = (b.count * b.minutes / 60) * perMonth;
+  const savedHours = monthlyHours * b.autoRate;
+  return { ...b, perMonth, monthlyHours, savedHours, fte: savedHours / FTE_HOURS };
+}
+
+const PER_LABEL = { day: "日", month: "月", year: "年" };
+export function benefitFormula(caseId) {
+  const b = benefit(caseId);
+  const per = b.per === "day" ? `／日（${b.workDays} 天／月）` : `／${PER_LABEL[b.per]}`;
+  return `${b.count} ${b.unit}${per} × ${b.minutes} 分 × 自動化 ${Math.round(b.autoRate * 100)}%`;
+}
+
+// 此案例在 A／B 版被列為哪些案型
+export function dealsForCase(caseId) {
+  const out = [];
+  for (const [version, deals] of [["A", DATA.versionA.deals], ["B", DATA.versionB.deals]]) {
+    for (const d of deals) {
+      if (d.caseId === caseId) out.push({ version, type: d.type, label: DATA.dealTypes[d.type].label, amount: dealAmount(d.type) * d.n });
+    }
+  }
   return out;
 }
 
@@ -247,7 +280,7 @@ export function collectAssumptions(overrides = {}) {
     if (s.bundle.days) list.push({ group: "情境組合人天", label: s.title, value: s.bundle.days + " 人天" });
   }
   for (const c of DATA.cases) {
-    list.push({ group: "流程預估人天", label: c.title, value: c.estDays + " 人天" });
+    list.push({ group: "個案人天與效益假設", label: c.customer.replace(/（.*）/, ""), value: `${c.estDays} 人天｜${benefitFormula(c.id)}`, wrap: true });
   }
   const scoreGroup = "產業評分（" + Object.values(DATA.scoreShort).join("・") + "，主觀 1–5）";
   for (const ind of DATA.industries) {

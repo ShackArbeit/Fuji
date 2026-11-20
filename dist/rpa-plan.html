@@ -174,7 +174,7 @@ input[type="radio"] { width: 1.1rem; height: 1.1rem; accent-color: var(--primary
 .link-btn { font: inherit; background: none; border: 0; color: var(--primary); text-decoration: underline; cursor: pointer; padding: 0; text-align: left; }
 
 /* ---- 3. 卡片 ---- */
-.cases-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 1.2rem; align-items: start; }
+.cases-layout { display: grid; grid-template-columns: minmax(0, 0.62fr) minmax(0, 2fr); gap: 1.2rem; align-items: start; }
 .case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
 .case-card {
   font: inherit; text-align: left; cursor: pointer; color: var(--ink);
@@ -359,11 +359,54 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   .ab-panel.is-hidden, .funnel-panel.is-hidden { display: block; }
   .ab-panel + .ab-panel, .funnel-panel + .funnel-panel { margin-top: .8rem; }
   .print-only { display: block !important; }
+  #s-ab .tbl th, #s-ab .tbl td { padding: .12rem .4rem; }
+  #s-ab .foot-note, #s-ab ul.plain, #s-ab h4 { display: none; }
+  #s-ab .target-bar { margin: 1.2rem 0 .3rem; }
+  #s-ab .bars { gap: .2rem; }
+  #s-ab .panel { padding: .6rem .9rem; }
   .case-grid { grid-template-columns: 1fr 1fr; }
   .as-cols { columns: 4; }
   a { color: var(--ink); text-decoration: none; }
 }
 .print-only { display: none; }
+
+/* ---- 客戶案例卡片（五段式）---- */
+.case-sub { font-size: .9rem; color: var(--muted); line-height: 1.35; }
+.cs { border: 1.5px solid var(--primary); color: var(--primary); background: #fff; }
+.cs-fuji-rpa { background: var(--primary); color: #fff; }
+.cs-new { border-style: dashed; border-color: var(--muted); color: var(--muted); }
+.info-tag { display: inline-block; font-size: .78rem; font-weight: 700; padding: 0 .45em; border-radius: 4px; vertical-align: .12em; white-space: nowrap; }
+.info-fact { background: var(--primary-soft); color: var(--primary); }
+.info-guess { background: var(--human-soft); color: var(--human); border: 1px dashed var(--human); }
+.info-assume { border: 1px dashed var(--muted); color: var(--muted); }
+.case-sections { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem 1rem; align-items: start; }
+.sec-stack { display: flex; flex-direction: column; gap: .6rem; }
+.case-grid { grid-template-columns: 1fr; gap: .35rem; }
+.case-card { padding: .35rem .7rem; gap: 0; }
+.case-row1 { display: flex; align-items: center; gap: .4rem; }
+.case-amt { margin-left: auto; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+.quote-line { font-size: .88rem; color: var(--muted); }
+.sec .quote-total { font-size: 1.6rem; }
+.sec .quote-total .muted { font-size: .85rem; font-weight: 400; margin-left: .4rem; }
+.sec { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: .55rem .8rem; }
+.sec h4 { margin: 0 0 .35rem; color: var(--ink); font-size: 1rem; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.sec-no { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--primary); color: #fff; font-size: .8rem; }
+.sec ul.plain { margin: 0; font-size: .92rem; line-height: 1.45; gap: .2rem; }
+.src-ref { color: var(--muted); font-size: .82rem; }
+.flow-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .45rem; font-size: .92rem; }
+.benefit-big { font-size: 1.15rem; }
+.benefit-big strong { font-size: 1.6rem; color: var(--robot); }
+.sec p { font-size: .92rem; }
+.tbl-compact td { padding: .2rem .4rem; font-size: .9rem; }
+.check { display: flex; gap: .5rem; align-items: center; font-weight: 400; margin-bottom: .8rem; }
+.check input { width: 1.1rem; height: 1.1rem; accent-color: var(--primary); }
+@media (max-width: 1300px) { .case-sections { grid-template-columns: 1fr; } }
+.case-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.case-card { min-width: 0; }
+#s-cases .row-head .lead { font-size: 1rem; }
+#s-cases .case-card { padding: .22rem .65rem; line-height: 1.38; }
+#s-cases .case-grid { gap: .28rem; }
+#s-cases { gap: .9rem; }
 
 </style>
 </head>
@@ -414,7 +457,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
       </div>
     </div>
     <p class="thesis" data-bind="meta.thesis"></p>
-    <p class="hero-line">主打流程：<strong data-bind="hero.title"></strong>　<span class="muted">案件業績以「回簽報價單」即計入</span></p>
+    <p class="hero-line">主打案例：<strong data-bind="hero.title"></strong>　<span class="muted">案件業績以「回簽報價單」即計入</span></p>
     <p class="hint no-print">按 → 或空白鍵翻頁，按 ? 看快捷鍵</p>
   </section>
 
@@ -423,7 +466,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
     <header class="slide-head">
       <p class="eyebrow">產業與痛點地圖</p>
       <h2 id="h-industry">先選對產業，再選對流程</h2>
-      <p class="lead">評分是我依「成交速度、市場規模、客單、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看對應的痛點流程。</p>
+      <p class="lead">評分是我依「成交速度、市場規模、客單、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看目標客戶。</p>
     </header>
     <div class="industry-layout">
       <div id="industry-map" class="industry-map"></div>
@@ -432,13 +475,15 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 3. 痛點互動卡片 -->
-  <section class="slide" id="s-cases" data-title="痛點卡片" tabindex="-1" aria-labelledby="h-cases">
-    <header class="slide-head">
-      <p class="eyebrow">痛點互動卡片</p>
-      <h2 id="h-cases">從一個人工步驟，看到一張報價單</h2>
-      <p class="lead">每張卡片：痛點、現況 vs 導入後流程、對應產品與報價、證據等級。公開案例皆為「同類型案例」，不代表特定客戶一定有此痛點。</p>
+  <section class="slide" id="s-cases" data-title="客戶案例" tabindex="-1" aria-labelledby="h-cases">
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">客戶案例卡片</p>
+        <h2 id="h-cases">一家公司、一個流程、一張報價單</h2>
+        <p class="lead">每張卡片＝一家實際公司：背景（公開事實）→ 挑戰（推估，需 Discovery 驗證）→ 解決方案 → 效益（試算假設）→ 報價。</p>
+      </div>
+      <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
     </header>
-    <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
     <div class="cases-layout">
       <div class="case-grid" id="case-grid"></div>
       <div class="panel case-detail" id="case-detail" aria-live="polite"></div>
@@ -531,7 +576,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   <section class="slide" id="s-sources" data-title="假設與來源" tabindex="-1" aria-labelledby="h-sources">
     <header class="slide-head">
       <p class="eyebrow">假設與來源</p>
-      <h2 id="h-sources">所有假設都攤開，所有案例都標證據</h2>
+      <h2 id="h-sources">所有假設都攤開，所有客戶資訊都標來源</h2>
       <p class="lead">下表由程式自動彙整；在前面章節調整的值會即時反映並標示「已調整」。</p>
     </header>
     <div class="sources-layout">
@@ -565,7 +610,7 @@ const DATA = {
     title: "2027 Q1 業績 500 萬達成規劃",
     target: 5_000_000,
     interviewDate: "2026-11-27",
-    heroCaseId: "mfg-delivery-followup", // 預設主打流程；Shack 尚無偏好，隨時可改這一行
+    heroCaseId: "porite-delivery", // 主打：台灣保來得｜供應商交期追蹤（標準案）
     thesis: "這個職位的關鍵，是先找到產業既定流程裡的痛點；計價、業績拆解與漏斗回推，則用來證明這份規劃有數字、可執行。"
   },
 
@@ -583,15 +628,18 @@ const DATA = {
     expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
   },
 
-  // A 版：從零 500 萬（共 9 案、511.6 萬）
+  // A 版：從零 500 萬（共 9 案、511.6 萬）；每案對應一家具名客戶（見 Industry.md）
   versionA: {
     deals: [
-      { industry: "manufacturing", type: "standard", n: 3 },
-      { industry: "manufacturing", type: "flagship", n: 1, caseId: "mfg-invoice-3way" },
-      { industry: "retail",        type: "standard", n: 2 },
-      { industry: "hightech",      type: "standard", n: 1 },
-      { industry: "finance",       type: "standard", n: 1 },
-      { industry: "department",    type: "starter",  n: 1 }
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "porite-delivery" },
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "teco-drawing-sync" },
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "tpi-stock-alert" },
+      { industry: "manufacturing", type: "flagship", n: 1, caseId: "skfiber-invoice-3way" },
+      { industry: "retail",        type: "standard", n: 1, caseId: "yuan-omni-orders" },
+      { industry: "retail",        type: "standard", n: 1, caseId: "ginza-store-daily" },
+      { industry: "hightech",      type: "standard", n: 1, caseId: "coretronic-quality-report" },
+      { industry: "finance",       type: "standard", n: 1, caseId: "yungda-commission" },
+      { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" }
     ]
   },
 
@@ -602,9 +650,10 @@ const DATA = {
     renewalRange: [0.85, 1.0],
     sensitivityRates: [1.0, 0.95, 0.9, 0.85],
     deals: [
-      { source: "existing", type: "expansion",   n: 2 }, // 既有客戶擴充 2 × 30 萬
-      { source: "new",      type: "standard",    n: 1 }, // 新客標準案 50 萬
-      { source: "new",      type: "starterLite", n: 1 }  // 新客入門包 24 萬
+      { source: "existing", type: "expansion",   n: 1, caseId: "lin-land-expansion" },   // 既有 RPA 客戶擴充 30 萬
+      { source: "existing", type: "expansion",   n: 1, caseId: "lens-dual-erp-recon" },  // 既有 RPA 客戶擴充 30 萬
+      { source: "new",      type: "standard",    n: 1, caseId: "porite-delivery" },      // 新 RPA 客戶標準案 50 萬
+      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" }     // 入門包（純授權）24 萬
     ]
   },
 
@@ -621,9 +670,9 @@ const DATA = {
   // score 為主觀假設（1–5，resistance 越高代表阻力越低）；pitch 為推論，需 Discovery 驗證
   industries: [
     { id: "manufacturing", name: "製造業供應鏈",   short: "製造",   role: "主攻",       abm: false, score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 },
-      pitch: "跨 ERP、Email、Excel 的重複作業多，工時與錯誤率容易量化；富士官網與公開報導都有同類型案例可引用。" },
+      pitch: "跨 ERP、Email、Excel 的重複作業多，效益容易量化；富士既有文件方案客戶多（保來得、東元、新纖），RPA 是它們數位化的下一步，交叉銷售成交最快。" },
     { id: "retail",        name: "傳統零售／電商", short: "零售",   role: "副攻",       abm: false, score: { speed: 4, size: 4, ticket: 2, quantifiable: 4, resistance: 4 },
-      pitch: "多平台、多門市的資料搬運量大、決策快；客單偏低，以標準案與入門包為主。" },
+      pitch: "多通路、多門市的資料搬運量大、決策快；客單偏低，以標準案與入門包為主。" },
     { id: "hightech",      name: "高科技",         short: "高科技", role: "選擇性",     abm: false, score: { speed: 2, size: 3, ticket: 5, quantifiable: 3, resistance: 2 },
       pitch: "客單潛力高，但大廠常有自建 RPA 團隊；切入點是授權與特定報表流程，少賣人天。" },
     { id: "department",    name: "百貨",           short: "百貨",   role: "單點 ABM",   abm: true,  score: { speed: 3, size: 1, ticket: 3, quantifiable: 4, resistance: 3 },
@@ -684,7 +733,7 @@ const DATA = {
 
   // 風險與備援（§7-9）；calc 指定影響試算方式
   risks: [
-    { id: "flagship-delay", title: "全自動旗艦延後", trigger: "三方比對例外多、客戶內部審查拉長", calc: "flagshipDelay",
+    { id: "flagship-delay", title: "全自動旗艦延後", trigger: "新纖三方比對例外多、客戶內部審查拉長", calc: "flagshipDelay",
       response: "以標準案補位；旗艦改為分階段（先半自動上線，Q2 升級全自動）" },
     { id: "renewal-drop", title: "續約率下滑", trigger: "既有客戶預算縮減或流程停用", calc: "renewalDrop", rate: 0.9,
       response: "續約前 60 天盤點使用率；以既有客戶擴充 + 新客標準案補缺口" },
@@ -694,345 +743,302 @@ const DATA = {
       response: "賣授權與加購機器人、少賣人天；以教育訓練與顧問支援補位" }
   ],
 
-  // 證據等級說明（§6.1）
-  evidenceLevels: {
-    "A":  "有公開 RPA 案例，該流程痛點有文字證據",
-    "A-": "有公開案例，但解法非 RPA（僅作痛點佐證）",
-    "B":  "只有產業結構資料或自備流程清單，痛點為推論，需 Discovery 驗證"
+  // 資訊標示（取代原證據等級）：每一段內容標明可信度
+  infoTags: {
+    fact:   "公開事實",   // 有公開來源（富士官網、新聞、公司官網）
+    guess:  "推估",       // 依產業常見痛點 × 該公司營運型態推論，需 Discovery 驗證
+    assume: "試算假設"    // 效益數字為假設，非客戶實績
   },
 
-  // 痛點卡片（§6.3）。內容為 Claude Code 草擬、待 Shack 審；estDays 皆為假設。
-  // 公開案例一律以「同類型案例」措辭引用，不代表特定潛在客戶一定有此痛點。
+  // 客戶來源
+  customerSources: {
+    "fuji-rpa":   "富士既有 RPA 客戶",
+    "fuji-other": "富士既有客戶（非 RPA）",
+    "new":        "集團外新客"
+  },
+
+  // 具名客戶案例卡片（內容來源：Industry.md）。
+  // background = 公開事實（附 sourceId）；challenge = 推估；toBe = 解決方案（human = 人工覆核點）；
+  // benefit = 效益試算假設：月工時 = count × minutes ÷ 60 × 每月次數（per: day×workDays／month×1／year÷12），節省 = 月工時 × autoRate
   cases: [
     {
-      id: "mfg-delivery-followup",
-      industry: "manufacturing",
+      id: "porite-delivery", industry: "manufacturing", customer: "台灣保來得", customerSource: "fuji-other",
       title: "供應商交期追蹤",
-      painStory: "採購每天早上逐一寄信問交期，再把回覆抄回 Excel 和 ERP，逾期常常是產線缺料時才發現。",
-      asIs: [
-        "從 ERP 匯出未交貨採購單",
-        "依供應商整理待追蹤清單",
-        "逐封寄送交期確認信",
-        "讀回信、手動回填新交期",
-        "人工判斷逾期並通知生管"
+      background: [
+        { text: "粉末冶金大廠，富士官網形容為全球前三大；2010 年起量產 SOFC 燃料電池連接板", sourceId: "fbtw-mfg" },
+        { text: "報導指出 SOFC 連接板主要供應美商 Bloom Energy（約占營收四成），汽車引擎／變速箱粉末冶金件為第二大業務，並規劃產能倍增", sourceId: "porite-news" },
+        { text: "富士既有客戶：kintone 處理請購、採購與不良品管制；Apeos 事務機由 130 台減至 30 台以下", sourceId: "fbtw-mfg" }
+      ],
+      challenge: [
+        "產能倍增、料件多（粉末原料、模具、外包加工），交期延誤直接影響出貨給國際車廠",
+        "請購、採購已上 kintone，但「追交期」可能仍是：匯出未交單 → 逐家寄信 → 讀回信 → 手動更新",
+        "資料已數位化、規則明確，正是 RPA 最容易接手的一段"
       ],
       toBe: [
-        { actor: "robot", text: "每日定時抓取未交貨採購單" },
-        { actor: "robot", text: "依供應商批次寄送確認信" },
-        { actor: "robot", text: "擷取回覆日期並回填追蹤表／ERP" },
+        { actor: "robot", text: "每日抓取未交貨採購單，對 7 天內到期項目批次寄送交期確認信" },
+        { actor: "robot", text: "擷取回覆交期，回填 kintone／ERP" },
         { actor: "robot", text: "標記逾期與未回覆項目" },
-        { actor: "human", text: "採購確認異常交期、與生管協調排程" }
+        { actor: "human", text: "採購只處理延後、未回覆的異常，並與生管協調排程" }
       ],
-      productType: "full",
-      productNote: "全自動候選：每日排程無人值守執行",
-      estDays: 13,
-      evidence: {
-        level: "A",
-        why: "同類型案例（亞旭電腦）有公開 RPA 導入報導，痛點與流程相符。",
-        refs: [{ sourceId: "ithome-asia", note: "採購交期變更人工約 3 小時，人機協作約 35 分鐘（年份待核對）" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 80, unit: "筆", per: "day", workDays: 21, minutes: 5, autoRate: 0.7,
+        quality: "逾期提早 7 天預警，降低缺料停線風險" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；穩定後可升級全自動排程（第二階段）"
     },
     {
-      id: "mfg-order-to-sales",
-      industry: "manufacturing",
-      title: "請購／訂單 → ERP 轉單",
-      painStory: "業助一天要把上百筆訂單一筆筆轉成銷貨單，同樣的點選動作重複數百次，月底還容易漏單。",
-      asIs: [
-        "收到客戶訂單或內部請購",
-        "人工核對品項、數量、價格",
-        "在 ERP 逐筆建立 PO／銷貨單",
-        "回頭標記已處理"
+      id: "teco-drawing-sync", industry: "manufacturing", customer: "東元電機", customerSource: "fuji-other",
+      title: "工程圖面發行 → ERP 料號同步與通知",
+      background: [
+        { text: "1956 年成立，從馬達起家，擴展到重電、家電與資訊產品", sourceId: "fbtw-mfg" },
+        { text: "富士既有客戶：DocuWorks 整合多格式設計檔，50 頁圖面處理由約 50 分鐘縮短到 5 分鐘內", sourceId: "fbtw-mfg" }
+      ],
+      challenge: [
+        "圖面數位化後，瓶頸移到「發行之後」：上傳文件庫、ERP 更新料號版次、寄信通知各部門",
+        "料號多、版次變更頻繁，人工更新易漏改，造成用錯舊版圖面"
       ],
       toBe: [
-        { actor: "robot", text: "讀取訂單／請購資料" },
-        { actor: "robot", text: "依規則在 ERP 建立 PO 或銷貨單" },
-        { actor: "robot", text: "產出轉單結果與異常清單" },
-        { actor: "human", text: "業助覆核價格或數量異常的單據" }
+        { actor: "robot", text: "監看已核准資料夾，讀取圖號、版次、料號" },
+        { actor: "robot", text: "登入 ERP 更新料號版次與圖面連結" },
+        { actor: "robot", text: "依料號寄送變更通知給採購、生管、品保" },
+        { actor: "human", text: "變更影響在途訂單或庫存時，由工程與生管判斷" }
       ],
-      productType: "semi",
-      productNote: "半自動：由業助觸發、在旁覆核",
-      estDays: 13,
-      evidence: {
-        level: "A",
-        why: "同類型案例（隆輝）有公開 RPA 報導，量化描述轉單重複操作。",
-        refs: [{ sourceId: "cio-zeus", note: "一天 200 筆訂單轉銷貨，需重複 600 次以上操作" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
+        quality: "版次錯誤歸零；延伸既有 DocuWorks 投資" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；與既有 DocuWorks 串接"
     },
     {
-      id: "mfg-dual-erp-sync",
-      industry: "manufacturing",
-      title: "兩套 ERP 資料同步",
-      painStory: "集團內兩套 ERP 不互通，同一張訂單要在兩邊各打一次，打錯就對不起帳。",
-      asIs: [
-        "在 A 系統建立訂單",
-        "人工在 B 系統重打一次",
-        "定期人工比對兩邊差異",
-        "發現不一致再回頭修正"
-      ],
-      toBe: [
-        { actor: "robot", text: "偵測 A 系統新增／異動訂單" },
-        { actor: "robot", text: "自動在 B 系統建立對應資料" },
-        { actor: "robot", text: "每日產出兩系統差異報表" },
-        { actor: "human", text: "承辦人處理差異與主檔不一致" }
-      ],
-      productType: "semi",
-      productNote: "半自動：承辦人觸發同步並處理差異",
-      estDays: 13,
-      evidence: {
-        level: "A",
-        why: "台灣富士軟片資訊官網有同類型 RPA 案例（工業鏡頭廠）。",
-        refs: [{ sourceId: "fbtw-lens", note: "兩套 ERP 重複登打，節省約 80% 訂單處理時間" }]
-      },
-      existingCustomerCandidate: false
-    },
-    {
-      id: "mfg-stock-alert",
-      industry: "manufacturing",
+      id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
       title: "安全庫存警示 + 盤點差異比對",
-      painStory: "1 月年度盤點後，帳面與實盤差異要人工逐料號比對；平時低於安全庫存也常靠經驗發現。",
-      asIs: [
-        "匯出 ERP 庫存與盤點表",
-        "用 Excel 逐料號比對差異",
-        "人工檢查是否低於安全庫存",
-        "寄信通知採購與倉管"
+      background: [
+        { text: "主要製造銷售滾動軸承與碳鉻鋼珠；與日本 NTN 合作，自稱東南亞最大軸承製造商之一", sourceId: "tpi-reg" },
+        { text: "規模：員工約 950 人、實收資本額約 12.57 億元（資料年份較早，待更新）", sourceId: "tpi-reg" }
+      ],
+      challenge: [
+        "軸承規格、料號多，原料鋼材與成品都要控管安全庫存，常靠經驗或週報才發現低庫存",
+        "1 月年度盤點後，帳面與實盤差異要用 Excel 逐料號比對"
       ],
       toBe: [
-        { actor: "robot", text: "定時匯出庫存與盤點資料" },
-        { actor: "robot", text: "比對差異並標記低於安全庫存料號" },
-        { actor: "robot", text: "寄送警示清單給負責人" },
-        { actor: "human", text: "倉管確認盤差原因、決定是否調帳" }
+        { actor: "robot", text: "每日匯出 ERP 庫存，比對安全庫存設定" },
+        { actor: "robot", text: "寄送低庫存清單給採購與倉管" },
+        { actor: "robot", text: "盤點期比對盤點表與帳面，產出差異清單" },
+        { actor: "human", text: "倉管確認盤差原因，主管決定是否調帳（不自動調帳）" }
       ],
-      productType: "semi",
-      productNote: "半自動起步，穩定後可升級全自動排程",
-      estDays: 9,
-      evidence: {
-        level: "B",
-        why: "僅有自備流程清單（RPA.md 優先順序第 7），痛點為推論，需 Discovery 驗證。",
-        refs: [{ sourceId: "rpa-md", note: "§3.6 庫存資料同步與安全庫存警示" }]
-      },
-      existingCustomerCandidate: true
+      benefit: { count: 6, unit: "人天（2 人 × 3 天）", per: "month", minutes: 480, autoRate: 0.75,
+        quality: "Q1 正逢年度盤點，是切入時機" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案"
     },
     {
-      id: "mfg-invoice-3way",
-      industry: "manufacturing",
-      title: "發票 OCR + 三方比對（旗艦）",
-      painStory: "會計每月要把供應商發票、採購單、收貨單三份資料對齊，數量或單價差一點就得來回追。",
-      asIs: [
-        "從 Email／紙本取得供應商發票",
-        "人工登打發票欄位",
-        "到 ERP 調閱 PO 與收貨紀錄",
-        "逐項比對料號、數量、單價",
-        "差異案件寄信給採購或倉庫"
+      id: "skfiber-invoice-3way", industry: "manufacturing", customer: "台灣新光合成纖維", customerSource: "fuji-other",
+      title: "供應商發票 OCR + 三方比對（旗艦）",
+      background: [
+        { text: "1967 年成立，隸屬新光集團；產品涵蓋 PET 粒、聚酯絲／棉、工程塑膠、薄膜與再生聚酯，生產基地含中壢、觀音、泰國、揚州", sourceId: "skfiber-news" },
+        { text: "富士既有客戶：DocuWorks 整合採購文件與多種電子簽章格式（可串接 DocuSign、Adobe Sign）", sourceId: "fbtw-mfg" }
+      ],
+      challenge: [
+        "原料與耗材供應商多、發票量大，會計須比對發票、採購單、收貨單三份資料",
+        "有差異就在採購、倉庫、供應商之間來回確認；採購文件已數位化，代表資料拿得到"
       ],
       toBe: [
         { actor: "robot", text: "收取發票並以 OCR 擷取欄位" },
-        { actor: "robot", text: "從 ERP 取得 PO 與收貨紀錄" },
-        { actor: "robot", text: "三方比對，相符項目標記待付款" },
-        { actor: "robot", text: "差異案件分派給採購／倉儲" },
-        { actor: "human", text: "會計覆核後才放行付款（不自動付款）" }
+        { actor: "robot", text: "從 ERP 取得採購單與收貨紀錄，三方比對" },
+        { actor: "robot", text: "相符項目標記待付款；差異自動分派採購／倉儲" },
+        { actor: "human", text: "會計確認後才放行付款（不自動付款）" }
       ],
-      productType: "full",
-      productNote: "全自動旗艦：需例外處理與 OCR 搭配",
-      estDays: 30,
-      evidence: {
-        level: "B",
-        why: "自備流程清單（RPA.md）列為優先順序第 1，但尚無具名公開案例，需 Discovery 驗證。",
-        refs: [{ sourceId: "rpa-md", note: "§3.12 供應商發票與三方比對；§8 優先順序第 1" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 3000, unit: "張發票", per: "month", minutes: 4, autoRate: 0.8,
+        quality: "付款前把關，減少溢付與重複付款" },
+      productType: "full", estDays: 30,
+      productNote: "全自動旗艦（含 OCR 與例外處理）；延後時可先半自動上線"
     },
     {
-      id: "retail-multiplatform-orders",
-      industry: "retail",
-      title: "多平台訂單彙整 + 物流單號回填",
-      painStory: "訂單分散在多個電商平台，每天要下載、整理格式再匯入 ERP，出貨後還得把物流單號一個個貼回平台。",
-      asIs: [
-        "逐一登入各平台下載訂單",
-        "人工轉換成 ERP 匯入格式",
-        "匯入 ERP 並處理錯誤",
-        "出貨後手動回填物流單號"
+      id: "yuan-omni-orders", industry: "retail", customer: "阿原（YUAN）", customerSource: "new",
+      title: "多通路訂單彙整 → ERP + 物流單號回填",
+      background: [
+        { text: "台灣手工皂與保養品牌，淡水、永康街、台南等地設有門市，並經營官方線上商城；momo 亦有販售", sourceId: "yuan-news" },
+        { text: "自有製造：新北石門「北海明珠創生基地」2026 年 3 月取得化妝品 GMP 證明", sourceId: "yuan-news" }
+      ],
+      challenge: [
+        "官網、電商平台、門市訂單分散在多個後台，每天分別下載、轉成 ERP 格式",
+        "出貨後要把物流單號逐筆貼回各平台；檔期活動訂單暴增時易延遲出錯"
       ],
       toBe: [
-        { actor: "robot", text: "定時下載各平台訂單" },
-        { actor: "robot", text: "轉換格式並匯入 ERP" },
+        { actor: "robot", text: "定時下載各通路訂單，轉成 ERP 格式匯入" },
         { actor: "robot", text: "出貨後回填物流單號到各平台" },
-        { actor: "human", text: "客服處理異常訂單、取消與退款" }
+        { actor: "robot", text: "產出每日各通路銷售彙整" },
+        { actor: "human", text: "客服處理取消、退款、地址異常（不自動退款）" }
       ],
-      productType: "full",
-      productNote: "全自動或半自動，視訂單量與平台數決定",
-      estDays: 14,
-      evidence: {
-        level: "B",
-        why: "自備流程清單列為優先順序第 3，但無具名公開案例，痛點為推論。",
-        refs: [{ sourceId: "rpa-md", note: "§4.1 多平台訂單彙整、§4.5 物流單號回寫" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 150, unit: "筆訂單", per: "day", workDays: 30, minutes: 2, autoRate: 0.8,
+        quality: "檔期不必加派人手，出貨延遲減少" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；通路超過 4 個時人天可能增加"
     },
     {
-      id: "retail-store-inventory",
-      industry: "retail",
-      title: "門市庫存／盤點彙整",
-      painStory: "各分店用試算表回報庫存，總部再靠 Email 收齊、手動合併，數字常常慢一天又對不上。",
-      asIs: [
-        "各門市填寫庫存試算表",
-        "Email 寄回總部",
-        "總部人工合併多份檔案",
-        "比對異常再回頭詢問門市"
+      id: "ginza-store-daily", industry: "retail", customer: "銀座白石", customerSource: "fuji-other",
+      title: "門市銷售／庫存日報彙整",
+      background: [
+        { text: "日本集團旗下婚戒珠寶品牌，台灣 6 間分店，販售半訂製鑽戒、對戒與飾品", sourceId: "fbtw-retail" },
+        { text: "富士既有客戶：原用試算表 + Email 彙總庫存，導入 Ragic 雲端資料庫後可即時查庫存、簽核電子化", sourceId: "fbtw-retail" }
+      ],
+      challenge: [
+        "庫存已上雲，但每日銷售日報可能仍要人工：POS 匯出 → 對應 Ragic 庫存 → 整理給總部與會計",
+        "婚戒訂製有「訂金 → 製作 → 尾款」時間差，對帳較複雜"
       ],
       toBe: [
-        { actor: "robot", text: "收取各門市回報檔案" },
-        { actor: "robot", text: "合併成總表並檢查缺報門市" },
-        { actor: "robot", text: "標記庫存異常品項" },
-        { actor: "human", text: "營運人員確認異常並決定調撥" }
+        { actor: "robot", text: "每晚匯出各店 POS 銷售，寫入 Ragic 並比對庫存異動" },
+        { actor: "robot", text: "產出總部日報與會計分錄底稿" },
+        { actor: "human", text: "會計確認訂金、尾款等特殊交易後才入帳" }
       ],
-      productType: "semi",
-      productNote: "半自動：總部人員觸發彙整",
-      estDays: 10,
-      evidence: {
-        level: "A-",
-        why: "富士官網同類型案例證實痛點存在，但當時解法是雲端資料庫而非 RPA。",
-        refs: [{ sourceId: "fbtw-retail", note: "銀座白石 6 間分店庫存用試算表 + Email 彙總" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
+        quality: "重點是日報準時、帳實一致；B 版可只賣純授權讓客戶自建" },
+      productType: "semi", estDays: 13,
+      productNote: "A 版含開發；B 版改賣入門包（純授權）",
+      altDealType: "starterLite"
     },
     {
-      id: "hightech-yield-report",
-      industry: "hightech",
-      title: "每日良率／OEE 報表與異常通報",
-      painStory: "工程師每天早上先花時間從 MES 撈資料做良率報表，真正分析異常的時間反而被壓縮。",
-      asIs: [
-        "登入 MES 匯出前一日資料",
-        "Excel 整理良率與 OEE",
-        "人工判斷是否超出管制界限",
-        "寄報表與異常通知"
+      id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
+      title: "每日品質／測試報表彙整與異常通報（首期）",
+      background: [
+        { text: "台灣首家 LCD 背光模組廠，以投影機、顯示器與背光模組聞名，旗下有奧圖碼及多家中光電智能子公司", sourceId: "fbtw-it" },
+        { text: "富士既有客戶：導入設備集中管理、影像備份（追蹤文件處理防個資外洩）與無紙化傳真", sourceId: "fbtw-it" }
+      ],
+      challenge: [
+        "測試站多，品質工程師每天先從 MES／測試系統匯出資料、用 Excel 做良率報表再寄出",
+        "大廠常有自建 IT 能力，切入點選「單一報表、唯讀系統」的小範圍首期"
       ],
       toBe: [
-        { actor: "robot", text: "每日唯讀擷取 MES 資料" },
-        { actor: "robot", text: "產出良率／OEE 報表" },
-        { actor: "robot", text: "超出門檻自動通報負責工程師" },
+        { actor: "robot", text: "唯讀擷取前一日測試資料（不寫回生產系統）" },
+        { actor: "robot", text: "產出良率／不良分類報表" },
+        { actor: "robot", text: "超出門檻時通報負責工程師" },
         { actor: "human", text: "工程師判斷異常原因與處置" }
       ],
-      productType: "full",
-      productNote: "全自動：唯讀 MES，不寫回生產系統",
-      estDays: 25,
-      evidence: {
-        level: "B",
-        why: "僅有自備流程清單；大廠自建能力強（見明基材料案例），需 Discovery 驗證是否外包。",
-        refs: [
-          { sourceId: "rpa-md", note: "§6.3 良率及不良品資料彙整" },
-          { sourceId: "benq-uipath", note: "大廠自建 RPA 能力強的背景參考" }
-        ]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 5, unit: "份報表", per: "day", workDays: 21, minutes: 40, autoRate: 0.8,
+        quality: "釋放工程師做真正的異常分析" },
+      productType: "semi", estDays: 13,
+      productNote: "首期半自動驗證；後續以加購機器人授權為主，少賣人天"
     },
     {
-      id: "fin-reconciliation",
-      industry: "finance",
-      title: "外匯／交易對帳",
-      painStory: "對帳單一天上萬筆，人工逐筆勾稽，差異要層層追；量大又不能錯。",
-      asIs: [
-        "下載或收取對帳單",
-        "人工登打或整理欄位",
-        "與內部交易紀錄逐筆勾稽",
-        "整理差異並通知承辦"
+      id: "yungda-commission", industry: "finance", customer: "永達保險經紀人", customerSource: "new",
+      title: "多家保險公司佣金明細對帳",
+      background: [
+        { text: "台灣大型保險經紀人公司；報導指出 2025 年新契約保費約 39 億元，2026 年目標 60 億元", sourceId: "yungda-news" }
+      ],
+      challenge: [
+        "代理多家保險公司商品，各家佣金明細格式不同（Excel、PDF、系統下載）",
+        "每月人工整理成統一格式、與應收佣金比對，差異逐家追討；業績成長代表對帳量跟著上升"
       ],
       toBe: [
-        { actor: "robot", text: "收取對帳單並 OCR 擷取" },
-        { actor: "robot", text: "依規則與內部紀錄比對" },
-        { actor: "robot", text: "產出差異清單並通知承辦" },
-        { actor: "human", text: "承辦人判斷差異、執行調整（風險判斷不自動化）" }
+        { actor: "robot", text: "首期 3–5 家：收取明細、辨識格式轉統一欄位" },
+        { actor: "robot", text: "與內部應收佣金比對，標記差異並產出追討清單" },
+        { actor: "human", text: "財務確認差異後才入帳、分配業務員佣金" }
       ],
-      productType: "full",
-      productNote: "全自動：量大、規則明確",
-      estDays: 25,
-      evidence: {
-        level: "A",
-        why: "台灣富士軟片資訊官網有同類型 RPA 案例（國際商業銀行）。",
-        refs: [{ sourceId: "fbtw-bank", note: "外匯對帳單日處理最高 14,000 筆，降低約 85% 工時" }]
-      },
-      existingCustomerCandidate: true
+      benefit: { count: 20, unit: "家保險公司", per: "month", minutes: 180, autoRate: 0.8,
+        quality: "月結提早 2–3 天，業務員佣金發放更準時" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案（首期）；金融資安審查期長，Q1 回簽有風險"
     },
     {
-      id: "ins-commission-check",
-      industry: "finance",
-      title: "保經代佣金對帳",
-      painStory: "每家保險公司的佣金明細格式都不一樣，每月要人工整理成同一張表，再跟應收對帳。",
-      asIs: [
-        "收取多家保險公司佣金明細",
-        "人工轉換成統一格式",
-        "與內部保單應收比對",
-        "整理差異並追討"
+      id: "skm-concession", industry: "department", customer: "新光三越（單一館試點）", customerSource: "new",
+      title: "專櫃營業額彙整 + 抽成試算",
+      background: [
+        { text: "台灣百貨龍頭之一，全台 15 個據點（20 館），2023 年營業額約 945 億元", sourceId: "skm-news" },
+        { text: "品牌汰換頻繁，報導指出上半年完成 530 個品牌調整與替換", sourceId: "skm-news" }
+      ],
+      challenge: [
+        "專櫃多、各品牌合約抽成條件不同（保底、級距、檔期折扣分攤）",
+        "每月從 POS 匯出營業額、對照合約用 Excel 試算、產出對帳單；品牌常汰換，條件常變"
       ],
       toBe: [
-        { actor: "robot", text: "收取並辨識各家明細格式" },
-        { actor: "robot", text: "轉換成統一格式彙整" },
-        { actor: "robot", text: "與應收比對、標記差異" },
-        { actor: "human", text: "財務確認差異後才入帳" }
+        { actor: "robot", text: "彙整單一館各櫃 POS 營業額" },
+        { actor: "robot", text: "套用合約抽成規則試算，產出對帳單草稿" },
+        { actor: "human", text: "財務覆核保底、檔期分攤等特殊條件後才寄出" }
       ],
-      productType: "full",
-      productNote: "全自動：每月固定批次",
-      estDays: 20,
-      evidence: {
-        level: "B",
-        why: "推論：保險業有導入 RPA 的公開報導，但無此流程的具名案例，需 Discovery 驗證。",
-        refs: [{ sourceId: "fubon-like", note: "保險業 RPA 應用於保單資料處理與報表（背景參考）" }]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
+        quality: "試點成功可複製到其他館（ABM 擴充故事）" },
+      productType: "semi", estDays: 10,
+      productNote: "入門包：先拿一館試點"
     },
     {
-      id: "dept-concession-settlement",
-      industry: "department",
-      title: "專櫃營業額彙整 + 抽成計算",
-      painStory: "櫃位多、合約抽成條件各不相同，每月結算要人工套公式，一個條件看錯就要重算。",
-      asIs: [
-        "匯出 POS 各櫃營業額",
-        "對照合約抽成條件",
-        "Excel 逐櫃計算抽成",
-        "產出對帳單寄給品牌"
+      id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
+      industryNote: "專業服務（地政士）",
+      title: "第二流程：謄本調閱 + 案件進度通知",
+      background: [
+        { text: "民國 71 年成立，服務上市建設公司、土地開發商與建築融資業者，每年平均約 4,000 件案件", sourceId: "fbtw-consult" },
+        { text: "富士既有 RPA 客戶：資料登打導入 RPA + AI／OCR 後，流程由 5 個步驟簡化為 2 個步驟", sourceId: "fbtw-consult" }
+      ],
+      challenge: [
+        "第一個流程（資料登打）已自動化；每件案子仍要多次上地政系統查進度、調謄本，再通知客戶",
+        "案件量逐年增加，這段仍是人工"
       ],
       toBe: [
-        { actor: "robot", text: "彙整各櫃 POS 營業額" },
-        { actor: "robot", text: "套用合約抽成規則試算" },
-        { actor: "robot", text: "產出對帳單草稿" },
-        { actor: "human", text: "財務覆核特殊合約條件後才寄出" }
+        { actor: "robot", text: "每日依案件清單查詢進度、下載最新謄本並歸檔" },
+        { actor: "robot", text: "狀態變更時寄送進度通知給客戶窗口" },
+        { actor: "human", text: "登記補正、異常狀態由地政士判斷處理" }
       ],
-      productType: "semi",
-      productNote: "半自動：月結時由財務觸發",
-      estDays: 20,
-      evidence: {
-        level: "B",
-        why: "無公開案例；自備流程清單列為優先順序第 5，需 Discovery 驗證。",
-        refs: [
-          { sourceId: "rpa-md", note: "§5.1 專櫃營業額彙整、§5.2 抽成計算" },
-          { sourceId: "dept-share", note: "百貨市場集中，適合單點 ABM（背景參考）" }
-        ]
-      },
-      existingCustomerCandidate: false
+      benefit: { count: 4000, unit: "件案件", per: "year", minutes: 10, autoRate: 0.7,
+        quality: "客戶已看到第一個機器人的效益，擴充阻力低" },
+      productType: "semi", estDays: 15, existingLicense: true,
+      productNote: "既有授權沿用，純人天擴充"
+    },
+    {
+      id: "lens-dual-erp-recon", industry: "manufacturing", customer: "工業鏡頭廠（富士官網案例）", customerSource: "fuji-rpa",
+      title: "第二流程：雙 ERP 月結庫存差異比對",
+      background: [
+        { text: "世界級工業鏡頭廠，美洲、歐洲、亞洲共 24 個據點；客戶名稱未公開，不臆測身分", sourceId: "fbtw-it" },
+        { text: "富士既有 RPA 客戶：在地 ERP 單據同步到日本母公司 ERP，節省約 80% 訂單處理時間", sourceId: "fbtw-it" }
+      ],
+      challenge: [
+        "單據已同步，但月結時兩套 ERP 的庫存與金額可能仍需人工核對",
+        "任一筆同步失敗都會造成差異，月結時才發現"
+      ],
+      toBe: [
+        { actor: "robot", text: "月結前匯出兩邊庫存與交易明細" },
+        { actor: "robot", text: "比對差異並產出差異報告" },
+        { actor: "human", text: "會計與倉管確認差異原因、決定調整" }
+      ],
+      benefit: { count: 1, unit: "次月結核對（約 16 小時）", per: "month", minutes: 960, autoRate: 0.8,
+        quality: "月結提早 1–2 天" },
+      productType: "semi", estDays: 15, existingLicense: true,
+      productNote: "既有授權沿用，純人天擴充"
     }
   ],
 
   // 額外手動假設（其餘由 calc.collectAssumptions() 自動彙整）
   assumptions: [
     { key: "poc-capacity", label: "PoC 團隊產能", value: "Q1 可同時支援的 PoC 場次需與主管確認", note: "Demo 用標準範本；PoC 用真實資料，建議付費並可抵扣" },
-    { key: "warm-start", label: "暖名單啟動", value: "A 版以 12 月啟動暖名單為前提", note: "" }
+    { key: "warm-start", label: "暖名單啟動", value: "A 版以 12 月啟動暖名單為前提", note: "" },
+    { key: "fte-hours", label: "1 人力當量", value: "每月 168 小時", note: "效益試算換算人力用" }
   ],
 
-  // 證據來源（paraphrase 摘要）
+  // 資料來源（paraphrase 摘要；urls 可多個）
   sources: [
-    { id: "ithome-asia",   title: "iThome：亞旭電腦 RPA 人機協作",      summary: "採購交期變更在 B2B 平台與 ERP 間來回，人工約 3 小時、RPA 人機協作約 35 分鐘（年份待核對）", url: "https://www.ithome.com.tw/news/140424" },
-    { id: "cio-zeus",      title: "CIO Taiwan：隆輝訂單轉銷貨",          summary: "一天 200 筆訂單轉銷貨，需重複 600 次以上操作", url: "https://www.cio.com.tw/the-xinli-information-systalk-rpa-helps-taiwans-zeus-safety-helmet-operating-process-automation-more-intelligent/" },
-    { id: "fbtw-lens",     title: "富士軟片資訊案例：工業鏡頭廠",        summary: "兩套 ERP 重複登打，節省約 80% 訂單處理時間", url: "https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/it" },
-    { id: "fbtw-bank",     title: "富士軟片資訊案例：國際商業銀行",      summary: "外匯對帳單日處理最高 14,000 筆，降低約 85% 工時", url: "https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/banking-finance-and-insurance" },
-    { id: "fbtw-retail",   title: "富士軟片資訊案例：銀座白石",          summary: "6 間分店庫存用試算表 + Email 彙總（解法為雲端資料庫，非 RPA）", url: "https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/retail" },
-    { id: "benq-uipath",   title: "INSIDE：明基材料導入 UiPath",         summary: "讓同仁自行開發，標題載六成部門導入（代表大廠自建能力強）", url: "https://www.inside.com.tw/article/35338-MetaAge" },
-    { id: "cathay-rpa",    title: "數位時代：國泰金控 RPA",              summary: "2018 年於銀行、人壽、產險導入 RPA，並設機器人管理辦公室", url: "https://www.bnext.com.tw/article/65346/cathay-financial-low-code-no-code" },
-    { id: "fubon-like",    title: "經濟日報：遠雄人壽 RPA",              summary: "RPA 用於保單資料處理、文件審核、報表，採公民開發", url: "https://money.udn.com/money/story/5613/9273082" },
-    { id: "iii-survey",    title: "INSIDE：資策會 RPA 調查",             summary: "67% 企業電子化系統搭配人工；採購 27% 仍用傳真電話（年份較早）", url: "https://www.inside.com.tw/article/14830-iii-robotic-process-automation" },
-    { id: "dept-share",    title: "NOWnews：2025 百貨市占",              summary: "市占前三為新光三越、遠東百貨、遠東 SOGO；三井升至第四", url: "https://www.nownews.com/news/6866139" },
-    { id: "fbtw-position", title: "商業周刊廣編：富士軟片資訊自述",      summary: "約四分之一企業辦公室使用其事務機；紙本數位化 + RPA 雙軌（2024 廣編企劃，公司自述）", url: "https://www.businessweekly.com.tw/business/indep/1004443" },
-    { id: "rpa-md",        title: "自備資料：五大產業 RPA 流程盤點（RPA.md）", summary: "自行整理的流程清單與優先順序，非客戶實績；用於推論，需 Discovery 驗證", url: "" }
+    { id: "fbtw-mfg", title: "富士官網｜製造業案例", summary: "台灣保來得、東元電機、台灣新光合成纖維（文件與流程方案）",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/manufacturing"] },
+    { id: "fbtw-it", title: "富士官網｜IT 案例", summary: "中強光電（設備管理）；工業鏡頭廠（RPA 雙 ERP 同步，省約 80% 時間）",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/it"] },
+    { id: "fbtw-retail", title: "富士官網｜零售案例", summary: "銀座白石 6 店，Ragic 雲端庫存與電子簽核",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/retail"] },
+    { id: "fbtw-consult", title: "富士官網｜專業服務案例", summary: "林懇伶地政士事務所，RPA + AI／OCR，流程 5 步驟變 2 步驟",
+      urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/consultancy"] },
+    { id: "porite-news", title: "經濟日報、工商時報｜台灣保來得", summary: "SOFC 連接板供應 Bloom Energy、產能倍增與擴廠",
+      urls: ["https://money.udn.com/money/story/8521/8954654", "https://www.ctee.com.tw/news/20240823700194-439901"] },
+    { id: "tpi-reg", title: "公司登記資料｜東培工業", summary: "軸承與鋼珠製造；員工與資本額資料年份較早",
+      urls: ["https://twincn.com/item.aspx?no=07220508"] },
+    { id: "skfiber-news", title: "1111、自由時報｜新光合纖", summary: "公司沿革、產品線、生產基地與減碳聚酯廠",
+      urls: ["https://www.1111.com.tw/news/jobns/167846", "https://ec.ltn.com.tw/article/breakingnews/4767947"] },
+    { id: "yuan-news", title: "Bella、蕃薯藤｜阿原", summary: "門市據點、官方商城、石門基地 GMP",
+      urls: ["https://www.bella.tw/articles/skincare/51003/taiwan-skincare-yuan-yongkang-store-design", "https://n.yam.com/Article/20260310753158"] },
+    { id: "yungda-news", title: "經濟日報｜永達保經", summary: "2025 新契約保費約 39 億元、2026 目標 60 億元",
+      urls: ["https://money.udn.com/money/amp/story/5613/9306733"] },
+    { id: "skm-news", title: "數位時代、旺得富｜新光三越", summary: "15 據點 20 館、2023 營業額約 945 億元、品牌大量汰換",
+      urls: ["https://www.bnext.com.tw/article/78195/skm-2024-strategy", "https://wantrich.chinatimes.com/news/20260917900505-420501"] },
+    { id: "benq-uipath", title: "INSIDE｜明基材料導入 UiPath", summary: "同仁自行開發，代表大廠自建能力強（高科技風險參考）",
+      urls: ["https://www.inside.com.tw/article/35338-MetaAge"] },
+    { id: "dept-share", title: "NOWnews｜2025 百貨市占", summary: "市場集中，前三為新光三越、遠東百貨、遠東 SOGO（ABM 參考）",
+      urls: ["https://www.nownews.com/news/6866139"] },
+    { id: "fbtw-position", title: "商業周刊廣編｜富士軟片資訊自述", summary: "約四分之一企業辦公室使用其事務機；紙本數位化 + RPA 雙軌（公司自述）",
+      urls: ["https://www.businessweekly.com.tw/business/indep/1004443"] },
+    { id: "rpa-md", title: "自備資料｜RPA.md", summary: "流程盤點與效益試算示範，非客戶實績", urls: [] }
   ]
 };
 
@@ -1186,15 +1192,17 @@ function renewalSensitivity(rates = DATA.versionB.sensitivityRates) {
 }
 
 // 報價組合器
-function configure({ caseId, productType, extraSemi = 0, days } = {}) {
+function configure({ caseId, productType, extraSemi = 0, days, existingLicense } = {}) {
   const c = caseId ? DATA.cases.find(x => x.id === caseId) : null;
   if (caseId && !c) throw new Error("未知流程：" + caseId);
   const type = productType || (c ? c.productType : "semi");
   const d = days ?? (c ? c.estDays : DATA.standardCase.days);
+  const reuse = existingLicense ?? !!(c && c.existingLicense); // 既有授權沿用 → 只算人天與加購
+  const base = reuse ? 0 : 1;
   const { price } = DATA;
   const lines = [
-    { key: "dev",   label: "RPA 開發工具使用者", qty: 1, unit: price.dev, kind: "license" },
-    { key: "robot", label: type === "full" ? "全自動機器人" : "半自動機器人", qty: 1, unit: type === "full" ? price.full : price.semi, kind: "license" },
+    { key: "dev",   label: "RPA 開發工具使用者", qty: base, unit: price.dev, kind: "license" },
+    { key: "robot", label: type === "full" ? "全自動機器人" : "半自動機器人", qty: base, unit: type === "full" ? price.full : price.semi, kind: "license" },
     { key: "extra", label: "加購半自動機器人", qty: extraSemi, unit: price.semi, kind: "license" },
     { key: "days",  label: "流程開發（人天）", qty: d, unit: price.day, kind: "service" }
   ].map(l => ({ ...l, amount: l.qty * l.unit }));
@@ -1202,12 +1210,43 @@ function configure({ caseId, productType, extraSemi = 0, days } = {}) {
   const service = lines.filter(l => l.kind === "service").reduce((a, l) => a + l.amount, 0);
   const total = license + service;
   const std = standardCaseAmount();
-  return { caseId: c ? c.id : null, productType: type, days: d, extraSemi, lines, license, service, total, standard: std, diffFromStandard: total - std };
+  return { caseId: c ? c.id : null, productType: type, days: d, extraSemi, existingLicense: reuse, lines, license, service, total, standard: std, diffFromStandard: total - std };
 }
 
-function evidenceSummary() {
-  const out = { "A": 0, "A-": 0, "B": 0 };
-  for (const c of DATA.cases) out[c.evidence.level] = (out[c.evidence.level] || 0) + 1;
+// 客戶來源統計（取代原證據等級統計）
+function customerSourceSummary() {
+  const out = Object.fromEntries(Object.keys(DATA.customerSources).map(k => [k, 0]));
+  for (const c of DATA.cases) out[c.customerSource] = (out[c.customerSource] || 0) + 1;
+  return out;
+}
+
+// 效益試算（皆為假設）：月工時 = count × minutes ÷ 60 × 每月次數；節省 = 月工時 × autoRate
+const FTE_HOURS = 168;
+function benefit(caseId) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  if (!c) throw new Error("未知案例：" + caseId);
+  const b = c.benefit;
+  const perMonth = b.per === "day" ? b.workDays : b.per === "year" ? 1 / 12 : 1;
+  const monthlyHours = (b.count * b.minutes / 60) * perMonth;
+  const savedHours = monthlyHours * b.autoRate;
+  return { ...b, perMonth, monthlyHours, savedHours, fte: savedHours / FTE_HOURS };
+}
+
+const PER_LABEL = { day: "日", month: "月", year: "年" };
+function benefitFormula(caseId) {
+  const b = benefit(caseId);
+  const per = b.per === "day" ? `／日（${b.workDays} 天／月）` : `／${PER_LABEL[b.per]}`;
+  return `${b.count} ${b.unit}${per} × ${b.minutes} 分 × 自動化 ${Math.round(b.autoRate * 100)}%`;
+}
+
+// 此案例在 A／B 版被列為哪些案型
+function dealsForCase(caseId) {
+  const out = [];
+  for (const [version, deals] of [["A", DATA.versionA.deals], ["B", DATA.versionB.deals]]) {
+    for (const d of deals) {
+      if (d.caseId === caseId) out.push({ version, type: d.type, label: DATA.dealTypes[d.type].label, amount: dealAmount(d.type) * d.n });
+    }
+  }
   return out;
 }
 
@@ -1287,7 +1326,7 @@ function collectAssumptions(overrides = {}) {
     if (s.bundle.days) list.push({ group: "情境組合人天", label: s.title, value: s.bundle.days + " 人天" });
   }
   for (const c of DATA.cases) {
-    list.push({ group: "流程預估人天", label: c.title, value: c.estDays + " 人天" });
+    list.push({ group: "個案人天與效益假設", label: c.customer.replace(/（.*）/, ""), value: `${c.estDays} 人天｜${benefitFormula(c.id)}`, wrap: true });
   }
   const scoreGroup = "產業評分（" + Object.values(DATA.scoreShort).join("・") + "，主觀 1–5）";
   for (const ind of DATA.industries) {
@@ -1347,12 +1386,22 @@ function fmtNum(v, digits = 1) {
       : { text: `✘ 距目標尚差 ${fmtWan(gap)}`, ok: false };
   }
   const statusHtml = s => `<p class="status" data-state="${s.ok ? "ok" : "bad"}">${esc(s.text)}</p>`;
-  const evBadge = level => `<span class="badge ev ev-${level === "A-" ? "Am" : esc(level)}">證據 ${esc(level)}</span>`;
+  const srcBadge = k => `<span class="badge cs cs-${k}">${esc(DATA.customerSources[k])}</span>`;
+  const infoTag = k => `<span class="info-tag info-${k}">${esc(DATA.infoTags[k])}</span>`;
+  const srcLinks = id => {
+    const s = SRC[id];
+    if (!s) return "";
+    return s.urls.length
+      ? s.urls.map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(i === 0 ? s.title : "另一篇")}</a>`).join("、")
+      : esc(s.title);
+  };
+  const customerName = c => c.customer;
   const prodBadge = t => `<span class="badge prod-${t}">${t === "full" ? "全自動" : "半自動"}</span>`;
   const roleBadge = ind => `<span class="badge role${ind.role === "主攻" ? " role-main" : ""}">${esc(ind.role)}</span>`;
 
   // ---------- 狀態 ----------
-  const defaultCfg = () => ({ caseId: "", productType: "semi", extraSemi: 0, days: DATA.standardCase.days });
+  const defaultCfg = () => ({ caseId: "", productType: "semi", extraSemi: 0, days: DATA.standardCase.days, existingLicense: false });
+  const cfgFromCase = c => ({ caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays, existingLicense: !!c.existingLicense });
   const state = {
     version: "A",
     funnelMode: "back",
@@ -1395,7 +1444,7 @@ function fmtNum(v, digits = 1) {
       "wd.days": wd.days,
       "time.sign": shortDate(DATA.timeline.signTargetDate),
       "time.buffer": wd.bufferDays,
-      "hero.title": CASE[DATA.meta.heroCaseId].title
+      "hero.title": `${CASE[DATA.meta.heroCaseId].customer}｜${CASE[DATA.meta.heroCaseId].title}`
     };
   }
   function renderBinds() {
@@ -1442,7 +1491,7 @@ function fmtNum(v, digits = 1) {
     }).join("");
     $("#industry-map").innerHTML = `
       <table class="tbl">
-        <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">痛點卡</th></tr></thead>
+        <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">客戶卡</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p class="foot-note">評分 1–5 為主觀假設；「導入阻力」分數越高代表阻力越低。點產業名稱可篩選痛點卡片。</p>`;
@@ -1456,7 +1505,7 @@ function fmtNum(v, digits = 1) {
           <li>零售：決策快，但客單偏低，作為副攻。</li>
           <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
         </ul>
-        <p class="foot-note">點左側任一產業，查看切入理由與對應痛點流程。</p>`;
+        <p class="foot-note">點左側任一產業，查看切入理由與目標客戶。</p>`;
       return;
     }
     const cases = DATA.cases.filter(c => c.industry === ind.id);
@@ -1465,8 +1514,8 @@ function fmtNum(v, digits = 1) {
       <p>${esc(ind.pitch)} <span class="tag-assume">推論</span></p>
       <h4>A 版規劃</h4>
       <p>${nDeals.n} 案、${fmtWan(nDeals.amount)}${ind.abm ? "（ABM：鎖定少數目標客戶）" : ""}</p>
-      <h4>對應痛點流程（${cases.length}）</h4>
-      <ul>${cases.map(c => `<li><button type="button" class="link-btn" data-open-case="${c.id}">${esc(c.title)}</button> ${evBadge(c.evidence.level)}</li>`).join("")}</ul>`;
+      <h4>目標客戶（${cases.length}）</h4>
+      <ul>${cases.map(c => `<li><button type="button" class="link-btn" data-open-case="${c.id}">${esc(customerName(c))}｜${esc(c.title)}</button> ${srcBadge(c.customerSource)}</li>`).join("")}</ul>`;
   }
 
   // ---------- 3. 痛點卡片 ----------
@@ -1482,53 +1531,63 @@ function fmtNum(v, digits = 1) {
   function renderCaseGrid() {
     $("#case-grid").innerHTML = filteredCases().map(c => {
       const hero = c.id === DATA.meta.heroCaseId;
+      const q = configure({ caseId: c.id });
       return `<button type="button" class="case-card${hero ? " is-hero" : ""}" data-case="${c.id}" aria-expanded="${state.openCase === c.id}" aria-controls="case-detail">
-        <span class="case-top">${esc(IND[c.industry].short)}${hero ? ' <span class="badge hero-badge">主打</span>' : ""}</span>
-        <span class="case-title">${esc(c.title)}</span>
-        <span class="case-meta">${evBadge(c.evidence.level)}${prodBadge(c.productType)}<span>${c.estDays} 人天</span></span>
+        <span class="case-row1"><span class="case-title">${esc(customerName(c))}</span>${hero ? '<span class="badge hero-badge">主打</span>' : ""}<span class="case-amt">${fmtWan(q.total)}</span></span>
+        <span class="case-sub">${esc(c.industryNote || IND[c.industry].short)}｜${esc(c.title)}</span>
       </button>`;
     }).join("");
+  }
+  function quoteTable(q) {
+    const SHORT = { dev: "開發工具", robot: q.productType === "full" ? "全自動" : "半自動", extra: "加購半自動" };
+    const parts = q.lines.filter(l => l.qty).map(l =>
+      l.key === "days" ? `${l.qty} 人天 ${fmtMoney(l.amount)}` : `${SHORT[l.key]}${l.qty > 1 ? " ×" + l.qty : ""} ${fmtMoney(l.amount)}`);
+    return `<p class="quote-line">${parts.join(" + ")}</p>
+      <p class="quote-total">${fmtMoney(q.total)}<span class="muted">${q.existingLicense ? "（既有授權沿用，純人天）" : ""}</span></p>`;
   }
   function renderCaseDetail() {
     const c = CASE[state.openCase];
     const el = $("#case-detail");
     if (!c) {
-      el.innerHTML = `<p class="muted">點左側任一卡片，展開痛點、流程、報價與證據。</p>`;
+      el.innerHTML = `<p class="muted">點左側任一客戶卡片，展開背景、挑戰、解決方案、效益與報價。</p>`;
       return;
     }
     const q = configure({ caseId: c.id });
+    const bf = benefit(c.id);
     const hero = c.id === DATA.meta.heroCaseId;
-    const refs = c.evidence.refs.map(r => {
-      const s = SRC[r.sourceId];
-      const t = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>` : esc(s.title);
-      return `<li>${t}：${esc(r.note)}</li>`;
-    }).join("");
+    const deals = dealsForCase(c.id);
+    const dealText = deals.map(d => `${d.version} 版：${d.label} ${fmtWan(d.amount)}`).join("；");
     el.innerHTML = `
       <div class="detail-head">
-        <h3>${esc(c.title)}</h3>${evBadge(c.evidence.level)}${prodBadge(c.productType)}
-        <span class="muted">${esc(IND[c.industry].name)}${hero ? "｜主打流程" : ""}${c.existingCustomerCandidate ? "｜適合既有客戶擴充" : ""}</span>
+        <h3>${esc(customerName(c))}</h3>${srcBadge(c.customerSource)}${prodBadge(c.productType)}
+        <span class="muted">${esc(c.industryNote || IND[c.industry].name)}｜${esc(c.title)}${hero ? "｜主打" : ""}</span>
       </div>
-      <p class="pain">${esc(c.painStory)}</p>
-      <div class="flows">
-        <div class="flow"><h4>現況：全靠人工</h4><ol>
-          ${c.asIs.map(s => `<li class="step step-manual"><span class="actor">人工</span><span>${esc(s)}</span></li>`).join("")}
-        </ol></div>
-        <div class="flow"><h4>導入後：機器人做、人覆核</h4><ol>
-          ${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}
-        </ol></div>
-      </div>
-      <div class="detail-foot">
-        <div class="box">
-          <p class="kpi-label">報價試算 ${ASSUME}</p>
-          <p class="quote-total">${fmtWan(q.total)}</p>
-          <p>授權 ${fmtWan(q.license)}（開發工具 + ${ROBOT[q.productType]}）+ 開發 ${q.days} 人天 ${fmtWan(q.service)}</p>
-          <p class="muted">${esc(c.productNote || "")}</p>
+      <div class="case-sections">
+        <section class="sec">
+          <h4><span class="sec-no">1</span>客戶名稱 & 背景 ${infoTag("fact")}</h4>
+          <ul class="plain">${c.background.map(b => `<li>${esc(b.text)} <span class="src-ref">（${srcLinks(b.sourceId)}）</span></li>`).join("")}</ul>
+        </section>
+        <section class="sec">
+          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
+          <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+        </section>
+        <section class="sec">
+          <h4><span class="sec-no">3</span>解決方案</h4>
+          <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
+        </section>
+        <div class="sec-stack">
+        <section class="sec">
+          <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
+          <p class="benefit-big">每月約省 <strong>${fmtNum(bf.savedHours, 0)}</strong> 小時<span class="muted">（約 ${fmtNum(bf.fte, 1)} 人力）</span></p>
+          <p class="muted">${esc(benefitFormula(c.id))}：月工時 ${fmtNum(bf.monthlyHours, 0)} 小時</p>
+          <p>${esc(bf.quality)}</p>
+        </section>
+        <section class="sec sec-quote">
+          <h4><span class="sec-no">5</span>報價試算</h4>
+          ${quoteTable(q)}
+          <p class="muted">${esc(c.productNote || "")}${dealText ? `<br>業績對應：${esc(dealText)}` : ""}</p>
           <p><button type="button" class="btn btn-ghost" data-goto-cfg="${c.id}">在組合器調整 →</button></p>
-        </div>
-        <div class="box evidence">
-          <p class="kpi-label">${evBadge(c.evidence.level)} ${esc(DATA.evidenceLevels[c.evidence.level])}</p>
-          <p>${esc(c.evidence.why)}</p>
-          <ul>${refs}</ul>
+        </section>
         </div>
       </div>`;
   }
@@ -1536,15 +1595,16 @@ function fmtNum(v, digits = 1) {
   // ---------- 4. 組合器 ----------
   function buildConfigurator() {
     const groups = DATA.industries.map(ind => {
-      const opts = DATA.cases.filter(c => c.industry === ind.id).map(c => `<option value="${c.id}">${esc(c.title)}</option>`).join("");
+      const opts = DATA.cases.filter(c => c.industry === ind.id).map(c => `<option value="${c.id}">${esc(customerName(c))}｜${esc(c.title)}</option>`).join("");
       return opts ? `<optgroup label="${esc(ind.name)}">${opts}</optgroup>` : "";
     }).join("");
     $("#cfg-form").innerHTML = `
       <h3>報價組合器</h3>
       <div class="field">
-        <label for="cfg-case">選擇流程</label>
-        <select id="cfg-case"><option value="">標準案（不指定流程）</option>${groups}</select>
+        <label for="cfg-case">選擇客戶案例</label>
+        <select id="cfg-case"><option value="">標準案（不指定客戶）</option>${groups}</select>
       </div>
+      <label class="check"><input type="checkbox" id="cfg-reuse"> 既有授權沿用（只報人天與加購）</label>
       <fieldset>
         <legend>機器人（擇 1，必要）</legend>
         <label><input type="radio" name="cfg-prod" value="semi"> 半自動　${fmtWan(P.semi)}／年</label>
@@ -1562,9 +1622,10 @@ function fmtNum(v, digits = 1) {
 
     $("#cfg-case").addEventListener("change", e => {
       const c = CASE[e.target.value];
-      state.cfg = c ? { caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays } : defaultCfg();
+      state.cfg = c ? cfgFromCase(c) : defaultCfg();
       update();
     });
+    $("#cfg-reuse").addEventListener("change", e => { state.cfg.existingLicense = e.target.checked; update(); });
     $$('input[name="cfg-prod"]').forEach(r => r.addEventListener("change", e => { state.cfg.productType = e.target.value; update(); }));
     $("#cfg-extra").addEventListener("input", e => { state.cfg.extraSemi = +e.target.value; update(); });
     $("#cfg-days").addEventListener("input", e => { state.cfg.days = +e.target.value; update(); });
@@ -1572,6 +1633,7 @@ function fmtNum(v, digits = 1) {
   }
   function syncConfiguratorControls() {
     $("#cfg-case").value = state.cfg.caseId;
+    $("#cfg-reuse").checked = !!state.cfg.existingLicense;
     $$('input[name="cfg-prod"]').forEach(r => { r.checked = r.value === state.cfg.productType; });
     $("#cfg-extra").value = state.cfg.extraSemi;
     $("#cfg-days").value = state.cfg.days;
@@ -1588,7 +1650,8 @@ function fmtNum(v, digits = 1) {
       : d > 0 ? `<p class="diff up">▲ 比標準案多 ${fmtMoney(d)}</p>`
       : `<p class="diff down">▼ 比標準案少 ${fmtMoney(-d)}</p>`;
     $("#cfg-result").innerHTML = `
-      <h3>${c ? esc(c.title) : "標準案"}${c ? " " + evBadge(c.evidence.level) : ""}</h3>
+      <h3>${c ? `${esc(customerName(c))}` : "標準案"}${c ? " " + srcBadge(c.customerSource) : ""}</h3>
+      ${c ? `<p class="muted">${esc(c.title)}</p>` : ""}
       <table class="tbl">
         <thead><tr><th>品項</th><th class="num">數量</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -1643,7 +1706,7 @@ function fmtNum(v, digits = 1) {
   function renderA() {
     const a = versionATotal();
     const fd = flagshipDelayImpact();
-    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${esc(d.label)}${d.caseId ? `<br><span class="muted">${esc(CASE[d.caseId].title)}</span>` : ""}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.unit)}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     const inds = Object.entries(a.byIndustry).map(([k, v]) => ({ label: IND[k].short, value: v.amount, text: `${fmtWan(v.amount)}｜${fmtPct(v.amount / a.total)}` }));
     const maxInd = Math.max(...inds.map(i => i.value));
     const mfg = a.byIndustry.manufacturing || { amount: 0 };
@@ -1652,9 +1715,9 @@ function fmtNum(v, digits = 1) {
         <div class="panel">
           <h3>A 版：從零開始，新簽 ${a.count} 案</h3>
           <table class="tbl">
-            <thead><tr><th>產業</th><th>案型</th><th class="num">案數</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
+            <thead><tr><th>產業</th><th>客戶</th><th>案型</th><th class="num">案數</th><th class="num">金額</th></tr></thead>
             <tbody>${rows}</tbody>
-            <tfoot><tr><td colspan="2">合計</td><td class="num">${a.count}</td><td></td><td class="num">${fmtMoney(a.total)}</td></tr></tfoot>
+            <tfoot><tr><td colspan="3">合計</td><td class="num">${a.count}</td><td class="num">${fmtMoney(a.total)}</td></tr></tfoot>
           </table>
         </div>
         <div class="panel">
@@ -1706,13 +1769,13 @@ function fmtNum(v, digits = 1) {
       <p class="foot-note">缺口 = 目標 − 續約金額；「約需標準案」= 缺口 ÷ 標準案金額，無條件進位。</p>`;
 
     const SRC_LABEL = { existing: "既有客戶", new: "新客" };
-    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.unit)}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     $("#b-comp").innerHTML = `
       <h3>B 版：續約保底 + 新增 ${b.count} 案</h3>
       <table class="tbl">
-        <thead><tr><th>來源</th><th>項目</th><th class="num">案數</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
+        <thead><tr><th>來源</th><th>客戶</th><th>案型</th><th class="num">案數</th><th class="num">金額</th></tr></thead>
         <tbody>
-          <tr><td>既有續約</td><td>${fmtWan(DATA.versionB.renewalBase)} × ${pct(state.renewalRate)}</td><td></td><td></td><td class="num">${fmtWan(b.renewal)}</td></tr>
+          <tr><td>既有續約</td><td colspan="3">${fmtWan(DATA.versionB.renewalBase)} × ${pct(state.renewalRate)}</td><td class="num">${fmtWan(b.renewal)}</td></tr>
           ${dealRows}
         </tbody>
         <tfoot><tr><td colspan="4">合計</td><td class="num">${fmtMoney(b.total)}</td></tr></tfoot>
@@ -1960,17 +2023,21 @@ function fmtNum(v, digits = 1) {
         items.map(a => `<dt>${esc(a.label)}</dt><dd class="${a.wrap ? "wrap" : ""}">${esc(a.value)}${a.changed ? '<span class="tag-changed">已調整</span>' : ""}</dd>`).join("")
       }</dl></div>`).join("")}</div>`;
 
-    const ev = evidenceSummary();
-    const citedBy = id => DATA.cases.filter(c => c.evidence.refs.some(r => r.sourceId === id));
+    const cs = customerSourceSummary();
+    const citedBy = id => DATA.cases.filter(c => c.background.some(b => b.sourceId === id));
     $("#sources").innerHTML = `
-      <h3>證據等級與來源</h3>
-      <div class="ev-legend">${Object.entries(DATA.evidenceLevels).map(([lv, d]) => `<p>${evBadge(lv)} ${ev[lv]} 張：${esc(d)}</p>`).join("")}</div>
+      <h3>資訊標示與來源</h3>
+      <div class="ev-legend">
+        <p>${infoTag("fact")} 有公開來源可查（附連結）</p>
+        <p>${infoTag("guess")} 依產業常見痛點 × 該公司營運型態推論，需 Discovery 驗證</p>
+        <p>${infoTag("assume")} 效益數字為假設，非客戶實績</p>
+        <p>客戶來源：${Object.entries(cs).map(([k, n]) => `${srcBadge(k)} ${n} 家`).join("　")}</p>
+      </div>
       <ul class="src-list">${DATA.sources.map(s => {
-        const cs = citedBy(s.id);
-        const t = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>` : `<strong>${esc(s.title)}</strong>`;
-        return `<li>${t}：${esc(s.summary)}${cs.length ? ` <span class="cited">→ ${cs.map(c => esc(c.title)).join("、")}</span>` : ""}</li>`;
+        const cited = citedBy(s.id);
+        return `<li>${srcLinks(s.id)}：${esc(s.summary)}${cited.length ? ` <span class="cited">→ ${cited.map(c => esc(c.customer)).join("、")}</span>` : ""}</li>`;
       }).join("")}</ul>
-      <p class="foot-note">公開案例皆為「同類型案例」，用於佐證痛點存在；不代表任何特定潛在客戶一定有此痛點，亦不涉及富士軟片內部客戶資料。</p>`;
+      <p class="foot-note">客戶背景皆取自公開資訊；「挑戰／流程現況」為外部觀察推估，不代表該公司一定有此問題，亦不涉及富士軟片內部客戶資料。</p>`;
   }
 
   // ---------- 更新（保留焦點）----------
@@ -2077,7 +2144,7 @@ function fmtNum(v, digits = 1) {
       return;
     } else if (d.gotoCfg) {
       const c = CASE[d.gotoCfg];
-      state.cfg = { caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays };
+      state.cfg = cfgFromCase(c);
       update();
       go(sections.findIndex(s => s.id === "s-pricing"));
       return;

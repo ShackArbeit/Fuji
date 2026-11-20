@@ -23,12 +23,22 @@
       : { text: `✘ 距目標尚差 ${fmtWan(gap)}`, ok: false };
   }
   const statusHtml = s => `<p class="status" data-state="${s.ok ? "ok" : "bad"}">${esc(s.text)}</p>`;
-  const evBadge = level => `<span class="badge ev ev-${level === "A-" ? "Am" : esc(level)}">證據 ${esc(level)}</span>`;
+  const srcBadge = k => `<span class="badge cs cs-${k}">${esc(DATA.customerSources[k])}</span>`;
+  const infoTag = k => `<span class="info-tag info-${k}">${esc(DATA.infoTags[k])}</span>`;
+  const srcLinks = id => {
+    const s = SRC[id];
+    if (!s) return "";
+    return s.urls.length
+      ? s.urls.map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(i === 0 ? s.title : "另一篇")}</a>`).join("、")
+      : esc(s.title);
+  };
+  const customerName = c => c.customer;
   const prodBadge = t => `<span class="badge prod-${t}">${t === "full" ? "全自動" : "半自動"}</span>`;
   const roleBadge = ind => `<span class="badge role${ind.role === "主攻" ? " role-main" : ""}">${esc(ind.role)}</span>`;
 
   // ---------- 狀態 ----------
-  const defaultCfg = () => ({ caseId: "", productType: "semi", extraSemi: 0, days: DATA.standardCase.days });
+  const defaultCfg = () => ({ caseId: "", productType: "semi", extraSemi: 0, days: DATA.standardCase.days, existingLicense: false });
+  const cfgFromCase = c => ({ caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays, existingLicense: !!c.existingLicense });
   const state = {
     version: "A",
     funnelMode: "back",
@@ -71,7 +81,7 @@
       "wd.days": wd.days,
       "time.sign": shortDate(DATA.timeline.signTargetDate),
       "time.buffer": wd.bufferDays,
-      "hero.title": CASE[DATA.meta.heroCaseId].title
+      "hero.title": `${CASE[DATA.meta.heroCaseId].customer}｜${CASE[DATA.meta.heroCaseId].title}`
     };
   }
   function renderBinds() {
@@ -118,7 +128,7 @@
     }).join("");
     $("#industry-map").innerHTML = `
       <table class="tbl">
-        <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">痛點卡</th></tr></thead>
+        <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">客戶卡</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p class="foot-note">評分 1–5 為主觀假設；「導入阻力」分數越高代表阻力越低。點產業名稱可篩選痛點卡片。</p>`;
@@ -132,7 +142,7 @@
           <li>零售：決策快，但客單偏低，作為副攻。</li>
           <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
         </ul>
-        <p class="foot-note">點左側任一產業，查看切入理由與對應痛點流程。</p>`;
+        <p class="foot-note">點左側任一產業，查看切入理由與目標客戶。</p>`;
       return;
     }
     const cases = DATA.cases.filter(c => c.industry === ind.id);
@@ -141,8 +151,8 @@
       <p>${esc(ind.pitch)} <span class="tag-assume">推論</span></p>
       <h4>A 版規劃</h4>
       <p>${nDeals.n} 案、${fmtWan(nDeals.amount)}${ind.abm ? "（ABM：鎖定少數目標客戶）" : ""}</p>
-      <h4>對應痛點流程（${cases.length}）</h4>
-      <ul>${cases.map(c => `<li><button type="button" class="link-btn" data-open-case="${c.id}">${esc(c.title)}</button> ${evBadge(c.evidence.level)}</li>`).join("")}</ul>`;
+      <h4>目標客戶（${cases.length}）</h4>
+      <ul>${cases.map(c => `<li><button type="button" class="link-btn" data-open-case="${c.id}">${esc(customerName(c))}｜${esc(c.title)}</button> ${srcBadge(c.customerSource)}</li>`).join("")}</ul>`;
   }
 
   // ---------- 3. 痛點卡片 ----------
@@ -158,53 +168,63 @@
   function renderCaseGrid() {
     $("#case-grid").innerHTML = filteredCases().map(c => {
       const hero = c.id === DATA.meta.heroCaseId;
+      const q = configure({ caseId: c.id });
       return `<button type="button" class="case-card${hero ? " is-hero" : ""}" data-case="${c.id}" aria-expanded="${state.openCase === c.id}" aria-controls="case-detail">
-        <span class="case-top">${esc(IND[c.industry].short)}${hero ? ' <span class="badge hero-badge">主打</span>' : ""}</span>
-        <span class="case-title">${esc(c.title)}</span>
-        <span class="case-meta">${evBadge(c.evidence.level)}${prodBadge(c.productType)}<span>${c.estDays} 人天</span></span>
+        <span class="case-row1"><span class="case-title">${esc(customerName(c))}</span>${hero ? '<span class="badge hero-badge">主打</span>' : ""}<span class="case-amt">${fmtWan(q.total)}</span></span>
+        <span class="case-sub">${esc(c.industryNote || IND[c.industry].short)}｜${esc(c.title)}</span>
       </button>`;
     }).join("");
+  }
+  function quoteTable(q) {
+    const SHORT = { dev: "開發工具", robot: q.productType === "full" ? "全自動" : "半自動", extra: "加購半自動" };
+    const parts = q.lines.filter(l => l.qty).map(l =>
+      l.key === "days" ? `${l.qty} 人天 ${fmtMoney(l.amount)}` : `${SHORT[l.key]}${l.qty > 1 ? " ×" + l.qty : ""} ${fmtMoney(l.amount)}`);
+    return `<p class="quote-line">${parts.join(" + ")}</p>
+      <p class="quote-total">${fmtMoney(q.total)}<span class="muted">${q.existingLicense ? "（既有授權沿用，純人天）" : ""}</span></p>`;
   }
   function renderCaseDetail() {
     const c = CASE[state.openCase];
     const el = $("#case-detail");
     if (!c) {
-      el.innerHTML = `<p class="muted">點左側任一卡片，展開痛點、流程、報價與證據。</p>`;
+      el.innerHTML = `<p class="muted">點左側任一客戶卡片，展開背景、挑戰、解決方案、效益與報價。</p>`;
       return;
     }
     const q = configure({ caseId: c.id });
+    const bf = benefit(c.id);
     const hero = c.id === DATA.meta.heroCaseId;
-    const refs = c.evidence.refs.map(r => {
-      const s = SRC[r.sourceId];
-      const t = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>` : esc(s.title);
-      return `<li>${t}：${esc(r.note)}</li>`;
-    }).join("");
+    const deals = dealsForCase(c.id);
+    const dealText = deals.map(d => `${d.version} 版：${d.label} ${fmtWan(d.amount)}`).join("；");
     el.innerHTML = `
       <div class="detail-head">
-        <h3>${esc(c.title)}</h3>${evBadge(c.evidence.level)}${prodBadge(c.productType)}
-        <span class="muted">${esc(IND[c.industry].name)}${hero ? "｜主打流程" : ""}${c.existingCustomerCandidate ? "｜適合既有客戶擴充" : ""}</span>
+        <h3>${esc(customerName(c))}</h3>${srcBadge(c.customerSource)}${prodBadge(c.productType)}
+        <span class="muted">${esc(c.industryNote || IND[c.industry].name)}｜${esc(c.title)}${hero ? "｜主打" : ""}</span>
       </div>
-      <p class="pain">${esc(c.painStory)}</p>
-      <div class="flows">
-        <div class="flow"><h4>現況：全靠人工</h4><ol>
-          ${c.asIs.map(s => `<li class="step step-manual"><span class="actor">人工</span><span>${esc(s)}</span></li>`).join("")}
-        </ol></div>
-        <div class="flow"><h4>導入後：機器人做、人覆核</h4><ol>
-          ${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}
-        </ol></div>
-      </div>
-      <div class="detail-foot">
-        <div class="box">
-          <p class="kpi-label">報價試算 ${ASSUME}</p>
-          <p class="quote-total">${fmtWan(q.total)}</p>
-          <p>授權 ${fmtWan(q.license)}（開發工具 + ${ROBOT[q.productType]}）+ 開發 ${q.days} 人天 ${fmtWan(q.service)}</p>
-          <p class="muted">${esc(c.productNote || "")}</p>
+      <div class="case-sections">
+        <section class="sec">
+          <h4><span class="sec-no">1</span>客戶名稱 & 背景 ${infoTag("fact")}</h4>
+          <ul class="plain">${c.background.map(b => `<li>${esc(b.text)} <span class="src-ref">（${srcLinks(b.sourceId)}）</span></li>`).join("")}</ul>
+        </section>
+        <section class="sec">
+          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
+          <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+        </section>
+        <section class="sec">
+          <h4><span class="sec-no">3</span>解決方案</h4>
+          <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
+        </section>
+        <div class="sec-stack">
+        <section class="sec">
+          <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
+          <p class="benefit-big">每月約省 <strong>${fmtNum(bf.savedHours, 0)}</strong> 小時<span class="muted">（約 ${fmtNum(bf.fte, 1)} 人力）</span></p>
+          <p class="muted">${esc(benefitFormula(c.id))}：月工時 ${fmtNum(bf.monthlyHours, 0)} 小時</p>
+          <p>${esc(bf.quality)}</p>
+        </section>
+        <section class="sec sec-quote">
+          <h4><span class="sec-no">5</span>報價試算</h4>
+          ${quoteTable(q)}
+          <p class="muted">${esc(c.productNote || "")}${dealText ? `<br>業績對應：${esc(dealText)}` : ""}</p>
           <p><button type="button" class="btn btn-ghost" data-goto-cfg="${c.id}">在組合器調整 →</button></p>
-        </div>
-        <div class="box evidence">
-          <p class="kpi-label">${evBadge(c.evidence.level)} ${esc(DATA.evidenceLevels[c.evidence.level])}</p>
-          <p>${esc(c.evidence.why)}</p>
-          <ul>${refs}</ul>
+        </section>
         </div>
       </div>`;
   }
@@ -212,15 +232,16 @@
   // ---------- 4. 組合器 ----------
   function buildConfigurator() {
     const groups = DATA.industries.map(ind => {
-      const opts = DATA.cases.filter(c => c.industry === ind.id).map(c => `<option value="${c.id}">${esc(c.title)}</option>`).join("");
+      const opts = DATA.cases.filter(c => c.industry === ind.id).map(c => `<option value="${c.id}">${esc(customerName(c))}｜${esc(c.title)}</option>`).join("");
       return opts ? `<optgroup label="${esc(ind.name)}">${opts}</optgroup>` : "";
     }).join("");
     $("#cfg-form").innerHTML = `
       <h3>報價組合器</h3>
       <div class="field">
-        <label for="cfg-case">選擇流程</label>
-        <select id="cfg-case"><option value="">標準案（不指定流程）</option>${groups}</select>
+        <label for="cfg-case">選擇客戶案例</label>
+        <select id="cfg-case"><option value="">標準案（不指定客戶）</option>${groups}</select>
       </div>
+      <label class="check"><input type="checkbox" id="cfg-reuse"> 既有授權沿用（只報人天與加購）</label>
       <fieldset>
         <legend>機器人（擇 1，必要）</legend>
         <label><input type="radio" name="cfg-prod" value="semi"> 半自動　${fmtWan(P.semi)}／年</label>
@@ -238,9 +259,10 @@
 
     $("#cfg-case").addEventListener("change", e => {
       const c = CASE[e.target.value];
-      state.cfg = c ? { caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays } : defaultCfg();
+      state.cfg = c ? cfgFromCase(c) : defaultCfg();
       update();
     });
+    $("#cfg-reuse").addEventListener("change", e => { state.cfg.existingLicense = e.target.checked; update(); });
     $$('input[name="cfg-prod"]').forEach(r => r.addEventListener("change", e => { state.cfg.productType = e.target.value; update(); }));
     $("#cfg-extra").addEventListener("input", e => { state.cfg.extraSemi = +e.target.value; update(); });
     $("#cfg-days").addEventListener("input", e => { state.cfg.days = +e.target.value; update(); });
@@ -248,6 +270,7 @@
   }
   function syncConfiguratorControls() {
     $("#cfg-case").value = state.cfg.caseId;
+    $("#cfg-reuse").checked = !!state.cfg.existingLicense;
     $$('input[name="cfg-prod"]').forEach(r => { r.checked = r.value === state.cfg.productType; });
     $("#cfg-extra").value = state.cfg.extraSemi;
     $("#cfg-days").value = state.cfg.days;
@@ -264,7 +287,8 @@
       : d > 0 ? `<p class="diff up">▲ 比標準案多 ${fmtMoney(d)}</p>`
       : `<p class="diff down">▼ 比標準案少 ${fmtMoney(-d)}</p>`;
     $("#cfg-result").innerHTML = `
-      <h3>${c ? esc(c.title) : "標準案"}${c ? " " + evBadge(c.evidence.level) : ""}</h3>
+      <h3>${c ? `${esc(customerName(c))}` : "標準案"}${c ? " " + srcBadge(c.customerSource) : ""}</h3>
+      ${c ? `<p class="muted">${esc(c.title)}</p>` : ""}
       <table class="tbl">
         <thead><tr><th>品項</th><th class="num">數量</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -319,7 +343,7 @@
   function renderA() {
     const a = versionATotal();
     const fd = flagshipDelayImpact();
-    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${esc(d.label)}${d.caseId ? `<br><span class="muted">${esc(CASE[d.caseId].title)}</span>` : ""}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.unit)}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     const inds = Object.entries(a.byIndustry).map(([k, v]) => ({ label: IND[k].short, value: v.amount, text: `${fmtWan(v.amount)}｜${fmtPct(v.amount / a.total)}` }));
     const maxInd = Math.max(...inds.map(i => i.value));
     const mfg = a.byIndustry.manufacturing || { amount: 0 };
@@ -328,9 +352,9 @@
         <div class="panel">
           <h3>A 版：從零開始，新簽 ${a.count} 案</h3>
           <table class="tbl">
-            <thead><tr><th>產業</th><th>案型</th><th class="num">案數</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
+            <thead><tr><th>產業</th><th>客戶</th><th>案型</th><th class="num">案數</th><th class="num">金額</th></tr></thead>
             <tbody>${rows}</tbody>
-            <tfoot><tr><td colspan="2">合計</td><td class="num">${a.count}</td><td></td><td class="num">${fmtMoney(a.total)}</td></tr></tfoot>
+            <tfoot><tr><td colspan="3">合計</td><td class="num">${a.count}</td><td class="num">${fmtMoney(a.total)}</td></tr></tfoot>
           </table>
         </div>
         <div class="panel">
@@ -382,13 +406,13 @@
       <p class="foot-note">缺口 = 目標 − 續約金額；「約需標準案」= 缺口 ÷ 標準案金額，無條件進位。</p>`;
 
     const SRC_LABEL = { existing: "既有客戶", new: "新客" };
-    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.unit)}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     $("#b-comp").innerHTML = `
       <h3>B 版：續約保底 + 新增 ${b.count} 案</h3>
       <table class="tbl">
-        <thead><tr><th>來源</th><th>項目</th><th class="num">案數</th><th class="num">單價</th><th class="num">小計</th></tr></thead>
+        <thead><tr><th>來源</th><th>客戶</th><th>案型</th><th class="num">案數</th><th class="num">金額</th></tr></thead>
         <tbody>
-          <tr><td>既有續約</td><td>${fmtWan(DATA.versionB.renewalBase)} × ${pct(state.renewalRate)}</td><td></td><td></td><td class="num">${fmtWan(b.renewal)}</td></tr>
+          <tr><td>既有續約</td><td colspan="3">${fmtWan(DATA.versionB.renewalBase)} × ${pct(state.renewalRate)}</td><td class="num">${fmtWan(b.renewal)}</td></tr>
           ${dealRows}
         </tbody>
         <tfoot><tr><td colspan="4">合計</td><td class="num">${fmtMoney(b.total)}</td></tr></tfoot>
@@ -636,17 +660,21 @@
         items.map(a => `<dt>${esc(a.label)}</dt><dd class="${a.wrap ? "wrap" : ""}">${esc(a.value)}${a.changed ? '<span class="tag-changed">已調整</span>' : ""}</dd>`).join("")
       }</dl></div>`).join("")}</div>`;
 
-    const ev = evidenceSummary();
-    const citedBy = id => DATA.cases.filter(c => c.evidence.refs.some(r => r.sourceId === id));
+    const cs = customerSourceSummary();
+    const citedBy = id => DATA.cases.filter(c => c.background.some(b => b.sourceId === id));
     $("#sources").innerHTML = `
-      <h3>證據等級與來源</h3>
-      <div class="ev-legend">${Object.entries(DATA.evidenceLevels).map(([lv, d]) => `<p>${evBadge(lv)} ${ev[lv]} 張：${esc(d)}</p>`).join("")}</div>
+      <h3>資訊標示與來源</h3>
+      <div class="ev-legend">
+        <p>${infoTag("fact")} 有公開來源可查（附連結）</p>
+        <p>${infoTag("guess")} 依產業常見痛點 × 該公司營運型態推論，需 Discovery 驗證</p>
+        <p>${infoTag("assume")} 效益數字為假設，非客戶實績</p>
+        <p>客戶來源：${Object.entries(cs).map(([k, n]) => `${srcBadge(k)} ${n} 家`).join("　")}</p>
+      </div>
       <ul class="src-list">${DATA.sources.map(s => {
-        const cs = citedBy(s.id);
-        const t = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>` : `<strong>${esc(s.title)}</strong>`;
-        return `<li>${t}：${esc(s.summary)}${cs.length ? ` <span class="cited">→ ${cs.map(c => esc(c.title)).join("、")}</span>` : ""}</li>`;
+        const cited = citedBy(s.id);
+        return `<li>${srcLinks(s.id)}：${esc(s.summary)}${cited.length ? ` <span class="cited">→ ${cited.map(c => esc(c.customer)).join("、")}</span>` : ""}</li>`;
       }).join("")}</ul>
-      <p class="foot-note">公開案例皆為「同類型案例」，用於佐證痛點存在；不代表任何特定潛在客戶一定有此痛點，亦不涉及富士軟片內部客戶資料。</p>`;
+      <p class="foot-note">客戶背景皆取自公開資訊；「挑戰／流程現況」為外部觀察推估，不代表該公司一定有此問題，亦不涉及富士軟片內部客戶資料。</p>`;
   }
 
   // ---------- 更新（保留焦點）----------
@@ -753,7 +781,7 @@
       return;
     } else if (d.gotoCfg) {
       const c = CASE[d.gotoCfg];
-      state.cfg = { caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays };
+      state.cfg = cfgFromCase(c);
       update();
       go(sections.findIndex(s => s.id === "s-pricing"));
       return;
