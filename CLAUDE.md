@@ -133,7 +133,7 @@ export const DATA = {
     quarter: ["2027-01-01", "2027-03-31"],
     lunarNewYearDay1: "2027-02-06",
     holidayWindow: ["2027-02-04", "2027-02-14"], // 暫定
-    signTargetDate: "2027-03-20", // 內部回簽目標（留 10 天緩衝）
+    signTargetDate: "2027-03-25", // 內部回簽目標（距季末 6 天緩衝；2026-11-20 由 3/20 改為 3/25）
     phases: [
       { id: "warm",  label: "暖名單啟動（Q1 前）", start: "2026-12-01", end: "2026-12-31" },
       { id: "disc",  label: "Discovery + Demo",   start: "2027-01-04", end: "2027-01-29" },

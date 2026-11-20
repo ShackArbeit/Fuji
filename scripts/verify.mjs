@@ -73,8 +73,8 @@ check("轉換率覆寫：名單 10% → 名單需求加倍", FA2.byKey.lead.ceil
 
 // ---- 1b. 衍生計算（M1–M4 新增；數值由資料推導並經人工驗算）----
 const WD = C.workingDays();
-check("Q1 有效工作天（1/1–3/20，扣週末、春節空窗、元旦、228 補假）", WD.days, 47);
-check("回簽目標距季末天數", WD.bufferDays, 11);
+check("Q1 有效工作天（1/1–3/25，扣週末、春節空窗、元旦、228 補假）", WD.days, 51);
+check("回簽目標距季末天數", WD.bufferDays, 6);
 const FD = C.flagshipDelayImpact();
 check("旗艦延後：剩餘金額", FD.without, 3_940_000);
 check("旗艦延後：缺口", FD.shortfall, 1_060_000);
@@ -208,7 +208,7 @@ for (const f of scanFiles) {
 const tpl = readFileSync(join(root, "src/index.template.html"), "utf8").replace(/<!--(STYLE|DATA|CALC|APP)-->/g, "");
 const tplText = tpl.replace(/<[^>]+>/g, " "); // 只看文案，不看標籤屬性
 const hardNumbers = ["5,116,000", "5116000", "511.6", "5,140,000", "5140000", "514", "180", "36", "4.09",
-  "1,176,000", "500,000", "3,800,000", "1,340,000", "47"];
+  "1,176,000", "500,000", "3,800,000", "1,340,000", "51"];
 for (const n of hardNumbers) {
   const re = new RegExp(`(?<![\\d.,])${n.replace(/[.,]/g, m => "\\" + m)}(?![\\d.,])`);
   assert(`模板文案寫死數字 ${n}（請改用 data-bind）`, !re.test(tplText));

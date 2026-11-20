@@ -94,7 +94,7 @@ export const DATA = {
     lunarNewYearDay1: "2027-02-06",
     holidayWindow: ["2027-02-04", "2027-02-14"], // 暫定
     otherHolidays: ["2027-01-01", "2027-03-01"], // 暫定：元旦、228 補假（以公告為準）
-    signTargetDate: "2027-03-20", // 內部回簽目標（留 10 天緩衝）
+    signTargetDate: "2027-03-25", // 內部回簽目標（距季末 6 天緩衝；2026-11-20 由 3/20 改為 3/25）
     phases: [
       { id: "warm",  label: "暖名單啟動（Q1 前）", start: "2026-12-01", end: "2026-12-31",
         tasks: ["盤點既有客戶與暖名單", "名單分級，預約 1 月 Discovery"] },
