@@ -215,7 +215,7 @@ export const DATA = {
         { actor: "robot", text: "監看已核准資料夾／DocuWorks／PLM 匯出，依標準化檔名或屬性擷取圖號、版次、料號" },
         { actor: "robot", text: "登入 ERP 更新版次與圖面連結；讀不到者轉人工" },
         { actor: "robot", text: "依料號寄設變通知給採購、生管、品保，附最新唯一版圖面" },
-        { actor: "human", text: "在途訂單與半成品如何處置（直接切換、用完再換、報廢重工），由工程與生管判斷" }
+        { actor: "human", text: "在途訂單與半成品怎麼處置，由工程與生管判斷" }
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
@@ -228,7 +228,7 @@ export const DATA = {
       background: [
         { text: "全台最大軸承製造商，年產軸承約 3.5 億只；1966 年由東元電機、日本 NTN 等合資成立，以 TPI 自有品牌行銷全球", sourceId: "tpi-cna" },
         { text: "2016 年起推動智慧製造，導入 T-MES 即時掌握機台稼動與品質狀況", sourceId: "tpi-cna" },
-        { text: "2026 年策略：深化南韓、印度等亞洲市場、穩守歐美；已切入新能源車供應鏈，並拓展航太、半導體等高端應用", sourceId: "tpi-ctee" }
+        { text: "2026 年策略：深化南韓、印度，穩守歐美；已切入新能源車供應鏈，拓展航太、半導體", sourceId: "tpi-ctee" }
       ],
       challenge: [
         "型號多（內外徑、保持器、防塵蓋不同即不同料號），標準品備庫生產；熱門規格斷貨會掉單，鋼材不足會讓熱處理、車削停線",
@@ -237,8 +237,8 @@ export const DATA = {
         "年度盤點差異比對一年 1–2 次，當延伸場景，不當主軸"
       ],
       toBe: [
-        { actor: "robot", text: "每日從 ERP 撈庫存、在途採購單、未交客戶訂單，算出淨需求低於安全庫存的料號" },
-        { actor: "robot", text: "原料低庫存推播給採購、成品低庫存推播給生管（Email／通訊軟體）" },
+        { actor: "robot", text: "每日從 ERP 撈庫存、在途採購、未交訂單，找出低於安全庫存的料號" },
+        { actor: "robot", text: "原料缺料推給採購、成品缺料推給生管" },
         { actor: "robot", text: "延伸：年度盤點時比對系統帳與盤點表，產出差異清單" },
         { actor: "human", text: "倉管查盤差原因、主管決定是否調帳（RPA 不自動調帳）" }
       ],
@@ -373,18 +373,20 @@ export const DATA = {
         { text: "台灣大型保險經紀人公司；報導指出 2025 年新契約保費約 39 億元，2026 年目標 60 億元", sourceId: "yungda-news" }
       ],
       challenge: [
-        "代理多家保險公司商品，各家佣金明細格式不同（Excel、PDF、系統下載）",
-        "每月人工整理成統一格式、與應收佣金比對，差異逐家追討；業績成長代表對帳量跟著上升"
+        "代理多家壽險／產險，各家佣金明細的欄位、期別、扣款調整（首期、續期、補扣）都不同",
+        "PDF 明細若版面不固定或是掃描檔，需搭配 OCR 並設人工覆核門檻；保險公司改版時腳本要維護",
+        "新契約保費目標由 39 億到 60 億，對帳量隨業績等比例增加"
       ],
       toBe: [
-        { actor: "robot", text: "首期 3–5 家：收取明細、辨識格式轉統一欄位" },
+        { actor: "robot", text: "首期先做格式穩定（Excel／CSV）、佣金量最大的 3–5 家，轉成統一欄位" },
+        { actor: "robot", text: "PDF 明細以 OCR 擷取，信心度不足者轉人工" },
         { actor: "robot", text: "與內部應收佣金比對，標記差異並產出追討清單" },
         { actor: "human", text: "財務確認差異後才入帳、分配業務員佣金" }
       ],
       benefit: { count: 20, unit: "家保險公司", per: "month", minutes: 180, autoRate: 0.8,
-        quality: "月結提早 2–3 天，業務員佣金發放更準時" },
+        quality: "價值在降低對帳出錯與漏追、縮短佣金結算週期；效益以擴到全部 20 家計" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案（首期）；金融資安審查期長，Q1 回簽有風險"
+      productNote: "先導模組（PoV）；需事先約定格式改版的維護範圍；金融資安審查期長，Q1 回簽有風險"
     },
     {
       id: "skm-concession", industry: "department", customer: "新光三越（單一館試點）", customerSource: "new",

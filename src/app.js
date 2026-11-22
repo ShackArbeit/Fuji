@@ -214,8 +214,15 @@
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
     const cost = q.total + renew;
     const costTxt = renew ? `(首年 ${fmtWan(q.total)} + 續約 ${fmtWan(renew)})` : `${fmtWan(q.total)}`;
-    const now = benefit(c.id).savedHours;
-    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 月 ＝ 月 ${fmtWan(cost / r.paybackLimit)} ÷ ${fmtWan(laborMonthlyOf(c.id))} × ${FTE_HOURS} 小時</span></p>`;
+    const b = benefit(c.id);
+    const labor = laborMonthlyOf(c.id);
+    // 月省怎麼來；月省低於授權年費攤提時，直接說明不會回本
+    const saveTxt = `月省 ${wan(base.monthlySave)} ＝ ${fmtNum(b.savedHours, 0)} 小時 ÷ ${FTE_HOURS} × ${fmtWan(labor)}`;
+    const neverTxt = q.license && base.monthlySave * 12 < q.license ? ` ＜ 續約每月 ${fmtWan(q.license / 12)} → 不會回本` : `，${pb(base)}`;
+    const warn = need > b.monthlyHours
+      ? `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時，但人工總工時僅 ${fmtNum(b.monthlyHours, 0)} 小時 → 不以工時回本為目標`
+      : `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(b.savedHours, 0)}，差 ${fmtNum(need - b.savedHours, 0)}）`;
+    return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">${warn}</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} ＝ 月 ${fmtWan(cost / r.paybackLimit)}；÷ ${fmtWan(labor)} × ${FTE_HOURS} ＝ ${fmtNum(need, 0)} 小時</span></p>`;
   }
 
   // 效益算式逐步標註：分鐘是「人工」處理一筆的時間；RPA 執行時間不計；未自動化的部分仍由人工處理

@@ -172,6 +172,8 @@ check("銀座白石卡片報價（只在 B 版最低授權組合）", C.caseQuot
 check("回本：大樹藥局月數", C.roi("greattree-pos-recon").payback, 3);
 check("回本：中強光電複製到第 2 條產線月數", C.roiPlan("coretronic-quality-report").alt.payback, 12);
 check("回本：中強光電人力成本覆寫", C.laborMonthlyOf("coretronic-quality-report"), 80_000);
+check("回本：永達保經需省時數超過人工總工時", C.hoursNeededForPayback("yungda-commission") > C.benefit("yungda-commission").monthlyHours, true);
+check("回本：永達保經月省低於續約每月攤提", C.roi("yungda-commission").monthlySave * 12 < C.caseQuote("yungda-commission").license, true);
 for (const c of DATA.cases) {
   const p = C.roiPlan(c.id);
   assert(`回本：${c.id} 月省金額需為正`, p.base.monthlySave > 0);
