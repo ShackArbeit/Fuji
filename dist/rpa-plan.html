@@ -1025,25 +1025,28 @@ const DATA = {
     },
     {
       id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
-      title: "每日品質／測試報表彙整與異常通報（首期）",
+      title: "每日品質／測試報表彙整與異常通報（首期一條產線）",
       background: [
         { text: "台灣首家 LCD 背光模組廠，以投影機、顯示器與背光模組聞名，旗下有奧圖碼及多家中光電智能子公司", sourceId: "fbtw-it" },
         { text: "富士既有客戶：導入設備集中管理、影像備份（追蹤文件處理防個資外洩）與無紙化傳真", sourceId: "fbtw-it" }
       ],
       challenge: [
-        "測試站多，品質工程師每天先從 MES／測試系統匯出資料、用 Excel 做良率報表再寄出",
-        "大廠常有自建 IT 能力，切入點選「單一報表、唯讀系統」的小範圍首期"
+        "品質工程師每天早會前從各測試站（點燈、AOI、老化）撈 Log 與 MES 資料，用 Excel 算良率與不良柏拉圖再寄出",
+        "大廠 IT 對 MES 與產線機台很敏感：首期只做「單一產線、唯讀、不寫回生產系統」",
+        "可能已有 Power BI／Tableau 或自寫 VBA／Python；RPA 補的是封閉測試機台介面匯出、與 MES 合併、排程推播的最後一哩路（待確認）"
       ],
       toBe: [
-        { actor: "robot", text: "唯讀擷取前一日測試資料（不寫回生產系統）" },
-        { actor: "robot", text: "產出良率／不良分類報表" },
-        { actor: "robot", text: "超出門檻時通報負責工程師" },
+        { actor: "robot", text: "唯讀擷取前一日測試機台 Log 與 MES 資料（不寫回生產系統）" },
+        { actor: "robot", text: "合併計算良率、不良柏拉圖，早會前寄出報表" },
+        { actor: "robot", text: "超出門檻時通報負責工程師；全程留存稽核軌跡，寄送權限受控" },
         { actor: "human", text: "工程師判斷異常原因與處置" }
       ],
       benefit: { count: 5, unit: "份報表", per: "day", workDays: 21, minutes: 40, autoRate: 0.8,
-        quality: "釋放工程師做真正的異常分析" },
+        quality: "釋放工程師做真正的異常分析；稽核軌跡符合既有資安與防外洩規範" },
       productType: "semi", estDays: 13,
-      productNote: "首期半自動驗證；後續以加購機器人授權為主，少賣人天"
+      productNote: "首期一條產線驗證；再複製到其他產線、廠區與子公司（如奧圖碼）",
+      roiOverride: { laborMonthly: 80_000, note: "光電廠品質工程師，含分紅獎金" },
+      replicate: { days: 5, label: "第 2 條產線" }
     },
     {
       id: "yungda-commission", industry: "finance", customer: "永達保險經紀人", customerSource: "new",
@@ -1444,13 +1447,22 @@ function caseQuote(caseId) {
 // ---- 回本試算（假設）----
 // 成本：首年 = 報價全額（含首年授權）；之後每滿 12 個月續約一次授權（既有授權沿用者為 0）
 // 多流程：同一套授權再加流程，每個流程以「既有客戶擴充」人天計價，效益假設與首個流程同量級
+// 個案可覆寫：roiOverride.laborMonthly（該職務每人每月實際成本）、replicate.days（同一報表／流程複製到下一條產線的人天）
+function laborMonthlyOf(caseId, r = DATA.roi) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  return (c && c.roiOverride && c.roiOverride.laborMonthly) || r.monthlySalary * r.loadFactor;
+}
+function addFlowCostOf(caseId) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  return c && c.replicate ? c.replicate.days * DATA.price.day : dealAmount("expansion");
+}
 function roi(caseId, flows = 1, r = DATA.roi) {
   const q = caseQuote(caseId);
   const b = benefit(caseId);
-  const laborMonthly = r.monthlySalary * r.loadFactor;
+  const laborMonthly = laborMonthlyOf(caseId, r);
   const savePerFlow = b.fte * laborMonthly;
   const monthlySave = savePerFlow * flows;
-  const addFlowCost = dealAmount("expansion");
+  const addFlowCost = addFlowCostOf(caseId);
   const oneTime = q.total + (flows - 1) * addFlowCost;
   const costAt = m => oneTime + q.license * (Math.ceil(m / 12) - 1);
   let payback = null;
@@ -1467,7 +1479,7 @@ function hoursNeededForPayback(caseId, r = DATA.roi) {
   const q = caseQuote(caseId);
   const m = r.paybackLimit;
   const cost = q.total + q.license * (Math.ceil(m / 12) - 1);
-  return (cost / m) / (r.monthlySalary * r.loadFactor) * FTE_HOURS;
+  return (cost / m) / laborMonthlyOf(caseId, r) * FTE_HOURS;
 }
 // 回本超過門檻時，找出最少需要幾個流程才能在門檻內回本（最多 maxFlows）
 function roiPlan(caseId, r = DATA.roi) {
@@ -1615,6 +1627,10 @@ function collectAssumptions(overrides = {}) {
   list.push({ group: g2, label: "回本門檻", value: `${r.paybackLimit} 個月` });
   list.push({ group: g2, label: "淨效益期間", value: `${r.horizonMonths / 12} 年（授權每年續約）` });
   list.push({ group: g2, label: "多流程攤提", value: `最多 ${r.maxFlows} 個流程；第 2 個起每個 ${dealTypeDays("expansion")} 人天`, wrap: true });
+  for (const c of DATA.cases) {
+    if (c.roiOverride) list.push({ group: g2, label: c.customer + "人力成本", value: `每人每月 ${c.roiOverride.laborMonthly / 10000} 萬（${c.roiOverride.note}）`, wrap: true });
+    if (c.replicate) list.push({ group: g2, label: c.customer + "複製", value: `${c.replicate.label} ${c.replicate.days} 人天`, wrap: true });
+  }
   for (const c of DATA.cases) {
     list.push({ group: "個案人天與效益假設", label: c.customer.replace(/（.*）/, ""), value: `${c.estDays} 人天｜${benefitFormula(c.id)}`, wrap: true });
   }
@@ -1855,16 +1871,20 @@ function fmtNum(v, digits = 1) {
     const { base, alt } = roiPlan(c.id);
     const wan = v => fmtWan(v);
     const pb = x => x.payback === null ? "回本需 60 個月以上" : `約 ${x.payback} 個月回本`;
-    const head = `人力成本以月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor} 計：月省約 ${wan(base.monthlySave)}，${pb(base)}`;
+    const laborTxt = c.roiOverride ? `每人每月 ${fmtWan(c.roiOverride.laborMonthly)}（${c.roiOverride.note}）` : `月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor}`;
+    const head = `人力成本以${laborTxt}計：月省約 ${wan(base.monthlySave)}，${pb(base)}`;
     if (base.ok) return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}</span></p>`;
-    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ 同一套授權加 ${alt.flows - 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span></p>`;
+    const addTxt = c.replicate
+      ? `複製到${c.replicate.label}（${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`
+      : `同一套授權加 ${alt ? alt.flows - 1 : 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）`;
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span></p>`;
     const need = hoursNeededForPayback(c.id);
     const q = caseQuote(c.id);
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
     const cost = q.total + renew;
     const costTxt = renew ? `(首年 ${fmtWan(q.total)} + 續約 ${fmtWan(renew)})` : `${fmtWan(q.total)}`;
     const now = benefit(c.id).savedHours;
-    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 月 ＝ 月 ${fmtWan(cost / r.paybackLimit)} ÷ ${fmtWan(r.monthlySalary * r.loadFactor)} × ${FTE_HOURS} 小時</span></p>`;
+    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 月 ＝ 月 ${fmtWan(cost / r.paybackLimit)} ÷ ${fmtWan(laborMonthlyOf(c.id))} × ${FTE_HOURS} 小時</span></p>`;
   }
 
   // 效益算式逐步標註：分鐘是「人工」處理一筆的時間；RPA 執行時間不計；未自動化的部分仍由人工處理

@@ -197,6 +197,7 @@ export const DATA = {
 - `customerSourceSummary()`：統計客戶來源（富士既有 RPA／富士既有非 RPA／集團外新客）。（取代原 `evidenceSummary()`）
 - `benefit(caseId)`、`benefitFormula(caseId)`、`measureOf(b)`：效益試算（月工時、節省工時、人力當量），皆為假設。`minutes` 是**人工**處理一個計量單位（`measure`，預設取 `unit` 第一個字）的分鐘數，RPA 執行時間不計；卡片第 4 段逐步標註「人工現況 → 導入後（機器人處理 X%，其餘例外仍人工）」。
 - `dealsForCase(caseId)`：該客戶在 A／B 版對應的案型與金額。
+- `laborMonthlyOf(caseId)`、`addFlowCostOf(caseId)`：回本試算的個案覆寫——卡片可設 `roiOverride.laborMonthly`（該職務實際月成本，如中強光電工程師 8 萬）與 `replicate.days`（同一報表複製到下一條產線的人天，如 5 人天），未設定則用共用規則（月薪 5 萬 × 1.3；每多一個流程 15 人天）。
 - `caseQuote(caseId)`：卡片報價；只出現在 B 版最低授權組合的客戶（銀座白石）以不含開發的 24 萬計，回本試算也用此報價。
 - `roi(caseId, flows)`、`roiPlan(caseId)`、`hoursNeededForPayback(caseId)`：回本試算（月省金額、回本月數、三年淨效益；超過門檻時找出多流程攤提方案，仍不達標則回傳所需每月省時），皆為試算假設。
 - 所有函式不碰 DOM；`verify.mjs` 直接呼叫。

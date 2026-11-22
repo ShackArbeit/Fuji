@@ -205,13 +205,22 @@ export function caseQuote(caseId) {
 // ---- 回本試算（假設）----
 // 成本：首年 = 報價全額（含首年授權）；之後每滿 12 個月續約一次授權（既有授權沿用者為 0）
 // 多流程：同一套授權再加流程，每個流程以「既有客戶擴充」人天計價，效益假設與首個流程同量級
+// 個案可覆寫：roiOverride.laborMonthly（該職務每人每月實際成本）、replicate.days（同一報表／流程複製到下一條產線的人天）
+export function laborMonthlyOf(caseId, r = DATA.roi) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  return (c && c.roiOverride && c.roiOverride.laborMonthly) || r.monthlySalary * r.loadFactor;
+}
+export function addFlowCostOf(caseId) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  return c && c.replicate ? c.replicate.days * DATA.price.day : dealAmount("expansion");
+}
 export function roi(caseId, flows = 1, r = DATA.roi) {
   const q = caseQuote(caseId);
   const b = benefit(caseId);
-  const laborMonthly = r.monthlySalary * r.loadFactor;
+  const laborMonthly = laborMonthlyOf(caseId, r);
   const savePerFlow = b.fte * laborMonthly;
   const monthlySave = savePerFlow * flows;
-  const addFlowCost = dealAmount("expansion");
+  const addFlowCost = addFlowCostOf(caseId);
   const oneTime = q.total + (flows - 1) * addFlowCost;
   const costAt = m => oneTime + q.license * (Math.ceil(m / 12) - 1);
   let payback = null;
@@ -228,7 +237,7 @@ export function hoursNeededForPayback(caseId, r = DATA.roi) {
   const q = caseQuote(caseId);
   const m = r.paybackLimit;
   const cost = q.total + q.license * (Math.ceil(m / 12) - 1);
-  return (cost / m) / (r.monthlySalary * r.loadFactor) * FTE_HOURS;
+  return (cost / m) / laborMonthlyOf(caseId, r) * FTE_HOURS;
 }
 // 回本超過門檻時，找出最少需要幾個流程才能在門檻內回本（最多 maxFlows）
 export function roiPlan(caseId, r = DATA.roi) {
@@ -376,6 +385,10 @@ export function collectAssumptions(overrides = {}) {
   list.push({ group: g2, label: "回本門檻", value: `${r.paybackLimit} 個月` });
   list.push({ group: g2, label: "淨效益期間", value: `${r.horizonMonths / 12} 年（授權每年續約）` });
   list.push({ group: g2, label: "多流程攤提", value: `最多 ${r.maxFlows} 個流程；第 2 個起每個 ${dealTypeDays("expansion")} 人天`, wrap: true });
+  for (const c of DATA.cases) {
+    if (c.roiOverride) list.push({ group: g2, label: c.customer + "人力成本", value: `每人每月 ${c.roiOverride.laborMonthly / 10000} 萬（${c.roiOverride.note}）`, wrap: true });
+    if (c.replicate) list.push({ group: g2, label: c.customer + "複製", value: `${c.replicate.label} ${c.replicate.days} 人天`, wrap: true });
+  }
   for (const c of DATA.cases) {
     list.push({ group: "個案人天與效益假設", label: c.customer.replace(/（.*）/, ""), value: `${c.estDays} 人天｜${benefitFormula(c.id)}`, wrap: true });
   }

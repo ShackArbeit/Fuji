@@ -170,6 +170,8 @@ check("回本：新光合纖 2 流程月數", C.roiPlan("skfiber-invoice-3way").
 check("A 版零售第 2 案改為大樹藥局", DATA.versionA.deals.some(d => d.caseId === "greattree-pos-recon"), true);
 check("銀座白石卡片報價（只在 B 版最低授權組合）", C.caseQuote("ginza-store-daily").total, 240_000);
 check("回本：大樹藥局月數", C.roi("greattree-pos-recon").payback, 3);
+check("回本：中強光電複製到第 2 條產線月數", C.roiPlan("coretronic-quality-report").alt.payback, 12);
+check("回本：中強光電人力成本覆寫", C.laborMonthlyOf("coretronic-quality-report"), 80_000);
 for (const c of DATA.cases) {
   const p = C.roiPlan(c.id);
   assert(`回本：${c.id} 月省金額需為正`, p.base.monthlySave > 0);

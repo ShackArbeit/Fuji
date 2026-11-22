@@ -343,25 +343,28 @@ export const DATA = {
     },
     {
       id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
-      title: "每日品質／測試報表彙整與異常通報（首期）",
+      title: "每日品質／測試報表彙整與異常通報（首期一條產線）",
       background: [
         { text: "台灣首家 LCD 背光模組廠，以投影機、顯示器與背光模組聞名，旗下有奧圖碼及多家中光電智能子公司", sourceId: "fbtw-it" },
         { text: "富士既有客戶：導入設備集中管理、影像備份（追蹤文件處理防個資外洩）與無紙化傳真", sourceId: "fbtw-it" }
       ],
       challenge: [
-        "測試站多，品質工程師每天先從 MES／測試系統匯出資料、用 Excel 做良率報表再寄出",
-        "大廠常有自建 IT 能力，切入點選「單一報表、唯讀系統」的小範圍首期"
+        "品質工程師每天早會前從各測試站（點燈、AOI、老化）撈 Log 與 MES 資料，用 Excel 算良率與不良柏拉圖再寄出",
+        "大廠 IT 對 MES 與產線機台很敏感：首期只做「單一產線、唯讀、不寫回生產系統」",
+        "可能已有 Power BI／Tableau 或自寫 VBA／Python；RPA 補的是封閉測試機台介面匯出、與 MES 合併、排程推播的最後一哩路（待確認）"
       ],
       toBe: [
-        { actor: "robot", text: "唯讀擷取前一日測試資料（不寫回生產系統）" },
-        { actor: "robot", text: "產出良率／不良分類報表" },
-        { actor: "robot", text: "超出門檻時通報負責工程師" },
+        { actor: "robot", text: "唯讀擷取前一日測試機台 Log 與 MES 資料（不寫回生產系統）" },
+        { actor: "robot", text: "合併計算良率、不良柏拉圖，早會前寄出報表" },
+        { actor: "robot", text: "超出門檻時通報負責工程師；全程留存稽核軌跡，寄送權限受控" },
         { actor: "human", text: "工程師判斷異常原因與處置" }
       ],
       benefit: { count: 5, unit: "份報表", per: "day", workDays: 21, minutes: 40, autoRate: 0.8,
-        quality: "釋放工程師做真正的異常分析" },
+        quality: "釋放工程師做真正的異常分析；稽核軌跡符合既有資安與防外洩規範" },
       productType: "semi", estDays: 13,
-      productNote: "首期半自動驗證；後續以加購機器人授權為主，少賣人天"
+      productNote: "首期一條產線驗證；再複製到其他產線、廠區與子公司（如奧圖碼）",
+      roiOverride: { laborMonthly: 80_000, note: "光電廠品質工程師，含分紅獎金" },
+      replicate: { days: 5, label: "第 2 條產線" }
     },
     {
       id: "yungda-commission", industry: "finance", customer: "永達保險經紀人", customerSource: "new",
