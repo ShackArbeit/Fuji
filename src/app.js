@@ -173,7 +173,7 @@
   function renderCaseGrid() {
     $("#case-grid").innerHTML = filteredCases().map(c => {
       const hero = c.id === DATA.meta.heroCaseId;
-      const q = configure({ caseId: c.id });
+      const q = caseQuote(c.id);
       return `<button type="button" class="case-card${hero ? " is-hero" : ""}" data-case="${c.id}" aria-expanded="${state.openCase === c.id}" aria-controls="case-detail">
         <span class="case-row1"><span class="case-title">${esc(customerName(c))}</span>${hero ? '<span class="badge hero-badge">主打</span>' : ""}<span class="case-amt">${fmtWan(q.total)}</span></span>
         <span class="case-sub">${esc(c.industryNote || IND[c.industry].short)}｜${esc(c.title)}</span>
@@ -200,13 +200,13 @@
   function roiHtml(c) {
     const r = DATA.roi;
     const { base, alt } = roiPlan(c.id);
-    const wan = v => fmtNum(v / 10000, 1) + " 萬";
+    const wan = v => fmtWan(v);
     const pb = x => x.payback === null ? "回本需 60 個月以上" : `約 ${x.payback} 個月回本`;
     const head = `人力成本以月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor} 計：月省約 ${wan(base.monthlySave)}，${pb(base)}`;
     if (base.ok) return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}</span></p>`;
-    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ 同一套授權加 ${alt.flows - 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）：約 ${alt.payback} 個月回本、三年淨效益約 ${wan(alt.net3y)}</span></p>`;
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ 同一套授權加 ${alt.flows - 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span></p>`;
     const need = hoursNeededForPayback(c.id);
-    const q = configure({ caseId: c.id });
+    const q = caseQuote(c.id);
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
     const cost = q.total + renew;
     const costTxt = renew ? `(首年 ${fmtWan(q.total)} + 續約 ${fmtWan(renew)})` : `${fmtWan(q.total)}`;
@@ -226,7 +226,7 @@
   }
 
   function caseDetailHtml(c) {
-    const q = configure({ caseId: c.id });
+    const q = caseQuote(c.id);
     const bf = benefit(c.id);
     const hero = c.id === DATA.meta.heroCaseId;
     const deals = dealsForCase(c.id);

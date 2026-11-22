@@ -33,7 +33,7 @@ export const DATA = {
       { industry: "manufacturing", type: "standard", n: 1, caseId: "tpi-stock-alert" },
       { industry: "manufacturing", type: "flagship", n: 1, caseId: "skfiber-invoice-3way" },
       { industry: "retail",        type: "standard", n: 1, caseId: "yuan-omni-orders" },
-      { industry: "retail",        type: "standard", n: 1, caseId: "ginza-store-daily" },
+      { industry: "retail",        type: "standard", n: 1, caseId: "greattree-pos-recon" }, // 2026-11-22 由銀座白石改為大樹藥局（量體與回本較成立）
       { industry: "hightech",      type: "standard", n: 1, caseId: "coretronic-quality-report" },
       { industry: "finance",       type: "standard", n: 1, caseId: "yungda-commission" },
       { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" },
@@ -191,7 +191,7 @@ export const DATA = {
         { actor: "robot", text: "每日從 kintone 抓未交貨採購單，依料件交期提前寄確認信（7 天為示範，長交期料件可設 14–30 天）" },
         { actor: "robot", text: "固定格式的回覆自動擷取交期，回填 kintone" },
         { actor: "robot", text: "非制式、模糊或未回覆者歸入「待人工確認」，產生交期異常預警清單" },
-        { actor: "human", text: "採購確認異常、以電話／LINE 跟催，並提早與生管調整排程" }
+        { actor: "human", text: "採購確認異常、電話／LINE 跟催，提早與生管調整排程" }
       ],
       benefit: { count: 80, unit: "筆", per: "day", workDays: 21, minutes: 5, autoRate: 0.7,
         quality: "被動追單變主動預警：提早發現延遲、調整排程，降低缺料停線風險" },
@@ -314,8 +314,32 @@ export const DATA = {
       benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
         quality: "價值主張改為降低漏帳與客訴風險；量體小，先輕量訪談驗證再決定是否推進" },
       productType: "semi", estDays: 13,
-      productNote: "A 版含開發；B 版改賣入門包（最低授權組合：開發工具＋半自動，不含開發）",
+      productNote: "B 版：入門包（最低授權組合，客戶以 Ragic 能力自建）；含開發 50 萬僅供參考，量體驗證後再議",
       altDealType: "starterLite"
+    },
+    {
+      id: "greattree-pos-recon", industry: "retail", customer: "大樹藥局", customerSource: "new",
+      title: "門市 POS × 多元支付撥款對帳（含線上訂單門市取貨）",
+      background: [
+        { text: "連鎖藥局，2025 年底全台門市 428 家、2025 年營收約 188.9 億元；目標 2027 年 520 家、2030 年 700 家", sourceId: "greattree-fugle" },
+        { text: "策略不是純零售電商，而是 OMO 的「精準健康交易平台」：2025 年建置完成，2026 年下半年起陸續公布營運數據", sourceId: "greattree-fugle" },
+        { text: "2025 年 6 月底門市 407 家，年增約 14%；大型商圈據點導入寵物、自有品牌保健品等高毛利商品", sourceId: "greattree-uanalyze" }
+      ],
+      challenge: [
+        "快速展店：每店每日 POS 營收要和信用卡、行動支付等撥款逐筆核對，工作量隨店數等比例增加",
+        "OMO 平台上線後，線上下單、門市取貨的訂單要跨系統對帳",
+        "若財務系統已能自動對帳，缺口可能在新支付方式與平台訂單（待確認現行系統與分工）"
+      ],
+      toBe: [
+        { actor: "robot", text: "每日下載各支付業者撥款明細與 POS 日結，逐店逐筆比對" },
+        { actor: "robot", text: "比對線上訂單與門市取貨／結帳紀錄，標記未取件、重複或金額不符" },
+        { actor: "robot", text: "差異清單分派門市與財務，並彙整全通路日報" },
+        { actor: "human", text: "財務確認差異原因後才沖帳或調整（不自動調帳）" }
+      ],
+      benefit: { count: 428, unit: "店", per: "day", workDays: 30, minutes: 3, autoRate: 0.7,
+        quality: "展店不必等比例增加對帳人力；差異隔天就知道，降低漏帳" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；先選一區門市試點，支付業者超過 5 家時人天可能增加"
     },
     {
       id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
@@ -517,6 +541,10 @@ export const DATA = {
       urls: ["https://www.inside.com.tw/article/29933-UiPATH"] },
     { id: "benq-uipath", title: "INSIDE｜明基材料導入 UiPath", summary: "同仁自行開發，代表大廠自建能力強（高科技風險參考）",
       urls: ["https://www.inside.com.tw/article/35338-MetaAge"] },
+    { id: "greattree-fugle", title: "富果｜大樹藥局法說會重點（2026-03，AI 摘要）", summary: "2025 年底門市 428 家、營收約 188.9 億；2027 年目標 520 家；精準健康交易平台 2025 年建置完成",
+      urls: ["https://blog.fugle.tw/post/earnings-call-6469-2026-03-26"] },
+    { id: "greattree-uanalyze", title: "優分析｜大樹藥局展店年增 14%（2025-07）", summary: "2025 年 6 月底門市 407 家、上半年營收年增 12%；商圈據點導入高毛利商品",
+      urls: ["https://uanalyze.com.tw/articles/6847825635"] },
     { id: "dept-share", title: "NOWnews｜2025 百貨市占", summary: "市場集中，前三為新光三越、遠東百貨、遠東 SOGO（ABM 參考）",
       urls: ["https://www.nownews.com/news/6866139"] },
     { id: "fbtw-position", title: "商業周刊廣編｜富士軟片資訊自述", summary: "約四分之一企業辦公室使用其事務機；紙本數位化 + RPA 雙軌（公司自述）",

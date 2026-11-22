@@ -192,14 +192,21 @@ export function measureOf(b) { return b.measure || b.unit.charAt(0); }
 export function benefitFormula(caseId) {
   const b = benefit(caseId);
   const per = b.per === "day" ? `／日（${b.workDays} 天／月）` : `／${PER_LABEL[b.per]}`;
-  return `${b.count.toLocaleString("en-US")} ${b.unit}${per} × 人工每${measureOf(b)} ${b.minutes} 分 × 機器人處理 ${Math.round(b.autoRate * 100)}%`;
+  return `${b.count.toLocaleString("en-US")} ${b.unit}${per} × 人工 ${b.minutes} 分／${measureOf(b)} × 自動化 ${Math.round(b.autoRate * 100)}%`;
+}
+
+// 卡片報價：只出現在 B 版「最低授權組合」的客戶，以不含開發的 24 萬計；其餘以卡片預設人天計
+export function caseQuote(caseId) {
+  const deals = dealsForCase(caseId);
+  const onlyLite = deals.length > 0 && deals.every(d => d.type === "starterLite");
+  return onlyLite ? configure({ caseId, days: 0 }) : configure({ caseId });
 }
 
 // ---- 回本試算（假設）----
 // 成本：首年 = 報價全額（含首年授權）；之後每滿 12 個月續約一次授權（既有授權沿用者為 0）
 // 多流程：同一套授權再加流程，每個流程以「既有客戶擴充」人天計價，效益假設與首個流程同量級
 export function roi(caseId, flows = 1, r = DATA.roi) {
-  const q = configure({ caseId });
+  const q = caseQuote(caseId);
   const b = benefit(caseId);
   const laborMonthly = r.monthlySalary * r.loadFactor;
   const savePerFlow = b.fte * laborMonthly;
@@ -218,7 +225,7 @@ export function roi(caseId, flows = 1, r = DATA.roi) {
 // 單一流程要在 paybackLimit 個月內回本，每月至少需省多少小時
 function dealTypeDays(k) { return DATA.dealTypes[k].days; }
 export function hoursNeededForPayback(caseId, r = DATA.roi) {
-  const q = configure({ caseId });
+  const q = caseQuote(caseId);
   const m = r.paybackLimit;
   const cost = q.total + q.license * (Math.ceil(m / 12) - 1);
   return (cost / m) / (r.monthlySalary * r.loadFactor) * FTE_HOURS;
