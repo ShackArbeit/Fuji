@@ -235,7 +235,10 @@
       const cap = b.monthlyHours / FTE_HOURS * labor;
       return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">⚠ 單點試點：人工總工時僅 ${fmtNum(b.monthlyHours, 0)} 小時，全自動上限月省 ${wan(cap)}，不走工時回本</span><br><span class="roi-goal">目標：${esc(c.pilotGoal || "Discovery 確認更多量體，或併入其他流程一起評估")}</span></p>`;
     }
-    const warn = `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(b.savedHours, 0)}，差 ${fmtNum(need - b.savedHours, 0)}）`;
+    // 換算成「每件要省幾分鐘」：量接近門檻時，說明只要每件多省一點就達標
+    const perMonthCount = b.count * b.perMonth;
+    const minNeed = need * 60 / perMonthCount, minNow = b.minutes * b.autoRate;
+    const warn = `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(b.savedHours, 0)}，差 ${fmtNum(need - b.savedHours, 0)}）＝ 每${esc(measureOf(b))}省 ${fmtNum(minNeed, 1)} 分（目前 ${fmtNum(minNow, 1)} 分）`;
     return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">${warn}</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} ＝ 月 ${fmtWan(cost / r.paybackLimit)}；÷ ${fmtWan(labor)} × ${FTE_HOURS} ＝ ${fmtNum(need, 0)} 小時</span></p>`;
   }
 

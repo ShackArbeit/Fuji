@@ -166,6 +166,7 @@ check("回本：保來得 2 流程月數", RP.alt && RP.alt.payback, 11);
 check("回本：新北裁決處 1 流程月數", C.roi("ntpc-traffic-adjudication").payback, 7);
 check("回本：標準案每月需省小時（18 個月）", Math.round(C.hoursNeededForPayback("tpi-stock-alert")), 106);
 check("回本：擴充案每月需省小時（18 個月）", Math.round(C.hoursNeededForPayback("lin-land-expansion")), 43);
+check("回本：林懇伶 1 流程月數", C.roi("lin-land-expansion").payback, 20);
 check("回本：新光合纖 2 流程月數", C.roiPlan("skfiber-invoice-3way").alt.payback, 12);
 check("A 版零售第 2 案改為大樹藥局", DATA.versionA.deals.some(d => d.caseId === "greattree-pos-recon"), true);
 check("銀座白石卡片報價（只在 B 版最低授權組合）", C.caseQuote("ginza-store-daily").total, 240_000);

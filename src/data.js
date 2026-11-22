@@ -474,18 +474,20 @@ export const DATA = {
         { text: "富士既有 RPA 客戶：資料登打導入 RPA + AI／OCR 後，流程由 5 個步驟簡化為 2 個步驟", sourceId: "fbtw-consult" }
       ],
       challenge: [
-        "第一個流程（資料登打）已自動化；每件案子仍要多次上地政系統查進度、調謄本，再通知客戶",
-        "案件量逐年增加，這段仍是人工"
+        "第一流程（資料登打）已自動化；每件案子仍要查 2–3 次進度、調謄本，再通知建商或銀行",
+        "地政系統需憑證登入，可能有驗證碼或查詢頻率限制；謄本每張有規費，重複下載會浪費",
+        "大型建商、銀行可能要求指定格式的進度回報表，不只一封通用通知信"
       ],
       toBe: [
-        { actor: "robot", text: "每日依案件清單查詢進度、下載最新謄本並歸檔" },
-        { actor: "robot", text: "狀態變更時寄送進度通知給客戶窗口" },
+        { actor: "robot", text: "人工插卡登入後，依案件清單批次查詢進度" },
+        { actor: "robot", text: "僅在狀態變為登記完畢／異動完成時才下載謄本並歸檔" },
+        { actor: "robot", text: "寄通知，大客戶依其指定格式產出進度回報表" },
         { actor: "human", text: "登記補正、異常狀態由地政士判斷處理" }
       ],
       benefit: { count: 4000, unit: "件案件", per: "year", minutes: 10, autoRate: 0.7,
-        quality: "客戶已看到第一個機器人的效益，擴充阻力低" },
+        quality: "登記一完成就通知建商與銀行，掌握撥款與交屋時程；第一流程已見效，擴充阻力低" },
       productType: "semi", estDays: 15, existingLicense: true,
-      productNote: "既有授權沿用，純人天擴充"
+      productNote: "既有授權沿用（續約本來就在付，不計入本案），30 萬為一次性開發；未含後續維運費"
     },
     {
       id: "lens-dual-erp-recon", industry: "manufacturing", customer: "工業鏡頭廠（富士官網案例）", customerSource: "fuji-rpa",
