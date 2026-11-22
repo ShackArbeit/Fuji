@@ -301,16 +301,18 @@ export const DATA = {
         { text: "富士既有客戶：原用試算表 + Email 彙總庫存，導入 Ragic 雲端資料庫後可即時查庫存、簽核電子化", sourceId: "fbtw-retail" }
       ],
       challenge: [
-        "庫存已上雲，但每日銷售日報可能仍要人工：POS 匯出 → 對應 Ragic 庫存 → 整理給總部與會計",
-        "婚戒訂製有「訂金 → 製作 → 尾款」時間差，對帳較複雜"
+        "庫存已上 Ragic，但銷售日報可能仍要人工：POS 匯出 → 對應庫存 → 整理給總部與會計（待確認 POS 與 Ragic 是否已有 API／Webhook）",
+        "婚戒高單價、低頻次、預約制，每店每日交易不多，純行政工時有上限",
+        "真正風險可能在「訂金 → 製作 → 尾款」核銷漏記，與客製婚戒的進度／交期追蹤"
       ],
       toBe: [
         { actor: "robot", text: "每晚匯出各店 POS 銷售，寫入 Ragic 並比對庫存異動" },
+        { actor: "robot", text: "比對訂金與尾款，列出未核銷、逾期未取件的訂製單" },
         { actor: "robot", text: "產出總部日報與會計分錄底稿" },
         { actor: "human", text: "會計確認訂金、尾款等特殊交易後才入帳" }
       ],
       benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
-        quality: "重點是日報準時、帳實一致；B 版可只賣最低授權組合（開發工具＋半自動）讓客戶自建" },
+        quality: "價值主張改為降低漏帳與客訴風險；量體小，先輕量訪談驗證再決定是否推進" },
       productType: "semi", estDays: 13,
       productNote: "A 版含開發；B 版改賣入門包（最低授權組合：開發工具＋半自動，不含開發）",
       altDealType: "starterLite"

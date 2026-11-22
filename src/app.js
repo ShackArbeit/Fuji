@@ -208,9 +208,10 @@
     const need = hoursNeededForPayback(c.id);
     const q = configure({ caseId: c.id });
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
-    const costTxt = renew ? `(${fmtWan(q.total)} + 續約 ${fmtWan(renew)})` : `${fmtWan(q.total)}`;
+    const cost = q.total + renew;
+    const costTxt = renew ? `(首年 ${fmtWan(q.total)} + 續約 ${fmtWan(renew)})` : `${fmtWan(q.total)}`;
     const now = benefit(c.id).savedHours;
-    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 個月 ÷ ${fmtWan(r.monthlySalary * r.loadFactor)} × ${FTE_HOURS} 小時</span></p>`;
+    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 月 ＝ 月 ${fmtWan(cost / r.paybackLimit)} ÷ ${fmtWan(r.monthlySalary * r.loadFactor)} × ${FTE_HOURS} 小時</span></p>`;
   }
 
   // 效益算式逐步標註：分鐘是「人工」處理一筆的時間；RPA 執行時間不計；未自動化的部分仍由人工處理
