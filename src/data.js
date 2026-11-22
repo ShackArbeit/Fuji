@@ -491,25 +491,26 @@ export const DATA = {
     },
     {
       id: "lens-dual-erp-recon", industry: "manufacturing", customer: "工業鏡頭廠（富士官網案例）", customerSource: "fuji-rpa",
-      title: "第二流程：雙 ERP 月結庫存差異比對",
+      title: "第二流程：雙 ERP 同步異常每日監控 + 月結差異比對",
       background: [
         { text: "世界級工業鏡頭廠，美洲、歐洲、亞洲共 24 個據點；客戶名稱未公開，不臆測身分", sourceId: "fbtw-it" },
         { text: "富士既有 RPA 客戶：在地 ERP 單據同步到日本母公司 ERP，節省約 80% 訂單處理時間", sourceId: "fbtw-it" }
       ],
       challenge: [
-        "單據已同步，但月結時兩套 ERP 的庫存與金額可能仍需人工核對",
-        "任一筆同步失敗都會造成差異，月結時才發現"
+        "單據已同步，但任一筆同步失敗要到月結才發現，回頭追查一整個月的單據最耗時",
+        "月結時兩套 ERP 的庫存與金額可能仍需人工核對（約 16 小時）",
+        "存取日本母公司 ERP 的帳號權限需母公司 IT 同意（待確認）"
       ],
       toBe: [
-        { actor: "robot", text: "月結前匯出兩邊庫存與交易明細" },
-        { actor: "robot", text: "比對差異並產出差異報告" },
-        { actor: "human", text: "會計與倉管確認差異原因、決定調整" }
+        { actor: "robot", text: "每日比對前一日同步紀錄，同步失敗或數量不符當天通知" },
+        { actor: "robot", text: "月結前匯出兩邊庫存與交易明細，產出差異報告" },
+        { actor: "human", text: "會計與倉管確認差異原因、決定調整（不自動調帳）" }
       ],
-      benefit: { count: 1, unit: "次月結核對（約 16 小時）", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
-        quality: "月結提早 1–2 天" },
-      pilotGoal: "月結提早 1–2 天、降低兩套 ERP 的庫存差異",
+      benefit: { count: 1, unit: "次月結核對", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
+        quality: "同步異常當天發現，不必月底回頭追；月結提早 1–2 天" },
+      pilotGoal: "同步異常當天發現、月結提早 1–2 天，降低兩套 ERP 的庫存差異",
       productType: "semi", estDays: 15, existingLicense: true,
-      productNote: "既有授權沿用，純人天擴充"
+      productNote: "既有授權沿用（續約不計入本案），30 萬為一次性開發；未含維運費"
     }
   ],
 

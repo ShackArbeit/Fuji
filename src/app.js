@@ -201,7 +201,11 @@
     const r = DATA.roi;
     const { base, alt } = roiPlan(c.id);
     const wan = v => fmtWan(v);
-    const pb = x => x.payback === null ? "回本需 60 個月以上" : `約 ${x.payback} 個月回本`;
+    // 沒有授權續約的擴充案，超過 60 個月時直接寫出「報價 ÷ 月省」的月數
+    const q0 = caseQuote(c.id);
+    const pb = x => x.payback !== null ? `約 ${x.payback} 個月回本`
+      : !q0.license ? `${fmtWan(q0.total)} ÷ 月省 ${fmtMoney(x.monthlySave)} 元 ≈ ${Math.ceil(q0.total / x.monthlySave)} 個月回本`
+      : "回本需 60 個月以上";
     const isGov = c.industry === "government";
     const laborTxt = c.roiOverride ? `每人每月 ${fmtWan(c.roiOverride.laborMonthly)}（${c.roiOverride.note}）` : `月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor}`;
     const lic0 = caseQuote(c.id).license;
