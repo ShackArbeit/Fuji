@@ -441,6 +441,8 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 /* B 版拆解表：表頭不換行（新增第 5 案後節省高度） */
 @media screen { #b-comp th { white-space: nowrap; } }
 
+.nowrap { white-space: nowrap; }
+
 </style>
 </head>
 <body>
@@ -456,7 +458,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
     <header class="slide-head">
       <p class="eyebrow">開場摘要</p>
       <h1 id="h-summary" data-bind="meta.title"></h1>
-      <p class="lead">先找到產業既定流程裡的痛點，再用「標準案」組合與成案率回推，逐步達成 <strong data-bind="target.wan"></strong> 業績目標。</p>
+      <p class="lead">我先假設該產業可被 RPA 優化的既有流程，再用「標準案」組合與成案率回推，逐步達成 <strong data-bind="target.wan"></strong> 業績目標。</p>
     </header>
     <div class="versions">
       <article class="vcard vcard-a">
@@ -476,7 +478,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
       <div class="kpi">
         <p class="kpi-label">標準案怎麼拆</p>
         <p class="kpi-value" data-bind="std.totalWan"></p>
-        <p class="kpi-sub">授權 <span data-bind="std.licenseWan"></span> + 開發 <span data-bind="std.days"></span> 人天 <span data-bind="std.serviceWan"></span></p>
+        <p class="kpi-sub">授權 <span data-bind="std.licenseWan"></span>（工具授權加上半自動化）+ <span class="nowrap">開發 <span data-bind="std.days"></span> 人天 <span data-bind="std.serviceWan"></span></span></p>
       </div>
       <div class="kpi">
         <p class="kpi-label">A 版所需名單量 <span class="tag-assume">假設</span></p>
