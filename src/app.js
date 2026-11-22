@@ -80,8 +80,7 @@
       "fa.poc": fa.byKey.poc.ceil,
       "wd.days": wd.days,
       "time.sign": shortDate(DATA.timeline.signTargetDate),
-      "time.buffer": wd.bufferDays,
-      "hero.title": `${CASE[DATA.meta.heroCaseId].customer}｜${CASE[DATA.meta.heroCaseId].title}`
+      "time.buffer": wd.bufferDays
     };
   }
   function renderBinds() {
