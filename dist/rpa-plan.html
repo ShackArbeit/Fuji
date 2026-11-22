@@ -840,25 +840,27 @@ const DATA = {
     },
     {
       id: "teco-drawing-sync", industry: "manufacturing", customer: "東元電機", customerSource: "fuji-other",
-      title: "工程圖面發行 → ERP 料號同步與通知",
+      title: "ECN 設變發行 → ERP 版次同步與通知",
       background: [
         { text: "1956 年成立，從馬達起家，擴展到重電、家電與資訊產品", sourceId: "fbtw-mfg" },
         { text: "富士既有客戶：DocuWorks 整合多格式設計檔，50 頁圖面處理由約 50 分鐘縮短到 5 分鐘內", sourceId: "fbtw-mfg" }
       ],
       challenge: [
-        "圖面數位化後，瓶頸移到「發行之後」：上傳文件庫、ERP 更新料號版次、寄信通知各部門",
-        "料號多、版次變更頻繁，人工更新易漏改，造成用錯舊版圖面"
+        "DocuWorks 解決整理效率後，瓶頸可能移到「發行之後」：上傳文件庫、ERP 更新版次、寄信通知",
+        "多品種、設變頻繁；用錯舊版圖面造成的報廢與重工，遠高於行政工時",
+        "最痛的常是採購（發錯圖給供應商）、品保（拿舊圖驗收）與文管（每天手動上傳、改 ERP、寄信）",
+        "待確認：是否已有 PLM／PDM 簽核；檔名或文件屬性是否標準化（掃描圖無文字層難讀取）"
       ],
       toBe: [
-        { actor: "robot", text: "監看已核准資料夾，讀取圖號、版次、料號" },
-        { actor: "robot", text: "登入 ERP 更新料號版次與圖面連結" },
-        { actor: "robot", text: "依料號寄送變更通知給採購、生管、品保" },
-        { actor: "human", text: "變更影響在途訂單或庫存時，由工程與生管判斷" }
+        { actor: "robot", text: "監看已核准資料夾／DocuWorks 工作區／PLM 匯出清單，依標準化檔名或文件屬性擷取圖號、版次、料號" },
+        { actor: "robot", text: "登入 ERP 更新料號版次與圖面連結；讀不到或格式不符者轉人工" },
+        { actor: "robot", text: "依料號寄設變通知給採購、生管、品保，附最新唯一版圖面" },
+        { actor: "human", text: "在途訂單與半成品如何處置（直接切換、用完再換、報廢重工），由工程與生管判斷" }
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
-        quality: "版次錯誤歸零；延伸既有 DocuWorks 投資" },
+        quality: "消除核准到 ERP 同步的時間差與漏改風險：核准後幾分鐘內各部門都拿到最新唯一版本" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；與既有 DocuWorks 串接"
+      productNote: "半自動標準案；先鎖定當初導入 DocuWorks 的工程團隊所屬事業部試點，成功後再橫向擴散"
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
