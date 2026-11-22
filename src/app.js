@@ -141,17 +141,20 @@
           <li>製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
           <li>零售：決策快，但客單偏低，作為副攻。</li>
           <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
-          <li>公部門：作業量大、規則明確，但須走採購程序，A 版只放 1 案當業績緩衝。</li>
+          <li>公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
         </ul>
         <p class="foot-note">點左側任一產業，查看切入理由與目標客戶。</p>`;
       return;
     }
     const cases = DATA.cases.filter(c => c.industry === ind.id);
     const nDeals = (a.byIndustry[ind.id] || { n: 0, amount: 0 });
+    const bIn = versionBTotal().deals.filter(d => CASE[d.caseId]?.industry === ind.id);
+    const bDeals = { n: bIn.reduce((s, d) => s + d.n, 0), amount: bIn.reduce((s, d) => s + d.amount, 0), names: bIn.map(d => CASE[d.caseId].customer) };
     det.innerHTML = `<h3>${esc(ind.name)} ${roleBadge(ind)}</h3>
       <p>${esc(ind.pitch)} <span class="tag-assume">推論</span></p>
       <h4>A 版規劃</h4>
       <p>${nDeals.n} 案、${fmtWan(nDeals.amount)}${ind.abm ? "（ABM：鎖定少數目標客戶）" : ""}</p>
+      ${bDeals.n ? `<h4>B 版規劃</h4><p>${bDeals.n} 案、${fmtWan(bDeals.amount)}（${esc(bDeals.names.join("、"))}）</p>` : ""}
       <h4>目標客戶（${cases.length}）</h4>
       <ul>${cases.map(c => `<li><button type="button" class="link-btn" data-open-case="${c.id}">${esc(customerName(c))}｜${esc(c.title)}</button> ${srcBadge(c.customerSource)}</li>`).join("")}</ul>`;
   }
@@ -427,7 +430,7 @@
       </ul>
       ${statusHtml(vsTarget(b.total))}
       <ul class="plain">
-        <li>新增以「既有客戶擴充（純人天）」為主：不需新授權採購流程，回簽較快。</li>
+        <li>擴充案免新授權採購、回簽快；公部門案以決標日視同回簽，當緩衝。</li>
         <li>續約率每降 5 個百分點，續約少 ${fmtWan(DATA.versionB.renewalBase * 0.05)}，約等於 ${fmtNum((DATA.versionB.renewalBase * 0.05) / standardCaseAmount(), 1)} 個標準案。</li>
       </ul>`;
   }
@@ -644,9 +647,11 @@
     }
     if (r.calc === "govDelay") {
       const g = govDelayImpact();
-      return g.shortfall === 0
-        ? `A 版少 ${fmtWan(g.gov)}，剩 ${fmtWan(g.without)}，仍達標（超出 ${fmtWan(g.surplus)}）：公部門案是緩衝，不是主力`
-        : `A 版少 ${fmtWan(g.gov)}，剩 ${fmtWan(g.without)}，距目標差 ${fmtWan(g.shortfall)} → 約需 ${g.standardCases} 個標準案補位`;
+      const line = (v, x) => x.shortfall === 0
+        ? `${v}少 ${fmtWan(x.gov)}，剩 ${fmtWan(x.without)}，仍達標（超出 ${fmtWan(x.surplus)}）`
+        : `${v}少 ${fmtWan(x.gov)}，剩 ${fmtWan(x.without)}，距目標差 ${fmtWan(x.shortfall)} → 約需 ${x.standardCases} 個標準案補位`;
+      const ok = g.shortfall === 0 && g.b.shortfall === 0;
+      return `${line("A 版", g)}；${line(`B 版（續約率 ${pct(g.b.rate)}）`, g.b)}${ok ? "：公部門案是緩衝，不是主力" : ""}`;
     }
     return "";
   }

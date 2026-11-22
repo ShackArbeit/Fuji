@@ -430,3 +430,6 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   #s-sources .as-group { margin-bottom: .25rem; }
   #s-sources .ev-legend { font-size: .8rem; }
 }
+
+/* B 版拆解表：表頭不換行（新增第 5 案後節省高度） */
+@media screen { #b-comp th { white-space: nowrap; } }

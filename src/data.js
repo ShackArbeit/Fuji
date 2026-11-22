@@ -51,7 +51,8 @@ export const DATA = {
       { source: "existing", type: "expansion",   n: 1, caseId: "lin-land-expansion" },   // 既有 RPA 客戶擴充 30 萬
       { source: "existing", type: "expansion",   n: 1, caseId: "lens-dual-erp-recon" },  // 既有 RPA 客戶擴充 30 萬
       { source: "new",      type: "standard",    n: 1, caseId: "porite-delivery" },      // 新 RPA 客戶標準案 50 萬
-      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" }     // 入門包（最低授權組合：開發工具 + 半自動）24 萬
+      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" },    // 入門包（最低授權組合：開發工具 + 半自動）24 萬
+      { source: "new",      type: "standard",    n: 1, caseId: "tc-1999-petition" }      // 公部門標準案 50 萬（2026-11-22 新增）；以決標／簽約日視同回簽
     ]
   },
 
@@ -385,6 +386,31 @@ export const DATA = {
       productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）"
     },
     {
+      id: "tc-1999-petition", industry: "government", customer: "臺中市政府研究發展考核委員會", customerSource: "new",
+      industryNote: "公部門（1999 臺中市民一碼通）",
+      title: "1999 陳情申訴案件分案 + 逾期追蹤",
+      background: [
+        { text: "市府統計通報由研考會與主計處共同發布：115 年 1–4 月 1999 便民專線服務 262,406 件，較去年同期增加 8.23%；114 年全年 780,058 件", sourceId: "tc-1999" },
+        { text: "同期「陳情申訴」43,140 件（占 16.44%），較去年同期增加 4,931 件（12.91%），是增量最多的項目；換算月均約 10,785 件", sourceId: "tc-1999" },
+        { text: "同類型案例：臺北市交通事件裁決所已導入 RPA 處理電子公文點收（廠商相關報導）", sourceId: "tpe-adjudication" }
+      ],
+      challenge: [
+        "陳情申訴量成長最快，受理後要依內容與權責分派到局處；量大時分案、改分容易延誤",
+        "各局處回覆期限不同，逾期與即將逾期案件可能靠人工查詢系統再催辦",
+        "每月統計與報表可能需從系統匯出再人工整理（以上皆需 Discovery 確認現行系統與分工）"
+      ],
+      toBe: [
+        { actor: "robot", text: "定時讀取新進陳情案件，依關鍵字與分類規則產生建議承辦機關" },
+        { actor: "human", text: "研考人員確認分案建議（涉權責爭議、陳情內容判斷不自動決定）" },
+        { actor: "robot", text: "每日比對回覆期限，對即將逾期案件寄送提醒並產生催辦清單" },
+        { actor: "robot", text: "每月自動匯出並整理件數、結案率、逾期率統計表草稿" }
+      ],
+      benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
+        quality: "分案與催辦時效一致，尖峰月份不必加派人力；統計報表可直接供施政考核使用" },
+      productType: "semi", estDays: 13,
+      productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）；避開個資外流：機器人在市府內網執行"
+    },
+    {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
       industryNote: "專業服務（地政士）",
       title: "第二流程：謄本調閱 + 案件進度通知",
@@ -462,6 +488,8 @@ export const DATA = {
       urls: ["https://tw.stock.yahoo.com/news/%E4%BA%A4%E9%80%9A-%E6%96%B0%E5%8C%97%E4%BA%A4%E9%80%9A%E9%81%95%E8%A6%8F%E8%A3%81%E6%B1%BA%E6%8F%90%E4%BE%9B%E7%B7%9A%E4%B8%8A%E6%9C%8D%E5%8B%99-2024%E5%B9%B4%E6%9C%8D%E5%8B%99%E9%87%8F%E6%BF%80%E5%A2%9E%E8%BF%91%E8%90%AC%E4%BB%B6-052726666.html"] },
     { id: "ntpc-org", title: "新北市政府人事處｜組織職掌資料", summary: "交通事件裁決處各課室職掌（案件管理、裁罰、申訴、催收）",
       urls: ["https://www.personnel.ntpc.gov.tw/userfiles/1190200/files/13-1_1150201.pdf"] },
+    { id: "tc-1999", title: "臺中市統計通報｜1999 便民專線服務統計（115 年 6 月）", summary: "115 年 1–4 月服務 262,406 件、年增 8.23%；陳情申訴 43,140 件、年增 12.91%",
+      urls: ["https://www.rdec.taichung.gov.tw/media/1421781/1999便民專線服務統計-114年度.pdf"] },
     { id: "tpe-adjudication", title: "科技新報｜臺北市交通事件裁決所導入 RPA", summary: "電子公文點收自動化，報導估計每日省 1–2 小時（廠商相關報導）",
       urls: ["https://technews.tw/?p=1370099"] },
     { id: "tpe-health", title: "INSIDE｜臺北市衛生局 RPA 抗疫", summary: "疫苗預約資料設定由七、八小時縮短到不到一小時（公部門導入背景參考）",

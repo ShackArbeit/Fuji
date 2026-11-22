@@ -251,7 +251,16 @@ export function govDelayImpact() {
   const gov = a.deals.filter(d => d.industry === "government").reduce((s, d) => s + d.amount, 0);
   const without = a.total - gov;
   const shortfall = Math.max(0, DATA.meta.target - without);
-  return { gov, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), surplus: Math.max(0, without - DATA.meta.target) };
+  // B 版：依卡片產業找出公部門案
+  const b = versionBTotal();
+  const isGov = d => DATA.cases.find(c => c.id === d.caseId)?.industry === "government";
+  const bGov = b.deals.filter(isGov).reduce((s, d) => s + d.amount, 0);
+  const bWithout = b.total - bGov;
+  const bShortfall = Math.max(0, DATA.meta.target - bWithout);
+  return {
+    gov, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), surplus: Math.max(0, without - DATA.meta.target),
+    b: { gov: bGov, without: bWithout, shortfall: bShortfall, standardCases: ceil(bShortfall / standardCaseAmount()), surplus: Math.max(0, bWithout - DATA.meta.target), rate: b.rate }
+  };
 }
 
 // 旗艦改分階段：先以半自動標準案上線（Q1 只認列標準案金額）

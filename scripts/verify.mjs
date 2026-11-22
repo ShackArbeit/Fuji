@@ -36,9 +36,9 @@ assert("A 版未達目標", A.total >= DATA.meta.target);
 
 const B = C.versionBTotal(0.95);
 check("B 版續約（95%）", B.renewal, 3_800_000);
-check("B 版新增金額", B.newTotal, 1_340_000);
-check("B 版合計", B.total, 5_140_000);
-check("B 版新增案數", B.count, 4);
+check("B 版新增金額", B.newTotal, 1_840_000);
+check("B 版合計", B.total, 5_640_000); // 2026-11-22 Shack 同意新增公部門案（臺中市研考會 1999）；原 4 案 5,140,000
+check("B 版新增案數", B.count, 5);
 
 const FA = C.funnelA();
 check("A 漏斗 PoC", FA.byKey.poc.ceil, 20);
@@ -49,8 +49,8 @@ check("A 覆蓋倍數 ≈ 4.49", Math.round(FA.coverage * 100) / 100, 4.49);
 const FB = C.funnelB();
 check("B 擴充商機（未進位）", FB.existing.byKey.opp.raw, 10 / 3, near(1e-9));
 check("B 擴充商機（進位）", FB.existing.byKey.opp.ceil, 4);
-check("B 新客商機", FB.fresh.byKey.opp.ceil, 8);
-check("B 新客名單", FB.fresh.byKey.lead.ceil, 40);
+check("B 新客商機", FB.fresh.byKey.opp.ceil, 12);
+check("B 新客名單", FB.fresh.byKey.lead.ceil, 60);
 
 const expSens = new Map([[1.0, [1_000_000, 2]], [0.95, [1_200_000, 3]], [0.9, [1_400_000, 3]], [0.85, [1_600_000, 4]]]);
 for (const s of C.renewalSensitivity()) {
@@ -81,8 +81,10 @@ check("旗艦延後：剩餘金額", FD.without, 4_440_000);
 check("旗艦延後：缺口", FD.shortfall, 560_000);
 check("旗艦延後：約需標準案", FD.standardCases, 2);
 const R90 = C.renewalSensitivity([0.9])[0];
-check("續約 90%：扣已規劃新增後仍差", R90.shortfall, 60_000);
-check("續約 90%：再加標準案", R90.extraStandardCases, 1);
+check("續約 90%：扣已規劃新增後仍差", R90.shortfall, 0);
+check("續約 90%：再加標準案", R90.extraStandardCases, 0);
+const R85 = C.renewalSensitivity([0.85])[0];
+check("續約 85%：已規劃新增足夠", R85.shortfall, 0);
 const R100 = C.renewalSensitivity([1.0])[0];
 check("續約 100%：已規劃新增足夠", R100.shortfall, 0);
 const PL = C.pocLoad();
@@ -91,6 +93,8 @@ check("PoC 每週場次", Math.round(PL.perWeek * 10) / 10, 5.4);
 const GD = C.govDelayImpact();
 check("公部門延後：剩餘金額", GD.without, 5_116_000);
 check("公部門延後：仍達標（缺口 0）", GD.shortfall, 0);
+check("公部門延後（B 版）：剩餘金額", GD.b.without, 5_140_000);
+check("公部門延後（B 版）：仍達標（缺口 0）", GD.b.shortfall, 0);
 const SA = Object.fromEntries(C.scenarioAmounts().map(s => [s.id, s]));
 check("情境：入門包首購", SA.starter.main.total, 440_000);
 check("情境：入門包最低授權組合", SA.starter.alt.total, 240_000);
@@ -142,13 +146,14 @@ for (const d of DATA.versionB.deals) {
     assert(`B 版擴充案須為富士既有 RPA 客戶：${d.caseId}`, c.customerSource === "fuji-rpa");
     check(`B 版擴充卡片報價一致：${d.caseId}`, C.configure({ caseId: d.caseId }).total, C.dealAmount("expansion"));
   }
+  if (d.type === "standard") check(`B 版標準案卡片報價一致：${d.caseId}`, C.configure({ caseId: d.caseId }).total, C.dealAmount("standard"));
   if (d.type === "starterLite") assert(`B 版最低授權組合案卡片須標 altDealType：${d.caseId}`, c.altDealType === "starterLite");
 }
 
 // 效益試算（Industry.md 第 2–7 節）
 const expSaved = {
   "porite-delivery": 98, "teco-drawing-sync": 60, "tpi-stock-alert": 36, "skfiber-invoice-3way": 160,
-  "yuan-omni-orders": 120, "ginza-store-daily": 31.2, "ntpc-traffic-adjudication": 212.4, "coretronic-quality-report": 56, "yungda-commission": 48,
+  "yuan-omni-orders": 120, "ginza-store-daily": 31.2, "ntpc-traffic-adjudication": 212.4, "tc-1999-petition": 269.6, "coretronic-quality-report": 56, "yungda-commission": 48,
   "skm-concession": 40, "lin-land-expansion": 38.9, "lens-dual-erp-recon": 12.8
 };
 for (const [id, h] of Object.entries(expSaved)) {
@@ -211,14 +216,14 @@ for (const f of scanFiles) {
 // 白名單：目前無例外。若未來需要，請在此註明原因。
 const tpl = readFileSync(join(root, "src/index.template.html"), "utf8").replace(/<!--(STYLE|DATA|CALC|APP)-->/g, "");
 const tplText = tpl.replace(/<[^>]+>/g, " "); // 只看文案，不看標籤屬性
-const hardNumbers = ["5,616,000", "5616000", "561.6", "4.49", "5,116,000", "5116000", "511.6", "5,140,000", "5140000", "514", "180", "36", "4.09",
+const hardNumbers = ["5,616,000", "5616000", "561.6", "4.49", "5,116,000", "5116000", "511.6", "5,140,000", "5140000", "514", "5,640,000", "5640000", "564", "1,840,000", "180", "36", "4.09",
   "1,176,000", "500,000", "3,800,000", "1,340,000", "51"];
 for (const n of hardNumbers) {
   const re = new RegExp(`(?<![\\d.,])${n.replace(/[.,]/g, m => "\\" + m)}(?![\\d.,])`);
   assert(`模板文案寫死數字 ${n}（請改用 data-bind）`, !re.test(tplText));
 }
 const app = readFileSync(join(root, "src/app.js"), "utf8");
-for (const n of ["5,116,000", "511.6", "5,140,000", "1,340,000", "3,800,000"]) {
+for (const n of ["5,116,000", "511.6", "5,140,000", "1,340,000", "3,800,000", "5,640,000", "1,840,000"]) {
   assert(`app.js 寫死金額 ${n}`, !app.includes(n));
 }
 

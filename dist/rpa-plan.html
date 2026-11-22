@@ -438,6 +438,9 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   #s-sources .ev-legend { font-size: .8rem; }
 }
 
+/* B 版拆解表：表頭不換行（新增第 5 案後節省高度） */
+@media screen { #b-comp th { white-space: nowrap; } }
+
 </style>
 </head>
 <body>
@@ -689,7 +692,8 @@ const DATA = {
       { source: "existing", type: "expansion",   n: 1, caseId: "lin-land-expansion" },   // 既有 RPA 客戶擴充 30 萬
       { source: "existing", type: "expansion",   n: 1, caseId: "lens-dual-erp-recon" },  // 既有 RPA 客戶擴充 30 萬
       { source: "new",      type: "standard",    n: 1, caseId: "porite-delivery" },      // 新 RPA 客戶標準案 50 萬
-      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" }     // 入門包（最低授權組合：開發工具 + 半自動）24 萬
+      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" },    // 入門包（最低授權組合：開發工具 + 半自動）24 萬
+      { source: "new",      type: "standard",    n: 1, caseId: "tc-1999-petition" }      // 公部門標準案 50 萬（2026-11-22 新增）；以決標／簽約日視同回簽
     ]
   },
 
@@ -1023,6 +1027,31 @@ const DATA = {
       productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）"
     },
     {
+      id: "tc-1999-petition", industry: "government", customer: "臺中市政府研究發展考核委員會", customerSource: "new",
+      industryNote: "公部門（1999 臺中市民一碼通）",
+      title: "1999 陳情申訴案件分案 + 逾期追蹤",
+      background: [
+        { text: "市府統計通報由研考會與主計處共同發布：115 年 1–4 月 1999 便民專線服務 262,406 件，較去年同期增加 8.23%；114 年全年 780,058 件", sourceId: "tc-1999" },
+        { text: "同期「陳情申訴」43,140 件（占 16.44%），較去年同期增加 4,931 件（12.91%），是增量最多的項目；換算月均約 10,785 件", sourceId: "tc-1999" },
+        { text: "同類型案例：臺北市交通事件裁決所已導入 RPA 處理電子公文點收（廠商相關報導）", sourceId: "tpe-adjudication" }
+      ],
+      challenge: [
+        "陳情申訴量成長最快，受理後要依內容與權責分派到局處；量大時分案、改分容易延誤",
+        "各局處回覆期限不同，逾期與即將逾期案件可能靠人工查詢系統再催辦",
+        "每月統計與報表可能需從系統匯出再人工整理（以上皆需 Discovery 確認現行系統與分工）"
+      ],
+      toBe: [
+        { actor: "robot", text: "定時讀取新進陳情案件，依關鍵字與分類規則產生建議承辦機關" },
+        { actor: "human", text: "研考人員確認分案建議（涉權責爭議、陳情內容判斷不自動決定）" },
+        { actor: "robot", text: "每日比對回覆期限，對即將逾期案件寄送提醒並產生催辦清單" },
+        { actor: "robot", text: "每月自動匯出並整理件數、結案率、逾期率統計表草稿" }
+      ],
+      benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
+        quality: "分案與催辦時效一致，尖峰月份不必加派人力；統計報表可直接供施政考核使用" },
+      productType: "semi", estDays: 13,
+      productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）；避開個資外流：機器人在市府內網執行"
+    },
+    {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
       industryNote: "專業服務（地政士）",
       title: "第二流程：謄本調閱 + 案件進度通知",
@@ -1100,6 +1129,8 @@ const DATA = {
       urls: ["https://tw.stock.yahoo.com/news/%E4%BA%A4%E9%80%9A-%E6%96%B0%E5%8C%97%E4%BA%A4%E9%80%9A%E9%81%95%E8%A6%8F%E8%A3%81%E6%B1%BA%E6%8F%90%E4%BE%9B%E7%B7%9A%E4%B8%8A%E6%9C%8D%E5%8B%99-2024%E5%B9%B4%E6%9C%8D%E5%8B%99%E9%87%8F%E6%BF%80%E5%A2%9E%E8%BF%91%E8%90%AC%E4%BB%B6-052726666.html"] },
     { id: "ntpc-org", title: "新北市政府人事處｜組織職掌資料", summary: "交通事件裁決處各課室職掌（案件管理、裁罰、申訴、催收）",
       urls: ["https://www.personnel.ntpc.gov.tw/userfiles/1190200/files/13-1_1150201.pdf"] },
+    { id: "tc-1999", title: "臺中市統計通報｜1999 便民專線服務統計（115 年 6 月）", summary: "115 年 1–4 月服務 262,406 件、年增 8.23%；陳情申訴 43,140 件、年增 12.91%",
+      urls: ["https://www.rdec.taichung.gov.tw/media/1421781/1999便民專線服務統計-114年度.pdf"] },
     { id: "tpe-adjudication", title: "科技新報｜臺北市交通事件裁決所導入 RPA", summary: "電子公文點收自動化，報導估計每日省 1–2 小時（廠商相關報導）",
       urls: ["https://technews.tw/?p=1370099"] },
     { id: "tpe-health", title: "INSIDE｜臺北市衛生局 RPA 抗疫", summary: "疫苗預約資料設定由七、八小時縮短到不到一小時（公部門導入背景參考）",
@@ -1369,7 +1400,16 @@ function govDelayImpact() {
   const gov = a.deals.filter(d => d.industry === "government").reduce((s, d) => s + d.amount, 0);
   const without = a.total - gov;
   const shortfall = Math.max(0, DATA.meta.target - without);
-  return { gov, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), surplus: Math.max(0, without - DATA.meta.target) };
+  // B 版：依卡片產業找出公部門案
+  const b = versionBTotal();
+  const isGov = d => DATA.cases.find(c => c.id === d.caseId)?.industry === "government";
+  const bGov = b.deals.filter(isGov).reduce((s, d) => s + d.amount, 0);
+  const bWithout = b.total - bGov;
+  const bShortfall = Math.max(0, DATA.meta.target - bWithout);
+  return {
+    gov, without, shortfall, standardCases: ceil(shortfall / standardCaseAmount()), surplus: Math.max(0, without - DATA.meta.target),
+    b: { gov: bGov, without: bWithout, shortfall: bShortfall, standardCases: ceil(bShortfall / standardCaseAmount()), surplus: Math.max(0, bWithout - DATA.meta.target), rate: b.rate }
+  };
 }
 
 // 旗艦改分階段：先以半自動標準案上線（Q1 只認列標準案金額）
@@ -1609,17 +1649,20 @@ function fmtNum(v, digits = 1) {
           <li>製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
           <li>零售：決策快，但客單偏低，作為副攻。</li>
           <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
-          <li>公部門：作業量大、規則明確，但須走採購程序，A 版只放 1 案當業績緩衝。</li>
+          <li>公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
         </ul>
         <p class="foot-note">點左側任一產業，查看切入理由與目標客戶。</p>`;
       return;
     }
     const cases = DATA.cases.filter(c => c.industry === ind.id);
     const nDeals = (a.byIndustry[ind.id] || { n: 0, amount: 0 });
+    const bIn = versionBTotal().deals.filter(d => CASE[d.caseId]?.industry === ind.id);
+    const bDeals = { n: bIn.reduce((s, d) => s + d.n, 0), amount: bIn.reduce((s, d) => s + d.amount, 0), names: bIn.map(d => CASE[d.caseId].customer) };
     det.innerHTML = `<h3>${esc(ind.name)} ${roleBadge(ind)}</h3>
       <p>${esc(ind.pitch)} <span class="tag-assume">推論</span></p>
       <h4>A 版規劃</h4>
       <p>${nDeals.n} 案、${fmtWan(nDeals.amount)}${ind.abm ? "（ABM：鎖定少數目標客戶）" : ""}</p>
+      ${bDeals.n ? `<h4>B 版規劃</h4><p>${bDeals.n} 案、${fmtWan(bDeals.amount)}（${esc(bDeals.names.join("、"))}）</p>` : ""}
       <h4>目標客戶（${cases.length}）</h4>
       <ul>${cases.map(c => `<li><button type="button" class="link-btn" data-open-case="${c.id}">${esc(customerName(c))}｜${esc(c.title)}</button> ${srcBadge(c.customerSource)}</li>`).join("")}</ul>`;
   }
@@ -1895,7 +1938,7 @@ function fmtNum(v, digits = 1) {
       </ul>
       ${statusHtml(vsTarget(b.total))}
       <ul class="plain">
-        <li>新增以「既有客戶擴充（純人天）」為主：不需新授權採購流程，回簽較快。</li>
+        <li>擴充案免新授權採購、回簽快；公部門案以決標日視同回簽，當緩衝。</li>
         <li>續約率每降 5 個百分點，續約少 ${fmtWan(DATA.versionB.renewalBase * 0.05)}，約等於 ${fmtNum((DATA.versionB.renewalBase * 0.05) / standardCaseAmount(), 1)} 個標準案。</li>
       </ul>`;
   }
@@ -2112,9 +2155,11 @@ function fmtNum(v, digits = 1) {
     }
     if (r.calc === "govDelay") {
       const g = govDelayImpact();
-      return g.shortfall === 0
-        ? `A 版少 ${fmtWan(g.gov)}，剩 ${fmtWan(g.without)}，仍達標（超出 ${fmtWan(g.surplus)}）：公部門案是緩衝，不是主力`
-        : `A 版少 ${fmtWan(g.gov)}，剩 ${fmtWan(g.without)}，距目標差 ${fmtWan(g.shortfall)} → 約需 ${g.standardCases} 個標準案補位`;
+      const line = (v, x) => x.shortfall === 0
+        ? `${v}少 ${fmtWan(x.gov)}，剩 ${fmtWan(x.without)}，仍達標（超出 ${fmtWan(x.surplus)}）`
+        : `${v}少 ${fmtWan(x.gov)}，剩 ${fmtWan(x.without)}，距目標差 ${fmtWan(x.shortfall)} → 約需 ${x.standardCases} 個標準案補位`;
+      const ok = g.shortfall === 0 && g.b.shortfall === 0;
+      return `${line("A 版", g)}；${line(`B 版（續約率 ${pct(g.b.rate)}）`, g.b)}${ok ? "：公部門案是緩衝，不是主力" : ""}`;
     }
     return "";
   }
