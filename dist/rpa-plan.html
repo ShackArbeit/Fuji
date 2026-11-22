@@ -481,6 +481,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 @media print {
   #s-cases .case-detail .case-sections { grid-template-columns: 1fr 1fr; }
 }
+.roi-goal { color: var(--primary); font-weight: 700; font-size: .9rem; }
 
 </style>
 </head>
@@ -901,6 +902,7 @@ const DATA = {
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
+      pilotGoal: "設變零漏改：消除核准到 ERP 的時間差，先驗證再擴到其他事業部",
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；先在導入 DocuWorks 的事業部試點，再橫向擴散"
     },
@@ -926,6 +928,7 @@ const DATA = {
       ],
       benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
         quality: "缺料從事後發現變成每日預警；盤點期加班比對 Excel 是加分項" },
+      pilotGoal: "缺料每日預警，降低停線與掉單風險",
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；主軸為每日低庫存預警，盤點差異比對為延伸場景"
     },
@@ -995,6 +998,7 @@ const DATA = {
       ],
       benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
         quality: "價值主張改為降低漏帳與客訴風險；量體小，先輕量訪談驗證再決定是否推進" },
+      pilotGoal: "降低訂金尾款漏帳與客訴風險",
       productType: "semi", estDays: 13,
       productNote: "B 版：入門包（最低授權組合，客戶以 Ragic 能力自建）；含開發 50 萬僅供參考，量體驗證後再議",
       altDealType: "starterLite"
@@ -1067,6 +1071,7 @@ const DATA = {
       ],
       benefit: { count: 20, unit: "家保險公司", per: "month", minutes: 180, autoRate: 0.8,
         quality: "價值在降低對帳出錯與漏追、縮短佣金結算週期；效益以擴到全部 20 家計" },
+      pilotGoal: "降低對帳出錯與漏追、縮短佣金結算週期",
       productType: "semi", estDays: 13,
       productNote: "先導模組（PoV）；需事先約定格式改版的維護範圍；金融資安審查期長，Q1 回簽有風險"
     },
@@ -1079,17 +1084,20 @@ const DATA = {
       ],
       challenge: [
         "專櫃多、各品牌合約抽成條件不同（保底、級距、檔期折扣分攤）",
-        "每月從 POS 匯出營業額、對照合約用 Excel 試算、產出對帳單；品牌常汰換，條件常變"
+        "每月從 POS 匯出營業額、對照合約用 Excel 試算、產出對帳單",
+        "品牌汰換頻繁：複雜條件若全寫進腳本，每次換約都要改，維護成本會吃掉效益"
       ],
       toBe: [
-        { actor: "robot", text: "彙整單一館各櫃 POS 營業額" },
-        { actor: "robot", text: "套用合約抽成規則試算，產出對帳單草稿" },
-        { actor: "human", text: "財務覆核保底、檔期分攤等特殊條件後才寄出" }
+        { actor: "robot", text: "彙整單一館各櫃 POS 營業額，套用標準抽成初算，產出對帳單草稿" },
+        { actor: "robot", text: "保底、級距、跨檔期分攤等特殊條件只標記，列入檢核清單" },
+        { actor: "human", text: "財務依檢核清單覆核特殊條款後才寄出" }
       ],
       benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
-        quality: "試點成功可複製到其他館（ABM 擴充故事）" },
+        quality: "縮短每月關帳天數、減少算錯抽成的帳務爭議；驗證可複製到其他分館的模板" },
       productType: "semi", estDays: 10,
-      productNote: "入門包：先拿一館試點"
+      productNote: "入門包：先拿一館試點；模板驗證後複製到其他分館",
+      pilotGoal: "縮短關帳天數、減少抽成算錯爭議，驗證可複製的分館模板",
+      replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4 }
     },
     {
       id: "ntpc-traffic-adjudication", industry: "government", customer: "新北市政府交通事件裁決處", customerSource: "new",
@@ -1180,6 +1188,7 @@ const DATA = {
       ],
       benefit: { count: 1, unit: "次月結核對（約 16 小時）", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
         quality: "月結提早 1–2 天" },
+      pilotGoal: "月結提早 1–2 天、降低兩套 ERP 的庫存差異",
       productType: "semi", estDays: 15, existingLicense: true,
       productNote: "既有授權沿用，純人天擴充"
     }
@@ -1488,7 +1497,9 @@ function roiPlan(caseId, r = DATA.roi) {
   const base = roi(caseId, 1, r);
   if (base.ok) return { base, alt: null };
   let alt = null;
-  for (let k = 2; k <= r.maxFlows; k++) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  const maxK = (c && c.replicate && c.replicate.maxCopies) || r.maxFlows;
+  for (let k = 2; k <= maxK; k++) {
     alt = roi(caseId, k, r);
     if (alt.ok) break;
   }
@@ -1874,12 +1885,16 @@ function fmtNum(v, digits = 1) {
     const wan = v => fmtWan(v);
     const pb = x => x.payback === null ? "回本需 60 個月以上" : `約 ${x.payback} 個月回本`;
     const laborTxt = c.roiOverride ? `每人每月 ${fmtWan(c.roiOverride.laborMonthly)}（${c.roiOverride.note}）` : `月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor}`;
-    const head = `人力成本以${laborTxt}計：月省約 ${wan(base.monthlySave)}，${pb(base)}`;
+    const lic0 = caseQuote(c.id).license;
+    const never0 = lic0 && base.monthlySave * 12 < lic0;
+    const head = `人力成本以${laborTxt}計：月省約 ${wan(base.monthlySave)}${never0 ? ` ＜ 續約每月 ${fmtWan(lic0 / 12)}，單點不會回本` : `，${pb(base)}`}`;
     if (base.ok) return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}</span></p>`;
     const addTxt = c.replicate
-      ? `複製到${c.replicate.label}（${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`
+      ? (alt && alt.flows > 2
+        ? `複製到${c.replicate.label}，共 ${alt.flows} ${c.replicate.unit || "處"}（每${c.replicate.unit || "處"} ${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`
+        : `複製到${c.replicate.label}（${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`)
       : `同一套授權加 ${alt ? alt.flows - 1 : 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）`;
-    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span></p>`;
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span>${c.pilotGoal ? `<br><span class="roi-goal">單點目標：${esc(c.pilotGoal)}</span>` : ""}</p>`;
     const need = hoursNeededForPayback(c.id);
     const q = caseQuote(c.id);
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
@@ -1890,9 +1905,12 @@ function fmtNum(v, digits = 1) {
     // 月省怎麼來；月省低於授權年費攤提時，直接說明不會回本
     const saveTxt = `月省 ${wan(base.monthlySave)} ＝ ${fmtNum(b.savedHours, 0)} 小時 ÷ ${FTE_HOURS} × ${fmtWan(labor)}`;
     const neverTxt = q.license && base.monthlySave * 12 < q.license ? ` ＜ 續約每月 ${fmtWan(q.license / 12)} → 不會回本` : `，${pb(base)}`;
-    const warn = need > b.monthlyHours
-      ? `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時，但人工總工時僅 ${fmtNum(b.monthlyHours, 0)} 小時 → 不以工時回本為目標`
-      : `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(b.savedHours, 0)}，差 ${fmtNum(need - b.savedHours, 0)}）`;
+    // 全自動也達不到門檻：不列不可能的門檻，改寫上限與單點目標
+    if (need > b.monthlyHours) {
+      const cap = b.monthlyHours / FTE_HOURS * labor;
+      return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">⚠ 單點試點：人工總工時僅 ${fmtNum(b.monthlyHours, 0)} 小時，全自動上限月省 ${wan(cap)}，不走工時回本</span><br><span class="roi-goal">目標：${esc(c.pilotGoal || "Discovery 確認更多量體，或併入其他流程一起評估")}</span></p>`;
+    }
+    const warn = `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(b.savedHours, 0)}，差 ${fmtNum(need - b.savedHours, 0)}）`;
     return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">${warn}</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} ＝ 月 ${fmtWan(cost / r.paybackLimit)}；÷ ${fmtWan(labor)} × ${FTE_HOURS} ＝ ${fmtNum(need, 0)} 小時</span></p>`;
   }
 

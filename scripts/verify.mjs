@@ -174,6 +174,11 @@ check("回本：中強光電複製到第 2 條產線月數", C.roiPlan("coretron
 check("回本：中強光電人力成本覆寫", C.laborMonthlyOf("coretronic-quality-report"), 80_000);
 check("回本：永達保經需省時數超過人工總工時", C.hoursNeededForPayback("yungda-commission") > C.benefit("yungda-commission").monthlyHours, true);
 check("回本：永達保經月省低於續約每月攤提", C.roi("yungda-commission").monthlySave * 12 < C.caseQuote("yungda-commission").license, true);
+check("回本：新光三越複製到 4 館月數", C.roiPlan("skm-concession").alt.payback, 12);
+check("回本：新光三越複製館數", C.roiPlan("skm-concession").alt.flows, 4);
+for (const c of DATA.cases) {
+  if (C.hoursNeededForPayback(c.id) > C.benefit(c.id).monthlyHours && !(C.roiPlan(c.id).alt || {}).ok) assert(`回本：${c.id} 全自動也達不到門檻，須有 pilotGoal`, !!c.pilotGoal);
+}
 for (const c of DATA.cases) {
   const p = C.roiPlan(c.id);
   assert(`回本：${c.id} 月省金額需為正`, p.base.monthlySave > 0);

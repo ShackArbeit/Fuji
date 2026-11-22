@@ -474,3 +474,4 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 @media print {
   #s-cases .case-detail .case-sections { grid-template-columns: 1fr 1fr; }
 }
+.roi-goal { color: var(--primary); font-weight: 700; font-size: .9rem; }

@@ -244,7 +244,9 @@ export function roiPlan(caseId, r = DATA.roi) {
   const base = roi(caseId, 1, r);
   if (base.ok) return { base, alt: null };
   let alt = null;
-  for (let k = 2; k <= r.maxFlows; k++) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  const maxK = (c && c.replicate && c.replicate.maxCopies) || r.maxFlows;
+  for (let k = 2; k <= maxK; k++) {
     alt = roi(caseId, k, r);
     if (alt.ok) break;
   }

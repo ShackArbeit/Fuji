@@ -219,6 +219,7 @@ export const DATA = {
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
+      pilotGoal: "設變零漏改：消除核准到 ERP 的時間差，先驗證再擴到其他事業部",
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；先在導入 DocuWorks 的事業部試點，再橫向擴散"
     },
@@ -244,6 +245,7 @@ export const DATA = {
       ],
       benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
         quality: "缺料從事後發現變成每日預警；盤點期加班比對 Excel 是加分項" },
+      pilotGoal: "缺料每日預警，降低停線與掉單風險",
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；主軸為每日低庫存預警，盤點差異比對為延伸場景"
     },
@@ -313,6 +315,7 @@ export const DATA = {
       ],
       benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
         quality: "價值主張改為降低漏帳與客訴風險；量體小，先輕量訪談驗證再決定是否推進" },
+      pilotGoal: "降低訂金尾款漏帳與客訴風險",
       productType: "semi", estDays: 13,
       productNote: "B 版：入門包（最低授權組合，客戶以 Ragic 能力自建）；含開發 50 萬僅供參考，量體驗證後再議",
       altDealType: "starterLite"
@@ -385,6 +388,7 @@ export const DATA = {
       ],
       benefit: { count: 20, unit: "家保險公司", per: "month", minutes: 180, autoRate: 0.8,
         quality: "價值在降低對帳出錯與漏追、縮短佣金結算週期；效益以擴到全部 20 家計" },
+      pilotGoal: "降低對帳出錯與漏追、縮短佣金結算週期",
       productType: "semi", estDays: 13,
       productNote: "先導模組（PoV）；需事先約定格式改版的維護範圍；金融資安審查期長，Q1 回簽有風險"
     },
@@ -397,17 +401,20 @@ export const DATA = {
       ],
       challenge: [
         "專櫃多、各品牌合約抽成條件不同（保底、級距、檔期折扣分攤）",
-        "每月從 POS 匯出營業額、對照合約用 Excel 試算、產出對帳單；品牌常汰換，條件常變"
+        "每月從 POS 匯出營業額、對照合約用 Excel 試算、產出對帳單",
+        "品牌汰換頻繁：複雜條件若全寫進腳本，每次換約都要改，維護成本會吃掉效益"
       ],
       toBe: [
-        { actor: "robot", text: "彙整單一館各櫃 POS 營業額" },
-        { actor: "robot", text: "套用合約抽成規則試算，產出對帳單草稿" },
-        { actor: "human", text: "財務覆核保底、檔期分攤等特殊條件後才寄出" }
+        { actor: "robot", text: "彙整單一館各櫃 POS 營業額，套用標準抽成初算，產出對帳單草稿" },
+        { actor: "robot", text: "保底、級距、跨檔期分攤等特殊條件只標記，列入檢核清單" },
+        { actor: "human", text: "財務依檢核清單覆核特殊條款後才寄出" }
       ],
       benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
-        quality: "試點成功可複製到其他館（ABM 擴充故事）" },
+        quality: "縮短每月關帳天數、減少算錯抽成的帳務爭議；驗證可複製到其他分館的模板" },
       productType: "semi", estDays: 10,
-      productNote: "入門包：先拿一館試點"
+      productNote: "入門包：先拿一館試點；模板驗證後複製到其他分館",
+      pilotGoal: "縮短關帳天數、減少抽成算錯爭議，驗證可複製的分館模板",
+      replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4 }
     },
     {
       id: "ntpc-traffic-adjudication", industry: "government", customer: "新北市政府交通事件裁決處", customerSource: "new",
@@ -498,6 +505,7 @@ export const DATA = {
       ],
       benefit: { count: 1, unit: "次月結核對（約 16 小時）", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
         quality: "月結提早 1–2 天" },
+      pilotGoal: "月結提早 1–2 天、降低兩套 ERP 的庫存差異",
       productType: "semi", estDays: 15, existingLicense: true,
       productNote: "既有授權沿用，純人天擴充"
     }
