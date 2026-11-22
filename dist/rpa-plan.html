@@ -1648,12 +1648,11 @@ function fmtNum(v, digits = 1) {
     if (!ind) {
       det.innerHTML = `<h3>怎麼看這張表</h3>
         <ul class="plain">
-          <li>製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
+          <li style="margin-bottom:40px">製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
           <li>零售：決策快，但客單偏低，作為副攻。</li>
           <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
           <li>公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
-        </ul>
-        <p class="foot-note">點左側任一產業，查看切入理由與目標客戶。</p>`;
+        </ul>`;
       return;
     }
     const cases = DATA.cases.filter(c => c.industry === ind.id);

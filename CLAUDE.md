@@ -65,76 +65,91 @@ rpa-plan/
 以下數字已驗算，請直接使用，勿自行更動（調整需經 Shack 同意並更新 `verify.mjs`）。
 
 ```js
+// 2026-11-22 依目前網頁（dist/rpa-plan.html）同步；完整內容以 src/data.js 為準
 export const DATA = {
   meta: {
     title: "2027 Q1 業績 500 萬達成規劃",
     target: 5_000_000,
     interviewDate: "2026-11-27",
-    heroCaseId: "mfg-delivery-followup" // 預設主打流程；Shack 尚無偏好，隨時可改這一行
+    heroCaseId: "porite-delivery", // 主打：台灣保來得｜供應商交期追蹤（標準案）；開場頁不另列主打行，僅卡片標示
+    thesis: "我認為 Pre-Sale 找到潛在商機 & 發掘客戶需求是成功的關鍵"
   },
 
   price: { dev: 176_000, semi: 64_000, full: 400_000, day: 20_000 },
 
-  // 標準案拆解：授權 24 萬 + 13 人天 26 萬 = 50 萬
+  // 標準案拆解：授權 24 萬（工具授權加上半自動化）+ 13 人天 26 萬 = 50 萬
   standardCase: { semiCount: 1, devToolCount: 1, days: 13 },
 
   // 案型（供組合器與 A/B 使用）
   dealTypes: {
-    starter:  { label: "入門包",   fullAuto: false, days: 10 }, // 24 萬授權 + 10 人天 = 44 萬（A 版百貨用）
-    starterLite: { label: "入門包（純授權）", fullAuto: false, days: 0 }, // 24 萬（B 版新客用）
-    standard: { label: "標準案",   fullAuto: false, days: 13 }, // 50 萬
-    flagship: { label: "全自動旗艦", fullAuto: true,  days: 30 }, // 57.6 萬授權 + 60 萬 = 117.6 萬
-    expansion:{ label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
+    starter:     { label: "入門包",                 fullAuto: false, days: 10 }, // 24 萬授權 + 10 人天 = 44 萬（A 版百貨用）
+    starterLite: { label: "入門包（最低授權組合）", fullAuto: false, days: 0 },  // 開發工具 + 半自動 = 24 萬（B 版新客用）
+    standard:    { label: "標準案",                 fullAuto: false, days: 13 }, // 50 萬
+    flagship:    { label: "全自動旗艦",             fullAuto: true,  days: 30 }, // 57.6 萬授權 + 60 萬 = 117.6 萬
+    expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
   },
 
-  // A 版：從零 500 萬（共 9 案、511.6 萬）
+  // A 版：從零 500 萬（共 10 案、561.6 萬；每案對應一家具名客戶，見 Industry.md）
   versionA: {
     deals: [
-      { industry: "manufacturing", type: "standard", n: 3 },
-      { industry: "manufacturing", type: "flagship", n: 1, caseId: "mfg-invoice-3way" },
-      { industry: "retail",        type: "standard", n: 2 },
-      { industry: "hightech",      type: "standard", n: 1 },
-      { industry: "finance",       type: "standard", n: 1 },
-      { industry: "department",    type: "starter",  n: 1 }
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "porite-delivery" },
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "teco-drawing-sync" },
+      { industry: "manufacturing", type: "standard", n: 1, caseId: "tpi-stock-alert" },
+      { industry: "manufacturing", type: "flagship", n: 1, caseId: "skfiber-invoice-3way" },
+      { industry: "retail",        type: "standard", n: 1, caseId: "yuan-omni-orders" },
+      { industry: "retail",        type: "standard", n: 1, caseId: "ginza-store-daily" },
+      { industry: "hightech",      type: "standard", n: 1, caseId: "coretronic-quality-report" },
+      { industry: "finance",       type: "standard", n: 1, caseId: "yungda-commission" },
+      { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" },
+      { industry: "government",    type: "standard", n: 1, caseId: "ntpc-traffic-adjudication" } // 以決標／簽約日視同回簽
     ]
   },
 
-  // B 版：續約 + 新增
+  // B 版：續約 + 新增（新增 5 案、184 萬）
   versionB: {
     renewalBase: 4_000_000,
     renewalRate: 0.95,                  // 基準情境；UI 可調 85%–100%
+    renewalRange: [0.85, 1.0],
     sensitivityRates: [1.0, 0.95, 0.9, 0.85],
     deals: [
-      { source: "existing", type: "expansion",   n: 2 }, // 既有客戶擴充 2 × 30 萬
-      { source: "new",      type: "standard",    n: 1 }, // 新客標準案 50 萬
-      { source: "new",      type: "starterLite", n: 1 }  // 新客入門包 24 萬
+      { source: "existing", type: "expansion",   n: 1, caseId: "lin-land-expansion" },  // 既有 RPA 客戶擴充 30 萬
+      { source: "existing", type: "expansion",   n: 1, caseId: "lens-dual-erp-recon" }, // 既有 RPA 客戶擴充 30 萬
+      { source: "new",      type: "standard",    n: 1, caseId: "porite-delivery" },     // 新客標準案 50 萬
+      { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" },   // 最低授權組合 24 萬
+      { source: "new",      type: "standard",    n: 1, caseId: "tc-1999-petition" }     // 公部門標準案 50 萬
     ]
   },
 
   // 漏斗假設（全部為「假設」，UI 需標示）
   funnel: {
-    leadToOpp: 0.20,   // 名單 → 有效商機
-    oppToPoc:  0.50,   // 商機 → Demo/PoC
-    pocToWin:  0.50,   // PoC → 回簽
+    leadToOpp: 0.20,        // 名單 → 有效商機
+    oppToPoc:  0.50,        // 商機 → Demo/PoC
+    pocToWin:  0.50,        // PoC → 回簽
     existingOppToWin: 0.60, // 既有客戶擴充：商機 → 回簽
-    coverageTarget: 4  // 商機加權覆蓋倍數（目標 3–4 倍）
+    coverageTarget: 4,      // 商機加權覆蓋倍數（目標 3–4 倍）
+    abmAccounts: [10, 15]   // 百貨／金融 ABM 鎖定家數
   },
 
-  industries: [
-    { id: "manufacturing", name: "製造業供應鏈",   role: "主攻",   score: { speed:4, size:5, ticket:4, quantifiable:5, resistance:4 } },
-    { id: "retail",        name: "傳統零售／電商", role: "副攻",   score: { speed:4, size:4, ticket:2, quantifiable:4, resistance:4 } },
-    { id: "hightech",      name: "高科技",         role: "選擇性", score: { speed:2, size:3, ticket:5, quantifiable:3, resistance:2 } },
-    { id: "department",    name: "百貨",           role: "單點 ABM", score: { speed:3, size:1, ticket:3, quantifiable:4, resistance:3 } },
-    { id: "finance",       name: "金融／保險",     role: "長線／擴充", score: { speed:1, size:2, ticket:5, quantifiable:4, resistance:1 } }
-  ], // score 為主觀假設（1–5，resistance 越高代表阻力越低）
+  industries: [ // 另有 short、abm、pitch 欄位（見 src/data.js）
+    { id: "manufacturing", name: "製造業供應鏈",   role: "主攻",       score: { speed:4, size:5, ticket:4, quantifiable:5, resistance:4 } },
+    { id: "retail",        name: "傳統零售／電商", role: "副攻",       score: { speed:4, size:4, ticket:2, quantifiable:4, resistance:4 } },
+    { id: "hightech",      name: "高科技",         role: "選擇性",     score: { speed:2, size:3, ticket:5, quantifiable:3, resistance:2 } },
+    { id: "department",    name: "百貨",           role: "單點 ABM",   score: { speed:3, size:1, ticket:3, quantifiable:4, resistance:3 } },
+    { id: "finance",       name: "金融／保險",     role: "長線／擴充", score: { speed:1, size:2, ticket:5, quantifiable:4, resistance:1 } },
+    { id: "government",    name: "政府／公部門",   role: "單點突破",   score: { speed:2, size:3, ticket:3, quantifiable:4, resistance:2 } }
+  ], // score 為主觀假設（1–5，分數越高越有利：speed＝成交週期越短，resistance＝導入阻力越低）
+
+  scoreLabels: { speed: "成交週期", size: "市場規模", ticket: "客單潛力", quantifiable: "效益可量化", resistance: "導入阻力（越高越低阻力）" },
+  scoreShort:  { speed: "週期", size: "規模", ticket: "客單", quantifiable: "可量化", resistance: "低阻力" },
 
   timeline: {
     // 日期為假設／預設，春節放假日以人事行政總處公告為準，務必可在資料中修改
     quarter: ["2027-01-01", "2027-03-31"],
     lunarNewYearDay1: "2027-02-06",
     holidayWindow: ["2027-02-04", "2027-02-14"], // 暫定
+    otherHolidays: ["2027-01-01", "2027-03-01"], // 暫定：元旦、228 補假
     signTargetDate: "2027-03-25", // 內部回簽目標（距季末 6 天緩衝；2026-11-20 由 3/20 改為 3/25）
-    phases: [
+    phases: [ // 每個階段另有 tasks（見 src/data.js）
       { id: "warm",  label: "暖名單啟動（Q1 前）", start: "2026-12-01", end: "2026-12-31" },
       { id: "disc",  label: "Discovery + Demo",   start: "2027-01-04", end: "2027-01-29" },
       { id: "push",  label: "春節前簽核推進",       start: "2027-02-01", end: "2027-02-03" },
@@ -143,9 +158,12 @@ export const DATA = {
     ]
   },
 
-  cases: [],       // 見 §6 痛點卡片種子，Claude Code 與 Shack 一起補齊內容
-  assumptions: [], // 由程式自動彙整：所有標示為假設的值
-  sources: []      // 見 §6 證據來源
+  scenarios: [], // 5 種情境：入門包首購（含最低授權組合替代）、標準案、全自動升級、既有客戶純人天擴充、續約 + 加購
+  risks: [],     // 5 項：旗艦延後、續約率下滑、PoC 產能不足、高科技自建、公部門採購時程延後
+  infoTags: {},  // 公開事實／推估／試算假設
+  customerSources: {}, // 富士既有 RPA／富士既有非 RPA／集團外新客
+  cases: [],     // 13 張具名客戶卡片（五段式），規格見 Industry.md
+  sources: []    // 客戶公開資料來源
 };
 ```
 
@@ -239,9 +257,9 @@ export const DATA = {
 
 ## 7. 頁面結構（章節 = 投影片）
 
-1. **開場摘要**：A 版 10 案／561.6 萬（含公部門 1 案）；B 版續約保底 + 5 案／564 萬（含公部門 1 案）；一句話主張；三個關鍵數字（標準案拆解、所需名單量、Q1 有效時程）。
-2. **產業與痛點地圖**：5 個產業徽章（角色：主攻／副攻…）+ 評分雷達或條列；點產業篩選痛點卡片。
-3. **痛點互動卡片**（核心）：點卡片展開 → 痛點人話、As-Is vs To-Be 簡易流程圖（inline SVG 或 CSS，3–5 節點，人工覆核點以不同顏色標示）、對應產品（半／全自動）、預估人天與報價、證據徽章與來源。預設突出 `meta.heroCaseId`。
+1. **開場摘要**：副標「先找到產業既定流程裡的痛點，再用「標準案」組合與成案率回推，逐步達成 500 萬業績目標」；A 版 10 案／561.6 萬（含公部門 1 案）；B 版續約保底 + 5 案／564 萬（含公部門 1 案）；三個關鍵數字（標準案拆解：授權 24 萬（工具授權加上半自動化）+ 開發 13 人天 26 萬、所需名單量、Q1 有效時程）；一句話主張「我認為 Pre-Sale 找到潛在商機 & 發掘客戶需求是成功的關鍵」。（開場頁已不列「主打案例／回簽報價單即計入」一行）
+2. **產業與痛點地圖**：6 個產業（含政府／公部門）評分表（成交週期、市場規模、客單、效益可量化、導入阻力）+ 角色徽章；右側「怎麼看這張表」說明框與評分表等高；點產業看切入理由、A／B 版規劃與目標客戶，並篩選卡片。
+3. **客戶案例卡片**（核心）：13 家具名客戶，點卡片展開五段式內容：① 客戶名稱 & 背景【公開事實】② 挑戰／流程現況【推估】③ 解決方案（機器人／人工覆核步驟，人工覆核以不同顏色標示）④ 預估成果／效益【試算假設】⑤ 報價試算。預設突出 `meta.heroCaseId`（台灣保來得）。
 4. **計價與組合器**：選流程 → 自動帶出「開發工具 + 機器人 + 人天」→ 顯示明細與總額；可加購半自動（64K／套）、調整人天；顯示與標準案（50 萬）的差距；內建「標準案怎麼拆」說明。**取代原本的「訂單→庫存→出貨→應收」動畫**（該動畫易過度承諾，已刪除；如需，只做成單一流程靜態圖放進卡片）。
 5. **A / B 業績拆解**：A/B 切換（同一版面）。顯示各產業案數與金額、案型組成、成交案數、風險說明。B 版置頂顯示**續約率敏感度表**與續約率滑桿（85%–100%）。
 6. **成案率回推與漏斗**：
@@ -251,8 +269,8 @@ export const DATA = {
    - 備註：百貨／金融走 ABM（鎖定 10–15 家），名單量不是重點；PoC 場次需標示團隊產能假設，並區分 Demo（標準範本）與 PoC（真實資料，建議付費抵扣）。
 7. **Q1 時間軸**：以回簽日倒推；標示暖名單（12 月）、Discovery（1 月）、春節前後簽核空窗、PoC、3 月衝刺、內部回簽目標。須在文案說明：「A 版以 12 月啟動暖名單為前提」。
 8. **特定情境／產品組合攻略**：入門包首購、標準案、全自動升級、既有客戶加購／純人天擴充、續約 + 加購。每項給「適用情境、組合、金額、對應產業」。
-9. **風險與備援**：全自動旗艦延後 → 以 2–3 個標準案補；續約率下滑 → 擴充 + 新客補；PoC 產能不足 → 付費 PoC／標準範本 Demo；高科技大廠自建能力強 → 賣授權、少賣人天。
-10. **假設與來源**：自動彙整所有假設（轉換率、人天、評分、日期）與證據來源列表（含等級說明）。
+9. **風險與備援**：全自動旗艦延後 → 以標準案補（缺口與案數由程式算出）或分階段；續約率下滑 → 擴充 + 新客補；PoC 產能不足 → 付費 PoC／標準範本 Demo；高科技大廠自建能力強 → 賣授權、少賣人天；公部門採購時程延後 → 12 月確認預算，公部門案列為 A／B 版緩衝。
+10. **假設與來源**：自動彙整所有假設（轉換率、人天、評分、日期、個案效益試算）與客戶公開資料來源列表。
 
 ## 8. 互動與簡報模式規格
 
