@@ -213,6 +213,17 @@
     return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 個月 ÷ ${fmtWan(r.monthlySalary * r.loadFactor)} × ${FTE_HOURS} 小時</span></p>`;
   }
 
+  // 效益算式逐步標註：分鐘是「人工」處理一筆的時間；RPA 執行時間不計；未自動化的部分仍由人工處理
+  function benefitSteps(b) {
+    const cnt = `${b.count.toLocaleString("en-US")} ${b.unit}`;
+    const vol = b.per === "day" ? `每日 ${cnt} × ${b.workDays} 天` : b.per === "year" ? `每年 ${cnt} ÷ 12` : `每月 ${cnt}`;
+    const auto = Math.round(b.autoRate * 100);
+    return `<ol class="benefit-steps">
+      <li><b>人工現況</b>：${esc(vol)} × 每${esc(measureOf(b))} ${b.minutes} 分 ＝ 月 ${fmtNum(b.monthlyHours, 0)} 小時</li>
+      <li><b>導入後</b>：機器人處理 ${auto}%，省 ${fmtNum(b.savedHours, 0)} 小時；${100 - auto}% 例外仍人工 ${fmtNum(b.monthlyHours - b.savedHours, 0)} 小時</li>
+    </ol>`;
+  }
+
   function caseDetailHtml(c) {
     const q = configure({ caseId: c.id });
     const bf = benefit(c.id);
@@ -246,15 +257,15 @@
         <div class="sec-stack">
         <section class="sec">
           <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
-          <p class="benefit-big">每月約省 <strong>${fmtNum(bf.savedHours, 0)}</strong> 小時<span class="muted">（約 ${fmtNum(bf.fte, 1)} 人力）</span></p>
-          <p class="muted">${esc(benefitFormula(c.id))}：月工時 ${fmtNum(bf.monthlyHours, 0)} 小時</p>
+          <p class="benefit-note">分鐘＝人工處理時間（RPA 執行時間不計）；1 人力＝每月 ${FTE_HOURS} 小時</p>
+          <p class="benefit-big">每月約省 <strong>${fmtNum(bf.savedHours, 0)}</strong> 小時人工<span class="muted">（約 ${fmtNum(bf.fte, 1)} 人力）</span></p>
+          ${benefitSteps(bf)}
           <p>${esc(bf.quality)}</p>
         </section>
         <section class="sec sec-quote">
-          <h4><span class="sec-no">5</span>報價試算</h4>
+          <h4 class="sec-h-row"><span><span class="sec-no">5</span>報價試算</span><button type="button" class="btn btn-ghost btn-sm" data-goto-cfg="${c.id}">在組合器調整 →</button></h4>
           ${quoteTable(q)}
           <p class="muted">${esc(c.productNote || "")}${dealText ? `<br>業績對應：${esc(dealText)}` : ""}</p>
-          <p><button type="button" class="btn btn-ghost" data-goto-cfg="${c.id}">在組合器調整 →</button></p>
         </section>
         </div>
       </div>`;

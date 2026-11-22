@@ -195,7 +195,7 @@ export const DATA = {
 - `renewalSensitivity(rates)`：回傳每個續約率的缺口與約需標準案數。
 - `configure({ caseId, productType, extraSemi, days, existingLicense })`：報價組合器，回傳明細（開發工具／機器人／加購／人天）與總額，並標示「與標準案差距」；`existingLicense`（或案例的 `existingLicense: true`）= 既有授權沿用、只算人天與加購。
 - `customerSourceSummary()`：統計客戶來源（富士既有 RPA／富士既有非 RPA／集團外新客）。（取代原 `evidenceSummary()`）
-- `benefit(caseId)`、`benefitFormula(caseId)`：效益試算（月工時、節省工時、人力當量），皆為假設。
+- `benefit(caseId)`、`benefitFormula(caseId)`、`measureOf(b)`：效益試算（月工時、節省工時、人力當量），皆為假設。`minutes` 是**人工**處理一個計量單位（`measure`，預設取 `unit` 第一個字）的分鐘數，RPA 執行時間不計；卡片第 4 段逐步標註「人工現況 → 導入後（機器人處理 X%，其餘例外仍人工）」。
 - `dealsForCase(caseId)`：該客戶在 A／B 版對應的案型與金額。
 - `roi(caseId, flows)`、`roiPlan(caseId)`、`hoursNeededForPayback(caseId)`：回本試算（月省金額、回本月數、三年淨效益；超過門檻時找出多流程攤提方案，仍不達標則回傳所需每月省時），皆為試算假設。
 - 所有函式不碰 DOM；`verify.mjs` 直接呼叫。

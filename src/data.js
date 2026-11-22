@@ -171,7 +171,7 @@ export const DATA = {
 
   // 具名客戶案例卡片（內容來源：Industry.md）。
   // background = 公開事實（附 sourceId）；challenge = 推估；toBe = 解決方案（human = 人工覆核點）；
-  // benefit = 效益試算假設：月工時 = count × minutes ÷ 60 × 每月次數（per: day×workDays／month×1／year÷12），節省 = 月工時 × autoRate
+  // benefit = 效益試算假設（minutes＝人工處理一個 measure 的分鐘數；measure 預設取 unit 第一個字）：月工時 = count × minutes ÷ 60 × 每月次數（per: day×workDays／month×1／year÷12），節省 = 月工時 × autoRate
   cases: [
     {
       id: "porite-delivery", industry: "manufacturing", customer: "台灣保來得", customerSource: "fuji-other",
@@ -242,7 +242,7 @@ export const DATA = {
         { actor: "robot", text: "延伸：年度盤點時比對系統帳與盤點表，產出差異清單" },
         { actor: "human", text: "倉管查盤差原因、主管決定是否調帳（RPA 不自動調帳）" }
       ],
-      benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
+      benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
         quality: "缺料從事後發現變成每日預警；盤點期加班比對 Excel 是加分項" },
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；主軸為每日低庫存預警，盤點差異比對為延伸場景"
@@ -388,7 +388,7 @@ export const DATA = {
       challenge: [
         "線上申辦量逐年成長，收件後仍可能需人工審查、比對車號／駕照資料再入案",
         "每日電子公文需依課室、類型人工篩選點收；量大時易延誤或分錯",
-        "裁決作業規則明確、格式固定，適合 RPA；但涉及裁罰判斷的部分必須保留人工"
+        "規則明確、格式固定，適合 RPA；裁罰判斷必須保留人工"
       ],
       toBe: [
         { actor: "robot", text: "定時讀取線上申辦案件，比對車號、駕照等資料完整性" },
@@ -397,7 +397,7 @@ export const DATA = {
         { actor: "human", text: "承辦人審核申訴內容與裁罰判斷（不自動裁決）" }
       ],
       benefit: { count: 84975, unit: "件線上申辦", per: "year", minutes: 3, autoRate: 0.6,
-        quality: "尖峰期不必加派人力；同類型機關（臺北市裁決所）已有導入先例，可降低決策阻力" },
+        quality: "尖峰期不必加派人力；同類機關已有先例，降低決策阻力" },
       productType: "semi", estDays: 13,
       productNote: "標準案；決標日視同回簽；低於公告金額門檻（待確認）"
     },
@@ -422,7 +422,7 @@ export const DATA = {
         { actor: "robot", text: "每月自動匯出並整理件數、結案率、逾期率統計表草稿" }
       ],
       benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
-        quality: "分案與催辦時效一致，尖峰月份不必加派人力；統計報表可直接供施政考核使用" },
+        quality: "分案與催辦時效一致；統計報表可直接供施政考核" },
       productType: "semi", estDays: 13,
       productNote: "標準案；決標／簽約日視同回簽；低於公告金額門檻（待確認）；機器人在市府內網執行"
     },
@@ -464,7 +464,7 @@ export const DATA = {
         { actor: "robot", text: "比對差異並產出差異報告" },
         { actor: "human", text: "會計與倉管確認差異原因、決定調整" }
       ],
-      benefit: { count: 1, unit: "次月結核對（約 16 小時）", per: "month", minutes: 960, autoRate: 0.8,
+      benefit: { count: 1, unit: "次月結核對（約 16 小時）", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
         quality: "月結提早 1–2 天" },
       productType: "semi", estDays: 15, existingLicense: true,
       productNote: "既有授權沿用，純人天擴充"

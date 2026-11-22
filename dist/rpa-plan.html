@@ -461,6 +461,22 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   .sec-roi h4 { margin-bottom: .1rem; }
 }
 .roi-calc { color: var(--muted); font-size: .85rem; }
+/* 效益算式逐步標註 */
+.benefit-steps { margin: .2rem 0 .1rem; padding-left: 1.3rem; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+.benefit-steps b { color: var(--ink); font-weight: 700; }
+.benefit-note { color: var(--muted); font-size: .8rem; margin: -.15rem 0 .1rem; }
+.sec-h-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.btn-sm { font-size: .85rem; padding: .2rem .7rem; }
+@media print { .sec-h-row .btn { display: none; } }
+.sec-h-row > span:first-child { display: inline-flex; align-items: center; gap: .45rem; }
+@media print {
+  .benefit-steps { font-size: .8rem; line-height: 1.3; margin: .1rem 0; }
+  .benefit-note { font-size: .72rem; margin: 0; }
+  .benefit-big { margin: .1rem 0; }
+}
+@media print {
+  #s-cases .case-detail .case-sections { grid-template-columns: 1fr 1fr; }
+}
 
 </style>
 </head>
@@ -833,7 +849,7 @@ const DATA = {
 
   // 具名客戶案例卡片（內容來源：Industry.md）。
   // background = 公開事實（附 sourceId）；challenge = 推估；toBe = 解決方案（human = 人工覆核點）；
-  // benefit = 效益試算假設：月工時 = count × minutes ÷ 60 × 每月次數（per: day×workDays／month×1／year÷12），節省 = 月工時 × autoRate
+  // benefit = 效益試算假設（minutes＝人工處理一個 measure 的分鐘數；measure 預設取 unit 第一個字）：月工時 = count × minutes ÷ 60 × 每月次數（per: day×workDays／month×1／year÷12），節省 = 月工時 × autoRate
   cases: [
     {
       id: "porite-delivery", industry: "manufacturing", customer: "台灣保來得", customerSource: "fuji-other",
@@ -904,7 +920,7 @@ const DATA = {
         { actor: "robot", text: "延伸：年度盤點時比對系統帳與盤點表，產出差異清單" },
         { actor: "human", text: "倉管查盤差原因、主管決定是否調帳（RPA 不自動調帳）" }
       ],
-      benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
+      benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
         quality: "缺料從事後發現變成每日預警；盤點期加班比對 Excel 是加分項" },
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；主軸為每日低庫存預警，盤點差異比對為延伸場景"
@@ -1050,7 +1066,7 @@ const DATA = {
       challenge: [
         "線上申辦量逐年成長，收件後仍可能需人工審查、比對車號／駕照資料再入案",
         "每日電子公文需依課室、類型人工篩選點收；量大時易延誤或分錯",
-        "裁決作業規則明確、格式固定，適合 RPA；但涉及裁罰判斷的部分必須保留人工"
+        "規則明確、格式固定，適合 RPA；裁罰判斷必須保留人工"
       ],
       toBe: [
         { actor: "robot", text: "定時讀取線上申辦案件，比對車號、駕照等資料完整性" },
@@ -1059,7 +1075,7 @@ const DATA = {
         { actor: "human", text: "承辦人審核申訴內容與裁罰判斷（不自動裁決）" }
       ],
       benefit: { count: 84975, unit: "件線上申辦", per: "year", minutes: 3, autoRate: 0.6,
-        quality: "尖峰期不必加派人力；同類型機關（臺北市裁決所）已有導入先例，可降低決策阻力" },
+        quality: "尖峰期不必加派人力；同類機關已有先例，降低決策阻力" },
       productType: "semi", estDays: 13,
       productNote: "標準案；決標日視同回簽；低於公告金額門檻（待確認）"
     },
@@ -1084,7 +1100,7 @@ const DATA = {
         { actor: "robot", text: "每月自動匯出並整理件數、結案率、逾期率統計表草稿" }
       ],
       benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
-        quality: "分案與催辦時效一致，尖峰月份不必加派人力；統計報表可直接供施政考核使用" },
+        quality: "分案與催辦時效一致；統計報表可直接供施政考核" },
       productType: "semi", estDays: 13,
       productNote: "標準案；決標／簽約日視同回簽；低於公告金額門檻（待確認）；機器人在市府內網執行"
     },
@@ -1126,7 +1142,7 @@ const DATA = {
         { actor: "robot", text: "比對差異並產出差異報告" },
         { actor: "human", text: "會計與倉管確認差異原因、決定調整" }
       ],
-      benefit: { count: 1, unit: "次月結核對（約 16 小時）", per: "month", minutes: 960, autoRate: 0.8,
+      benefit: { count: 1, unit: "次月結核對（約 16 小時）", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
         quality: "月結提早 1–2 天" },
       productType: "semi", estDays: 15, existingLicense: true,
       productNote: "既有授權沿用，純人天擴充"
@@ -1375,10 +1391,12 @@ function benefit(caseId) {
 }
 
 const PER_LABEL = { day: "日", month: "月", year: "年" };
+// 效益的計量單位（「人工每 X 幾分鐘」的 X）
+function measureOf(b) { return b.measure || b.unit.charAt(0); }
 function benefitFormula(caseId) {
   const b = benefit(caseId);
   const per = b.per === "day" ? `／日（${b.workDays} 天／月）` : `／${PER_LABEL[b.per]}`;
-  return `${b.count} ${b.unit}${per} × ${b.minutes} 分 × 自動化 ${Math.round(b.autoRate * 100)}%`;
+  return `${b.count.toLocaleString("en-US")} ${b.unit}${per} × 人工每${measureOf(b)} ${b.minutes} 分 × 機器人處理 ${Math.round(b.autoRate * 100)}%`;
 }
 
 // ---- 回本試算（假設）----
@@ -1806,6 +1824,17 @@ function fmtNum(v, digits = 1) {
     return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 個月 ÷ ${fmtWan(r.monthlySalary * r.loadFactor)} × ${FTE_HOURS} 小時</span></p>`;
   }
 
+  // 效益算式逐步標註：分鐘是「人工」處理一筆的時間；RPA 執行時間不計；未自動化的部分仍由人工處理
+  function benefitSteps(b) {
+    const cnt = `${b.count.toLocaleString("en-US")} ${b.unit}`;
+    const vol = b.per === "day" ? `每日 ${cnt} × ${b.workDays} 天` : b.per === "year" ? `每年 ${cnt} ÷ 12` : `每月 ${cnt}`;
+    const auto = Math.round(b.autoRate * 100);
+    return `<ol class="benefit-steps">
+      <li><b>人工現況</b>：${esc(vol)} × 每${esc(measureOf(b))} ${b.minutes} 分 ＝ 月 ${fmtNum(b.monthlyHours, 0)} 小時</li>
+      <li><b>導入後</b>：機器人處理 ${auto}%，省 ${fmtNum(b.savedHours, 0)} 小時；${100 - auto}% 例外仍人工 ${fmtNum(b.monthlyHours - b.savedHours, 0)} 小時</li>
+    </ol>`;
+  }
+
   function caseDetailHtml(c) {
     const q = configure({ caseId: c.id });
     const bf = benefit(c.id);
@@ -1839,15 +1868,15 @@ function fmtNum(v, digits = 1) {
         <div class="sec-stack">
         <section class="sec">
           <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
-          <p class="benefit-big">每月約省 <strong>${fmtNum(bf.savedHours, 0)}</strong> 小時<span class="muted">（約 ${fmtNum(bf.fte, 1)} 人力）</span></p>
-          <p class="muted">${esc(benefitFormula(c.id))}：月工時 ${fmtNum(bf.monthlyHours, 0)} 小時</p>
+          <p class="benefit-note">分鐘＝人工處理時間（RPA 執行時間不計）；1 人力＝每月 ${FTE_HOURS} 小時</p>
+          <p class="benefit-big">每月約省 <strong>${fmtNum(bf.savedHours, 0)}</strong> 小時人工<span class="muted">（約 ${fmtNum(bf.fte, 1)} 人力）</span></p>
+          ${benefitSteps(bf)}
           <p>${esc(bf.quality)}</p>
         </section>
         <section class="sec sec-quote">
-          <h4><span class="sec-no">5</span>報價試算</h4>
+          <h4 class="sec-h-row"><span><span class="sec-no">5</span>報價試算</span><button type="button" class="btn btn-ghost btn-sm" data-goto-cfg="${c.id}">在組合器調整 →</button></h4>
           ${quoteTable(q)}
           <p class="muted">${esc(c.productNote || "")}${dealText ? `<br>業績對應：${esc(dealText)}` : ""}</p>
-          <p><button type="button" class="btn btn-ghost" data-goto-cfg="${c.id}">在組合器調整 →</button></p>
         </section>
         </div>
       </div>`;

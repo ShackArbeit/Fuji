@@ -187,10 +187,12 @@ export function benefit(caseId) {
 }
 
 const PER_LABEL = { day: "日", month: "月", year: "年" };
+// 效益的計量單位（「人工每 X 幾分鐘」的 X）
+export function measureOf(b) { return b.measure || b.unit.charAt(0); }
 export function benefitFormula(caseId) {
   const b = benefit(caseId);
   const per = b.per === "day" ? `／日（${b.workDays} 天／月）` : `／${PER_LABEL[b.per]}`;
-  return `${b.count} ${b.unit}${per} × ${b.minutes} 分 × 自動化 ${Math.round(b.autoRate * 100)}%`;
+  return `${b.count.toLocaleString("en-US")} ${b.unit}${per} × 人工每${measureOf(b)} ${b.minutes} 分 × 機器人處理 ${Math.round(b.autoRate * 100)}%`;
 }
 
 // ---- 回本試算（假設）----

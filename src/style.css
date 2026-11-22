@@ -454,3 +454,19 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   .sec-roi h4 { margin-bottom: .1rem; }
 }
 .roi-calc { color: var(--muted); font-size: .85rem; }
+/* 效益算式逐步標註 */
+.benefit-steps { margin: .2rem 0 .1rem; padding-left: 1.3rem; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+.benefit-steps b { color: var(--ink); font-weight: 700; }
+.benefit-note { color: var(--muted); font-size: .8rem; margin: -.15rem 0 .1rem; }
+.sec-h-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.btn-sm { font-size: .85rem; padding: .2rem .7rem; }
+@media print { .sec-h-row .btn { display: none; } }
+.sec-h-row > span:first-child { display: inline-flex; align-items: center; gap: .45rem; }
+@media print {
+  .benefit-steps { font-size: .8rem; line-height: 1.3; margin: .1rem 0; }
+  .benefit-note { font-size: .72rem; margin: 0; }
+  .benefit-big { margin: .1rem 0; }
+}
+@media print {
+  #s-cases .case-detail .case-sections { grid-template-columns: 1fr 1fr; }
+}
