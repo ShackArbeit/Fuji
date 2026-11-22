@@ -278,19 +278,20 @@ export const DATA = {
         { text: "自有製造：新北石門「北海明珠創生基地」2026 年 3 月取得化妝品 GMP 證明", sourceId: "yuan-news" }
       ],
       challenge: [
-        "官網、電商平台、門市訂單分散在多個後台，每天分別下載、轉成 ERP 格式",
-        "出貨後要把物流單號逐筆貼回各平台；檔期活動訂單暴增時易延遲出錯"
+        "官網、momo 等電商訂單要抓單、回填物流單號；門市 POS 銷售則要併入每日全通路彙整，兩種資料流不同",
+        "若已有 OMS／ERP 串接部分通路，缺口可能在長尾通路、檔期組合贈品拆單、跨系統對帳（待確認）",
+        "取得 GMP 後，批號／效期追溯與通路擴張（跨境、更多電商）會讓資料流更複雜"
       ],
       toBe: [
-        { actor: "robot", text: "定時下載各通路訂單，轉成 ERP 格式匯入" },
+        { actor: "robot", text: "定時抓取未串接通路的訂單，依檔期組合／贈品規則拆單，轉成 ERP 格式匯入" },
         { actor: "robot", text: "出貨後回填物流單號到各平台" },
-        { actor: "robot", text: "產出每日各通路銷售彙整" },
+        { actor: "robot", text: "併入門市 POS 日結，產出每日全通路銷售與對帳彙整" },
         { actor: "human", text: "客服處理取消、退款、地址異常（不自動退款）" }
       ],
       benefit: { count: 150, unit: "筆訂單", per: "day", workDays: 30, minutes: 2, autoRate: 0.8,
-        quality: "檔期不必加派人手，出貨延遲減少" },
+        quality: "檔期爆單不必加派人手；不改各平台與 ERP 的 API 就能串起資料流" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；通路超過 4 個時人天可能增加"
+      productNote: "半自動標準案；先確認既有 OMS 串接範圍，通路超過 4 個時人天可能增加"
     },
     {
       id: "ginza-store-daily", industry: "retail", customer: "銀座白石", customerSource: "fuji-other",
