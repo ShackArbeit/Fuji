@@ -66,6 +66,15 @@ export const DATA = {
     abmAccounts: [10, 15]   // 百貨／金融 ABM 鎖定家數
   },
 
+  // 回本試算假設（2026-11-22 Shack 同意：月薪 5 萬 × 1.3 雇主成本）；皆為試算假設，非客戶實績
+  roi: {
+    monthlySalary: 50_000, // 每人月薪
+    loadFactor: 1.3,       // 雇主實際成本倍數（勞健保、勞退、年終）
+    horizonMonths: 36,     // 淨效益計算期間（3 年；授權每 12 個月續約一次）
+    paybackLimit: 18,      // 回本超過此月數，提出「同一套授權多流程攤提」
+    maxFlows: 3            // 攤提試算最多幾個流程（第 2 個起每個以既有客戶擴充人天計價，效益假設與首個流程同量級）
+  },
+
   // score 為主觀假設（1–5，resistance 越高代表阻力越低）；pitch 為推論，需 Discovery 驗證
   industries: [
     { id: "manufacturing", name: "製造業供應鏈",   short: "製造",   role: "主攻",       abm: false, score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 },
@@ -203,15 +212,15 @@ export const DATA = {
         "待確認：是否已有 PLM／PDM 簽核；檔名或文件屬性是否標準化（掃描圖無文字層難讀取）"
       ],
       toBe: [
-        { actor: "robot", text: "監看已核准資料夾／DocuWorks 工作區／PLM 匯出清單，依標準化檔名或文件屬性擷取圖號、版次、料號" },
-        { actor: "robot", text: "登入 ERP 更新料號版次與圖面連結；讀不到或格式不符者轉人工" },
+        { actor: "robot", text: "監看已核准資料夾／DocuWorks／PLM 匯出，依標準化檔名或屬性擷取圖號、版次、料號" },
+        { actor: "robot", text: "登入 ERP 更新版次與圖面連結；讀不到者轉人工" },
         { actor: "robot", text: "依料號寄設變通知給採購、生管、品保，附最新唯一版圖面" },
         { actor: "human", text: "在途訂單與半成品如何處置（直接切換、用完再換、報廢重工），由工程與生管判斷" }
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
-        quality: "消除核准到 ERP 同步的時間差與漏改風險：核准後幾分鐘內各部門都拿到最新唯一版本" },
+        quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；先鎖定當初導入 DocuWorks 的工程團隊所屬事業部試點，成功後再橫向擴散"
+      productNote: "半自動標準案；先在導入 DocuWorks 的事業部試點，再橫向擴散"
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
@@ -389,7 +398,7 @@ export const DATA = {
       benefit: { count: 84975, unit: "件線上申辦", per: "year", minutes: 3, autoRate: 0.6,
         quality: "尖峰期不必加派人力；同類型機關（臺北市裁決所）已有導入先例，可降低決策阻力" },
       productType: "semi", estDays: 13,
-      productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）"
+      productNote: "標準案；決標日視同回簽；低於公告金額門檻（待確認）"
     },
     {
       id: "tc-1999-petition", industry: "government", customer: "臺中市政府研究發展考核委員會", customerSource: "new",
@@ -414,7 +423,7 @@ export const DATA = {
       benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
         quality: "分案與催辦時效一致，尖峰月份不必加派人力；統計報表可直接供施政考核使用" },
       productType: "semi", estDays: 13,
-      productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）；避開個資外流：機器人在市府內網執行"
+      productNote: "標準案；決標／簽約日視同回簽；低於公告金額門檻（待確認）；機器人在市府內網執行"
     },
     {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",

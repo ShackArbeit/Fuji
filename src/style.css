@@ -441,3 +441,15 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   #s-summary .kpi { padding: .75rem 1.2rem; }
   #s-summary .thesis { padding: .6rem 1.2rem; }
 }
+
+/* 回本試算（卡片第 4 段） */
+.roi-line { margin-top: .35rem; font-size: .9rem; line-height: 1.45; }
+.roi-ok { color: var(--robot); font-weight: 700; font-size: .95rem; }
+.roi-alt { color: var(--primary); font-weight: 700; font-size: .95rem; }
+.roi-warn { color: var(--human); font-weight: 700; font-size: .95rem; }
+.sec-roi .roi-line { margin-top: .2rem; }
+.roi-sub { font-size: .8rem; font-weight: 400; margin-left: .3rem; }
+@media print {
+  .sec-roi .roi-line { font-size: .82rem; line-height: 1.35; }
+  .sec-roi h4 { margin-bottom: .1rem; }
+}

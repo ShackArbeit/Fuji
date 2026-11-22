@@ -196,6 +196,18 @@
     }
     el.innerHTML = caseDetailHtml(c);
   }
+  // 回本試算（試算假設）：達標顯示回本月數與三年淨效益；未達標改提多流程攤提或量體門檻，不顯示負數
+  function roiHtml(c) {
+    const r = DATA.roi;
+    const { base, alt } = roiPlan(c.id);
+    const wan = v => fmtNum(v / 10000, 1) + " 萬";
+    const pb = x => x.payback === null ? "回本需 60 個月以上" : `約 ${x.payback} 個月回本`;
+    const head = `人力成本以月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor} 計：月省約 ${wan(base.monthlySave)}，${pb(base)}`;
+    if (base.ok) return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}</span></p>`;
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ 同一套授權加 ${alt.flows - 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）：約 ${alt.payback} 個月回本、三年淨效益約 ${wan(alt.net3y)}</span></p>`;
+    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省約 ${fmtNum(hoursNeededForPayback(c.id), 0)} 小時以上，才能在 ${r.paybackLimit} 個月內回本</span></p>`;
+  }
+
   function caseDetailHtml(c) {
     const q = configure({ caseId: c.id });
     const bf = benefit(c.id);
@@ -216,10 +228,16 @@
           <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
           <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
         </section>
+        <div class="sec-stack">
         <section class="sec">
           <h4><span class="sec-no">3</span>解決方案</h4>
           <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
         </section>
+        <section class="sec sec-roi">
+          <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（接第 4 段效益 × 第 5 段報價）</span></h4>
+          ${roiHtml(c)}
+        </section>
+        </div>
         <div class="sec-stack">
         <section class="sec">
           <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>

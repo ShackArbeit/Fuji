@@ -159,6 +159,16 @@ const expSaved = {
 for (const [id, h] of Object.entries(expSaved)) {
   if (ids.has(id)) check(`效益：${id} 每月節省小時`, Math.round(C.benefit(id).savedHours * 10) / 10, h);
 }
+// 回本試算（2026-11-22 Shack 同意：月薪 5 萬 × 1.3、門檻 18 個月）
+const RP = C.roiPlan("porite-delivery");
+check("回本：保來得 1 流程月數", RP.base.payback, 20);
+check("回本：保來得 2 流程月數", RP.alt && RP.alt.payback, 11);
+check("回本：新北裁決處 1 流程月數", C.roi("ntpc-traffic-adjudication").payback, 7);
+check("回本：標準案每月需省小時（18 個月）", Math.round(C.hoursNeededForPayback("tpi-stock-alert")), 106);
+for (const c of DATA.cases) {
+  const p = C.roiPlan(c.id);
+  assert(`回本：${c.id} 月省金額需為正`, p.base.monthlySave > 0);
+}
 check("主打案例報價 = 標準案", C.configure({ caseId: DATA.meta.heroCaseId }).total, C.standardCaseAmount());
 
 // 列印附錄（情境對照表）

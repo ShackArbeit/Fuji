@@ -193,6 +193,46 @@ export function benefitFormula(caseId) {
   return `${b.count} ${b.unit}${per} × ${b.minutes} 分 × 自動化 ${Math.round(b.autoRate * 100)}%`;
 }
 
+// ---- 回本試算（假設）----
+// 成本：首年 = 報價全額（含首年授權）；之後每滿 12 個月續約一次授權（既有授權沿用者為 0）
+// 多流程：同一套授權再加流程，每個流程以「既有客戶擴充」人天計價，效益假設與首個流程同量級
+export function roi(caseId, flows = 1, r = DATA.roi) {
+  const q = configure({ caseId });
+  const b = benefit(caseId);
+  const laborMonthly = r.monthlySalary * r.loadFactor;
+  const savePerFlow = b.fte * laborMonthly;
+  const monthlySave = savePerFlow * flows;
+  const addFlowCost = dealAmount("expansion");
+  const oneTime = q.total + (flows - 1) * addFlowCost;
+  const costAt = m => oneTime + q.license * (Math.ceil(m / 12) - 1);
+  let payback = null;
+  for (let m = 1; m <= 60; m++) {
+    if (m * monthlySave >= costAt(m)) { payback = m; break; }
+  }
+  const H = r.horizonMonths;
+  const net3y = H * monthlySave - costAt(H);
+  return { caseId, flows, laborMonthly, monthlySave, oneTime, license: q.license, payback, net3y, ok: payback !== null && payback <= r.paybackLimit };
+}
+// 單一流程要在 paybackLimit 個月內回本，每月至少需省多少小時
+function dealTypeDays(k) { return DATA.dealTypes[k].days; }
+export function hoursNeededForPayback(caseId, r = DATA.roi) {
+  const q = configure({ caseId });
+  const m = r.paybackLimit;
+  const cost = q.total + q.license * (Math.ceil(m / 12) - 1);
+  return (cost / m) / (r.monthlySalary * r.loadFactor) * FTE_HOURS;
+}
+// 回本超過門檻時，找出最少需要幾個流程才能在門檻內回本（最多 maxFlows）
+export function roiPlan(caseId, r = DATA.roi) {
+  const base = roi(caseId, 1, r);
+  if (base.ok) return { base, alt: null };
+  let alt = null;
+  for (let k = 2; k <= r.maxFlows; k++) {
+    alt = roi(caseId, k, r);
+    if (alt.ok) break;
+  }
+  return { base, alt };
+}
+
 // 此案例在 A／B 版被列為哪些案型
 export function dealsForCase(caseId) {
   const out = [];
@@ -321,6 +361,12 @@ export function collectAssumptions(overrides = {}) {
   for (const s of DATA.scenarios) {
     if (s.bundle.days) list.push({ group: "情境組合人天", label: s.title, value: s.bundle.days + " 人天" });
   }
+  const r = DATA.roi;
+  const g2 = "回本試算（試算假設）";
+  list.push({ group: g2, label: "人力成本", value: `月薪 ${r.monthlySalary / 10000} 萬 × ${r.loadFactor}` });
+  list.push({ group: g2, label: "回本門檻", value: `${r.paybackLimit} 個月` });
+  list.push({ group: g2, label: "淨效益期間", value: `${r.horizonMonths / 12} 年（授權每年續約）` });
+  list.push({ group: g2, label: "多流程攤提", value: `最多 ${r.maxFlows} 個流程；第 2 個起每個 ${dealTypeDays("expansion")} 人天`, wrap: true });
   for (const c of DATA.cases) {
     list.push({ group: "個案人天與效益假設", label: c.customer.replace(/（.*）/, ""), value: `${c.estDays} 人天｜${benefitFormula(c.id)}`, wrap: true });
   }

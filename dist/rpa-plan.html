@@ -449,6 +449,18 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   #s-summary .thesis { padding: .6rem 1.2rem; }
 }
 
+/* 回本試算（卡片第 4 段） */
+.roi-line { margin-top: .35rem; font-size: .9rem; line-height: 1.45; }
+.roi-ok { color: var(--robot); font-weight: 700; font-size: .95rem; }
+.roi-alt { color: var(--primary); font-weight: 700; font-size: .95rem; }
+.roi-warn { color: var(--human); font-weight: 700; font-size: .95rem; }
+.sec-roi .roi-line { margin-top: .2rem; }
+.roi-sub { font-size: .8rem; font-weight: 400; margin-left: .3rem; }
+@media print {
+  .sec-roi .roi-line { font-size: .82rem; line-height: 1.35; }
+  .sec-roi h4 { margin-bottom: .1rem; }
+}
+
 </style>
 </head>
 <body>
@@ -715,6 +727,15 @@ const DATA = {
     abmAccounts: [10, 15]   // 百貨／金融 ABM 鎖定家數
   },
 
+  // 回本試算假設（2026-11-22 Shack 同意：月薪 5 萬 × 1.3 雇主成本）；皆為試算假設，非客戶實績
+  roi: {
+    monthlySalary: 50_000, // 每人月薪
+    loadFactor: 1.3,       // 雇主實際成本倍數（勞健保、勞退、年終）
+    horizonMonths: 36,     // 淨效益計算期間（3 年；授權每 12 個月續約一次）
+    paybackLimit: 18,      // 回本超過此月數，提出「同一套授權多流程攤提」
+    maxFlows: 3            // 攤提試算最多幾個流程（第 2 個起每個以既有客戶擴充人天計價，效益假設與首個流程同量級）
+  },
+
   // score 為主觀假設（1–5，resistance 越高代表阻力越低）；pitch 為推論，需 Discovery 驗證
   industries: [
     { id: "manufacturing", name: "製造業供應鏈",   short: "製造",   role: "主攻",       abm: false, score: { speed: 4, size: 5, ticket: 4, quantifiable: 5, resistance: 4 },
@@ -852,15 +873,15 @@ const DATA = {
         "待確認：是否已有 PLM／PDM 簽核；檔名或文件屬性是否標準化（掃描圖無文字層難讀取）"
       ],
       toBe: [
-        { actor: "robot", text: "監看已核准資料夾／DocuWorks 工作區／PLM 匯出清單，依標準化檔名或文件屬性擷取圖號、版次、料號" },
-        { actor: "robot", text: "登入 ERP 更新料號版次與圖面連結；讀不到或格式不符者轉人工" },
+        { actor: "robot", text: "監看已核准資料夾／DocuWorks／PLM 匯出，依標準化檔名或屬性擷取圖號、版次、料號" },
+        { actor: "robot", text: "登入 ERP 更新版次與圖面連結；讀不到者轉人工" },
         { actor: "robot", text: "依料號寄設變通知給採購、生管、品保，附最新唯一版圖面" },
         { actor: "human", text: "在途訂單與半成品如何處置（直接切換、用完再換、報廢重工），由工程與生管判斷" }
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
-        quality: "消除核准到 ERP 同步的時間差與漏改風險：核准後幾分鐘內各部門都拿到最新唯一版本" },
+        quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；先鎖定當初導入 DocuWorks 的工程團隊所屬事業部試點，成功後再橫向擴散"
+      productNote: "半自動標準案；先在導入 DocuWorks 的事業部試點，再橫向擴散"
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
@@ -1038,7 +1059,7 @@ const DATA = {
       benefit: { count: 84975, unit: "件線上申辦", per: "year", minutes: 3, autoRate: 0.6,
         quality: "尖峰期不必加派人力；同類型機關（臺北市裁決所）已有導入先例，可降低決策阻力" },
       productType: "semi", estDays: 13,
-      productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）"
+      productNote: "標準案；決標日視同回簽；低於公告金額門檻（待確認）"
     },
     {
       id: "tc-1999-petition", industry: "government", customer: "臺中市政府研究發展考核委員會", customerSource: "new",
@@ -1063,7 +1084,7 @@ const DATA = {
       benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
         quality: "分案與催辦時效一致，尖峰月份不必加派人力；統計報表可直接供施政考核使用" },
       productType: "semi", estDays: 13,
-      productNote: "標準案；以決標／簽約日視同回簽；金額低於採購公告金額門檻（程序待確認）；避開個資外流：機器人在市府內網執行"
+      productNote: "標準案；決標／簽約日視同回簽；低於公告金額門檻（待確認）；機器人在市府內網執行"
     },
     {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
@@ -1358,6 +1379,46 @@ function benefitFormula(caseId) {
   return `${b.count} ${b.unit}${per} × ${b.minutes} 分 × 自動化 ${Math.round(b.autoRate * 100)}%`;
 }
 
+// ---- 回本試算（假設）----
+// 成本：首年 = 報價全額（含首年授權）；之後每滿 12 個月續約一次授權（既有授權沿用者為 0）
+// 多流程：同一套授權再加流程，每個流程以「既有客戶擴充」人天計價，效益假設與首個流程同量級
+function roi(caseId, flows = 1, r = DATA.roi) {
+  const q = configure({ caseId });
+  const b = benefit(caseId);
+  const laborMonthly = r.monthlySalary * r.loadFactor;
+  const savePerFlow = b.fte * laborMonthly;
+  const monthlySave = savePerFlow * flows;
+  const addFlowCost = dealAmount("expansion");
+  const oneTime = q.total + (flows - 1) * addFlowCost;
+  const costAt = m => oneTime + q.license * (Math.ceil(m / 12) - 1);
+  let payback = null;
+  for (let m = 1; m <= 60; m++) {
+    if (m * monthlySave >= costAt(m)) { payback = m; break; }
+  }
+  const H = r.horizonMonths;
+  const net3y = H * monthlySave - costAt(H);
+  return { caseId, flows, laborMonthly, monthlySave, oneTime, license: q.license, payback, net3y, ok: payback !== null && payback <= r.paybackLimit };
+}
+// 單一流程要在 paybackLimit 個月內回本，每月至少需省多少小時
+function dealTypeDays(k) { return DATA.dealTypes[k].days; }
+function hoursNeededForPayback(caseId, r = DATA.roi) {
+  const q = configure({ caseId });
+  const m = r.paybackLimit;
+  const cost = q.total + q.license * (Math.ceil(m / 12) - 1);
+  return (cost / m) / (r.monthlySalary * r.loadFactor) * FTE_HOURS;
+}
+// 回本超過門檻時，找出最少需要幾個流程才能在門檻內回本（最多 maxFlows）
+function roiPlan(caseId, r = DATA.roi) {
+  const base = roi(caseId, 1, r);
+  if (base.ok) return { base, alt: null };
+  let alt = null;
+  for (let k = 2; k <= r.maxFlows; k++) {
+    alt = roi(caseId, k, r);
+    if (alt.ok) break;
+  }
+  return { base, alt };
+}
+
 // 此案例在 A／B 版被列為哪些案型
 function dealsForCase(caseId) {
   const out = [];
@@ -1486,6 +1547,12 @@ function collectAssumptions(overrides = {}) {
   for (const s of DATA.scenarios) {
     if (s.bundle.days) list.push({ group: "情境組合人天", label: s.title, value: s.bundle.days + " 人天" });
   }
+  const r = DATA.roi;
+  const g2 = "回本試算（試算假設）";
+  list.push({ group: g2, label: "人力成本", value: `月薪 ${r.monthlySalary / 10000} 萬 × ${r.loadFactor}` });
+  list.push({ group: g2, label: "回本門檻", value: `${r.paybackLimit} 個月` });
+  list.push({ group: g2, label: "淨效益期間", value: `${r.horizonMonths / 12} 年（授權每年續約）` });
+  list.push({ group: g2, label: "多流程攤提", value: `最多 ${r.maxFlows} 個流程；第 2 個起每個 ${dealTypeDays("expansion")} 人天`, wrap: true });
   for (const c of DATA.cases) {
     list.push({ group: "個案人天與效益假設", label: c.customer.replace(/（.*）/, ""), value: `${c.estDays} 人天｜${benefitFormula(c.id)}`, wrap: true });
   }
@@ -1720,6 +1787,18 @@ function fmtNum(v, digits = 1) {
     }
     el.innerHTML = caseDetailHtml(c);
   }
+  // 回本試算（試算假設）：達標顯示回本月數與三年淨效益；未達標改提多流程攤提或量體門檻，不顯示負數
+  function roiHtml(c) {
+    const r = DATA.roi;
+    const { base, alt } = roiPlan(c.id);
+    const wan = v => fmtNum(v / 10000, 1) + " 萬";
+    const pb = x => x.payback === null ? "回本需 60 個月以上" : `約 ${x.payback} 個月回本`;
+    const head = `人力成本以月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor} 計：月省約 ${wan(base.monthlySave)}，${pb(base)}`;
+    if (base.ok) return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}</span></p>`;
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ 同一套授權加 ${alt.flows - 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）：約 ${alt.payback} 個月回本、三年淨效益約 ${wan(alt.net3y)}</span></p>`;
+    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省約 ${fmtNum(hoursNeededForPayback(c.id), 0)} 小時以上，才能在 ${r.paybackLimit} 個月內回本</span></p>`;
+  }
+
   function caseDetailHtml(c) {
     const q = configure({ caseId: c.id });
     const bf = benefit(c.id);
@@ -1740,10 +1819,16 @@ function fmtNum(v, digits = 1) {
           <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
           <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
         </section>
+        <div class="sec-stack">
         <section class="sec">
           <h4><span class="sec-no">3</span>解決方案</h4>
           <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
         </section>
+        <section class="sec sec-roi">
+          <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（接第 4 段效益 × 第 5 段報價）</span></h4>
+          ${roiHtml(c)}
+        </section>
+        </div>
         <div class="sec-stack">
         <section class="sec">
           <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
