@@ -405,6 +405,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 @media print {
   .print-appendix { display: block; break-before: page; page-break-before: always; }
   .ap-page { break-after: page; page-break-after: always; }
+  #ap-sources { break-before: page; page-break-before: always; }
   .ap-page h2 { margin-bottom: .2rem; }
   .ap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 1.2rem; margin-top: .6rem; }
   .ap-grid .panel { padding: .5rem .8rem; }
@@ -425,13 +426,13 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 #s-cases .case-sub { font-size: .84rem; } /* 14 家客戶時維持一屏 */
 #s-cases .slide-head h2 { font-size: 1.9rem; }
 @media print {
-  #s-sources .as-group dl, #s-sources .src-list { font-size: .76rem; line-height: 1.3; }
-  #s-sources .src-list { columns: 3; }
-  #s-sources .as-group { margin-bottom: .25rem; }
-  #s-sources .ev-legend { font-size: .8rem; }
+  #ap-sources .as-group dl, #ap-sources .src-list { font-size: .76rem; line-height: 1.3; }
+  #ap-sources .src-list { columns: 3; }
+  #ap-sources .as-group { margin-bottom: .25rem; }
+  #ap-sources .ev-legend { font-size: .8rem; }
   /* 個案假設較長：列印時允許跨欄，讓 4 欄平均分配（同一列 dt／dd 仍在同一欄） */
-  #s-sources .as-group { break-inside: auto; }
-  #s-sources .as-group h4 { break-after: avoid; }
+  #ap-sources .as-group { break-inside: auto; }
+  #ap-sources .as-group h4 { break-after: avoid; }
 }
 
 /* B 版拆解表：表頭不換行（新增第 5 案後節省高度） */
