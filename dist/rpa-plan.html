@@ -815,25 +815,26 @@ const DATA = {
   cases: [
     {
       id: "porite-delivery", industry: "manufacturing", customer: "台灣保來得", customerSource: "fuji-other",
-      title: "供應商交期追蹤",
+      title: "供應商交期追蹤 + 交期異常預警",
       background: [
         { text: "粉末冶金大廠，富士官網形容為全球前三大；2010 年起量產 SOFC 燃料電池連接板", sourceId: "fbtw-mfg" },
         { text: "報導指出 SOFC 連接板主要供應美商 Bloom Energy（約占營收四成），汽車引擎／變速箱粉末冶金件為第二大業務，並規劃產能倍增", sourceId: "porite-news" },
         { text: "富士既有客戶：kintone 處理請購、採購與不良品管制；Apeos 事務機由 130 台減至 30 台以下", sourceId: "fbtw-mfg" }
       ],
       challenge: [
-        "產能倍增、料件多（粉末原料、模具、外包加工），交期延誤直接影響出貨給國際車廠",
-        "請購、採購已上 kintone，但「追交期」可能仍是：匯出未交單 → 逐家寄信 → 讀回信 → 手動更新",
-        "資料已數位化、規則明確，正是 RPA 最容易接手的一段"
+        "產能倍增、料件多，交期延誤會影響下游客戶（國際車廠、SOFC／能源客戶）的交付節奏與排程",
+        "許多製造業導入 kintone 後，追交期仍常是半人工：匯出未交單 → 寄信 → 讀回信 → 手動更新（待確認）",
+        "系統邊界待確認：ERP 角色、主檔與介面權限未知，先以 kintone 為對接對象",
+        "供應商回覆管道與格式多元（Email、EDI、電話、LINE），不能假設全部自動讀懂"
       ],
       toBe: [
-        { actor: "robot", text: "每日抓取未交貨採購單，對 7 天內到期項目批次寄送交期確認信" },
-        { actor: "robot", text: "擷取回覆交期，回填 kintone／ERP" },
-        { actor: "robot", text: "標記逾期與未回覆項目" },
-        { actor: "human", text: "採購只處理延後、未回覆的異常，並與生管協調排程" }
+        { actor: "robot", text: "每日從 kintone 抓未交貨採購單，依料件交期提前寄確認信（7 天為示範，長交期料件可設 14–30 天）" },
+        { actor: "robot", text: "固定格式的回覆自動擷取交期，回填 kintone" },
+        { actor: "robot", text: "非制式、模糊或未回覆者歸入「待人工確認」，產生交期異常預警清單" },
+        { actor: "human", text: "採購確認異常、以電話／LINE 跟催，並提早與生管調整排程" }
       ],
       benefit: { count: 80, unit: "筆", per: "day", workDays: 21, minutes: 5, autoRate: 0.7,
-        quality: "逾期提早 7 天預警，降低缺料停線風險" },
+        quality: "被動追單變主動預警：提早發現延遲、調整排程，降低缺料停線風險" },
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；穩定後可升級全自動排程（第二階段）"
     },
@@ -1649,7 +1650,7 @@ function fmtNum(v, digits = 1) {
         <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">客戶卡</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
-    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低";
+    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低)";
 
     const ind = IND[state.industry];
     const det = $("#industry-detail");
@@ -1657,9 +1658,9 @@ function fmtNum(v, digits = 1) {
       det.innerHTML = `<h3>怎麼看這張表</h3>
         <ul class="plain">
           <li style="margin-bottom:40px">製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
-          <li>零售：決策快，但客單偏低，作為副攻。</li>
-          <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
-          <li>公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
+          <li style="margin-bottom:40px">零售：決策快，但客單偏低，作為副攻。</li>
+          <li style="margin-bottom:40px">百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
+          <li style="margin-bottom:40px">公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
         </ul>`;
       return;
     }

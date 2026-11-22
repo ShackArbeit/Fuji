@@ -71,7 +71,7 @@ export const DATA = {
     title: "2027 Q1 業績 500 萬達成規劃",
     target: 5_000_000,
     interviewDate: "2026-11-27",
-    heroCaseId: "porite-delivery", // 主打：台灣保來得｜供應商交期追蹤（標準案）；開場頁不另列主打行，僅卡片標示
+    heroCaseId: "porite-delivery", // 主打：台灣保來得｜供應商交期追蹤 + 交期異常預警（標準案）；開場頁不另列主打行，僅卡片標示
     thesis: "我認為 Pre-Sale 找到潛在商機 & 發掘客戶需求是成功的關鍵"
   },
 

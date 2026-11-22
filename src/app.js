@@ -133,7 +133,7 @@
         <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">客戶卡</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
-    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低";
+    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低)";
 
     const ind = IND[state.industry];
     const det = $("#industry-detail");
@@ -141,9 +141,9 @@
       det.innerHTML = `<h3>怎麼看這張表</h3>
         <ul class="plain">
           <li style="margin-bottom:40px">製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
-          <li>零售：決策快，但客單偏低，作為副攻。</li>
-          <li>百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
-          <li>公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
+          <li style="margin-bottom:40px">零售：決策快，但客單偏低，作為副攻。</li>
+          <li style="margin-bottom:40px">百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
+          <li style="margin-bottom:40px">公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
         </ul>`;
       return;
     }
