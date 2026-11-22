@@ -436,3 +436,8 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .nowrap { white-space: nowrap; }
 /* 產業表註解移出網格後，抵銷投影片 1.2rem 間距，維持原本貼近表格的距離 */
 #industry-note { margin-top: calc(.5rem - 1.2rem); }
+/* 1366×768 等矮螢幕：開場 KPI 卡片多一行（轉換率）時收緊內距，維持一屏 */
+@media screen and (max-height: 800px) {
+  #s-summary .kpi { padding: .75rem 1.2rem; }
+  #s-summary .thesis { padding: .6rem 1.2rem; }
+}

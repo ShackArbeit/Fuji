@@ -21,7 +21,7 @@
     <header class="slide-head">
       <p class="eyebrow">開場摘要</p>
       <h1 id="h-summary" data-bind="meta.title"></h1>
-      <p class="lead">先找到產業既定流程裡的痛點，再用「標準案」組合與成案率回推，逐步達成 <strong data-bind="target.wan"></strong> 業績目標。</p>
+      <p class="lead">我先假設該產業潛在可被 RPA 優化的流程，再用「標準案」組合與成案率回推，逐步達成 <strong data-bind="target.wan"></strong> 業績目標。</p>
     </header>
     <div class="versions">
       <article class="vcard vcard-a">
@@ -46,7 +46,7 @@
       <div class="kpi">
         <p class="kpi-label">A 版所需名單量 <span class="tag-assume">假設</span></p>
         <p class="kpi-value"><span data-bind="fa.leads"></span> 份</p>
-        <p class="kpi-sub">→ 商機 <span data-bind="fa.opp"></span> → Demo／PoC <span data-bind="fa.poc"></span> → 回簽 <span data-bind="a.count"></span></p>
+        <p class="kpi-sub"><span class="nowrap">→（<span data-bind="fa.rLead"></span>）商機 <span data-bind="fa.opp"></span></span> <span class="nowrap">→（<span data-bind="fa.rOpp"></span>）Demo／PoC <span data-bind="fa.poc"></span></span> <span class="nowrap">→（<span data-bind="fa.rPoc"></span>）回簽 <span data-bind="a.count"></span></span></p>
       </div>
       <div class="kpi">
         <p class="kpi-label">Q1 有效時程 <span class="tag-assume">假設</span></p>

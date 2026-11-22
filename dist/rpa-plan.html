@@ -443,6 +443,11 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .nowrap { white-space: nowrap; }
 /* 產業表註解移出網格後，抵銷投影片 1.2rem 間距，維持原本貼近表格的距離 */
 #industry-note { margin-top: calc(.5rem - 1.2rem); }
+/* 1366×768 等矮螢幕：開場 KPI 卡片多一行（轉換率）時收緊內距，維持一屏 */
+@media screen and (max-height: 800px) {
+  #s-summary .kpi { padding: .75rem 1.2rem; }
+  #s-summary .thesis { padding: .6rem 1.2rem; }
+}
 
 </style>
 </head>
@@ -459,7 +464,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
     <header class="slide-head">
       <p class="eyebrow">開場摘要</p>
       <h1 id="h-summary" data-bind="meta.title"></h1>
-      <p class="lead">先找到產業既定流程裡的痛點，再用「標準案」組合與成案率回推，逐步達成 <strong data-bind="target.wan"></strong> 業績目標。</p>
+      <p class="lead">我先假設該產業潛在可被 RPA 優化的流程，再用「標準案」組合與成案率回推，逐步達成 <strong data-bind="target.wan"></strong> 業績目標。</p>
     </header>
     <div class="versions">
       <article class="vcard vcard-a">
@@ -484,7 +489,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
       <div class="kpi">
         <p class="kpi-label">A 版所需名單量 <span class="tag-assume">假設</span></p>
         <p class="kpi-value"><span data-bind="fa.leads"></span> 份</p>
-        <p class="kpi-sub">→ 商機 <span data-bind="fa.opp"></span> → Demo／PoC <span data-bind="fa.poc"></span> → 回簽 <span data-bind="a.count"></span></p>
+        <p class="kpi-sub"><span class="nowrap">→（<span data-bind="fa.rLead"></span>）商機 <span data-bind="fa.opp"></span></span> <span class="nowrap">→（<span data-bind="fa.rOpp"></span>）Demo／PoC <span data-bind="fa.poc"></span></span> <span class="nowrap">→（<span data-bind="fa.rPoc"></span>）回簽 <span data-bind="a.count"></span></span></p>
       </div>
       <div class="kpi">
         <p class="kpi-label">Q1 有效時程 <span class="tag-assume">假設</span></p>
@@ -1589,6 +1594,9 @@ function fmtNum(v, digits = 1) {
       "fa.leads": fa.byKey.lead.ceil,
       "fa.opp": fa.byKey.opp.ceil,
       "fa.poc": fa.byKey.poc.ceil,
+      "fa.rLead": pct(state.funnel.leadToOpp),
+      "fa.rOpp": pct(state.funnel.oppToPoc),
+      "fa.rPoc": pct(state.funnel.pocToWin),
       "wd.days": wd.days,
       "time.sign": shortDate(DATA.timeline.signTargetDate),
       "time.buffer": wd.bufferDays
@@ -1641,7 +1649,7 @@ function fmtNum(v, digits = 1) {
         <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">客戶卡</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
-    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低）；點產業名稱可篩選卡片。";
+    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低";
 
     const ind = IND[state.industry];
     const det = $("#industry-detail");
