@@ -129,8 +129,8 @@
       <table class="tbl">
         <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">客戶卡</th></tr></thead>
         <tbody>${rows}</tbody>
-      </table>
-      <p class="foot-note">評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低）；點產業名稱可篩選卡片。</p>`;
+      </table>`;
+    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低）；點產業名稱可篩選卡片。";
 
     const ind = IND[state.industry];
     const det = $("#industry-detail");

@@ -146,7 +146,7 @@ input[type="radio"] { width: 1.1rem; height: 1.1rem; accent-color: var(--primary
 .thesis { font-size: 1.25rem; font-weight: 700; border-left: 6px solid var(--human); background: var(--human-soft); padding: .8rem 1.2rem; border-radius: 0 var(--radius) var(--radius) 0; }
 
 /* ---- 2. 產業 ---- */
-.industry-layout { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.industry-layout { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 1.2rem; align-items: stretch; } /* 右側說明框與左側列表等高 */
 .tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .tbl th, .tbl td { padding: .45rem .6rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
 .tbl thead th { color: var(--muted); font-size: .9rem; border-bottom: 2px solid var(--line); }
@@ -434,3 +434,5 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 @media screen { #b-comp th { white-space: nowrap; } }
 
 .nowrap { white-space: nowrap; }
+/* 產業表註解移出網格後，抵銷投影片 1.2rem 間距，維持原本貼近表格的距離 */
+#industry-note { margin-top: calc(.5rem - 1.2rem); }
