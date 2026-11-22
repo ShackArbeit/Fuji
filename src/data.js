@@ -82,10 +82,10 @@ export const DATA = {
       pitch: "公文與案件作業量大、規則明確；同性質機關已有導入 RPA 的公開案例。1 月新年度預算可動用，但須走採購程序，以決標／簽約日視同回簽。" }
   ],
 
-  scoreShort: { speed: "速度", size: "規模", ticket: "客單", quantifiable: "可量化", resistance: "低阻力" },
+  scoreShort: { speed: "週期", size: "規模", ticket: "客單", quantifiable: "可量化", resistance: "低阻力" },
 
   scoreLabels: {
-    speed: "成交速度",
+    speed: "成交週期",
     size: "市場規模",
     ticket: "客單潛力",
     quantifiable: "效益可量化",
