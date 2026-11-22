@@ -165,6 +165,8 @@ check("回本：保來得 1 流程月數", RP.base.payback, 20);
 check("回本：保來得 2 流程月數", RP.alt && RP.alt.payback, 11);
 check("回本：新北裁決處 1 流程月數", C.roi("ntpc-traffic-adjudication").payback, 7);
 check("回本：標準案每月需省小時（18 個月）", Math.round(C.hoursNeededForPayback("tpi-stock-alert")), 106);
+check("回本：擴充案每月需省小時（18 個月）", Math.round(C.hoursNeededForPayback("lin-land-expansion")), 43);
+check("回本：新光合纖 2 流程月數", C.roiPlan("skfiber-invoice-3way").alt.payback, 12);
 for (const c of DATA.cases) {
   const p = C.roiPlan(c.id);
   assert(`回本：${c.id} 月省金額需為正`, p.base.monthlySave > 0);

@@ -255,19 +255,20 @@ export const DATA = {
         { text: "富士既有客戶：DocuWorks 整合採購文件與多種電子簽章格式（可串接 DocuSign、Adobe Sign）", sourceId: "fbtw-mfg" }
       ],
       challenge: [
-        "原料與耗材供應商多、發票量大，會計須比對發票、採購單、收貨單三份資料",
-        "有差異就在採購、倉庫、供應商之間來回確認；採購文件已數位化，代表資料拿得到"
+        "除 PTA、EG 等大宗原料，MRO、包材、外包工程供應商多，進項發票量大；常見一對多、分批交貨分批開票",
+        "B2B 電子發票可直接解析；紙本三聯式與國外 Invoice 仍需 OCR，難以 100% 零人工",
+        "泰國、揚州廠稅務與發票格式不同：第一期鎖定台灣總公司財務與中壢／觀音廠"
       ],
       toBe: [
-        { actor: "robot", text: "收取發票並以 OCR 擷取欄位" },
-        { actor: "robot", text: "從 ERP 取得採購單與收貨紀錄，三方比對" },
-        { actor: "robot", text: "相符項目標記待付款；差異自動分派採購／倉儲" },
-        { actor: "human", text: "會計確認後才放行付款（不自動付款）" }
+        { actor: "robot", text: "電子發票直接解析結構化資料；紙本與國外發票以 OCR 擷取" },
+        { actor: "robot", text: "比對採購單、收貨單的單價、數量、品名、統編、稅額；相符者標記待付款" },
+        { actor: "robot", text: "差異依歸責分派：單價／稅額→採購；數量→倉儲收料；抬頭／統編錯→通知供應商重開" },
+        { actor: "human", text: "會計覆核後才放行付款與傳票拋轉（不自動付款）" }
       ],
       benefit: { count: 3000, unit: "張發票", per: "month", minutes: 4, autoRate: 0.8,
-        quality: "付款前把關，減少溢付與重複付款" },
+        quality: "付款前把關，減少溢付與重複付款；台灣成功後作為集團標竿複製到海外廠" },
       productType: "full", estDays: 30,
-      productNote: "全自動旗艦（含 OCR 與例外處理）；延後時可先半自動上線"
+      productNote: "全自動＝高直通率（STP）：標準發票自動標記待付、異常件分流；延後可先半自動上線"
     },
     {
       id: "yuan-omni-orders", industry: "retail", customer: "阿原（YUAN）", customerSource: "new",

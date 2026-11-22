@@ -205,7 +205,12 @@
     const head = `人力成本以月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor} 計：月省約 ${wan(base.monthlySave)}，${pb(base)}`;
     if (base.ok) return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}</span></p>`;
     if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ 同一套授權加 ${alt.flows - 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）：約 ${alt.payback} 個月回本、三年淨效益約 ${wan(alt.net3y)}</span></p>`;
-    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省約 ${fmtNum(hoursNeededForPayback(c.id), 0)} 小時以上，才能在 ${r.paybackLimit} 個月內回本</span></p>`;
+    const need = hoursNeededForPayback(c.id);
+    const q = configure({ caseId: c.id });
+    const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
+    const costTxt = renew ? `(${fmtWan(q.total)} + 續約 ${fmtWan(renew)})` : `${fmtWan(q.total)}`;
+    const now = benefit(c.id).savedHours;
+    return `<p class="roi-line">${head}<br><span class="roi-warn">⚠ 量體待驗證：每月需省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(now, 0)}，差 ${fmtNum(need - now, 0)}）</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} 個月 ÷ ${fmtWan(r.monthlySalary * r.loadFactor)} × ${FTE_HOURS} 小時</span></p>`;
   }
 
   function caseDetailHtml(c) {
