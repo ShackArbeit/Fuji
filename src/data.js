@@ -8,7 +8,7 @@ export const DATA = {
     target: 5_000_000,
     interviewDate: "2026-11-27",
     heroCaseId: "porite-delivery", // 主打：台灣保來得｜供應商交期追蹤（標準案）
-    thesis: "這個職位的關鍵，是先找到產業既定流程裡的痛點；計價、業績拆解與漏斗回推，則用來證明這份規劃有數字、可執行。"
+    thesis: "我認為 Pre-Sale 找到潛在商機 & 發掘客戶需求是成功的關鍵"
   },
 
   price: { dev: 176_000, semi: 64_000, full: 400_000, day: 20_000 },
