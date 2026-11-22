@@ -212,7 +212,7 @@
     if (base.ok) {
       const H = r.horizonMonths, renewN = Math.ceil(H / 12) - 1;
       const cost3 = base.oneTime + base.license * renewN;
-      return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}${isGov ? "（等效價值，非實際減薪）" : ""}</span><br><span class="roi-calc">算法：${wan(base.monthlySave)} × ${H} 月 ＝ ${wan(base.monthlySave * H)} － 三年成本 ${wan(cost3)}（首年 ${wan(base.oneTime)}＋續約 ${wan(base.license)}×${renewN}）</span></p>`;
+      return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}${isGov ? "（等效價值，非實際減薪）" : ""}</span><br><span class="roi-calc">算法：${fmtNum(base.monthlySave / 10000, 2)} 萬 × ${H} 月 ＝ ${wan(base.monthlySave * H)} － 三年成本 ${wan(cost3)}（首年 ${wan(base.oneTime)}＋續約 ${wan(base.license)}×${renewN}）</span></p>`;
     }
     const addTxt = c.replicate
       ? (alt && alt.flows > 2
@@ -228,7 +228,7 @@
     const b = benefit(c.id);
     const labor = laborMonthlyOf(c.id);
     // 月省怎麼來；月省低於授權年費攤提時，直接說明不會回本
-    const saveTxt = `月省 ${wan(base.monthlySave)} ＝ ${fmtNum(b.savedHours, 0)} 小時 ÷ ${FTE_HOURS} × ${fmtWan(labor)}`;
+    const saveTxt = `月省 ${wan(base.monthlySave)} ≈ ${fmtNum(b.savedHours, 0)} 小時 ÷ ${FTE_HOURS} × ${fmtWan(labor)}`;
     const neverTxt = q.license && base.monthlySave * 12 < q.license ? ` ＜ 續約每月 ${fmtWan(q.license / 12)} → 不會回本` : `，${pb(base)}`;
     // 全自動也達不到門檻：不列不可能的門檻，改寫上限與單點目標
     if (need > b.monthlyHours) {

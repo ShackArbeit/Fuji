@@ -451,19 +451,19 @@ export const DATA = {
       ],
       challenge: [
         "陳情申訴量成長最快，受理後要依內容與權責分派到局處；量大時分案、改分容易延誤",
-        "各局處回覆期限不同，逾期與即將逾期案件可能靠人工查詢系統再催辦",
-        "每月統計與報表可能需從系統匯出再人工整理（以上皆需 Discovery 確認現行系統與分工）"
+        "1999 系統可能已內建期限提醒與基礎報表：RPA 聚焦多次改分、展延案件的稽催與首長月報（待確認）",
+        "陳情多為口語，複合型陳情（違停＋噪音）只靠關鍵字易分錯，需搭配歷史派案對照表"
       ],
       toBe: [
-        { actor: "robot", text: "讀取新進陳情案件，依關鍵字與規則產生建議承辦機關" },
+        { actor: "robot", text: "依關鍵字與歷史派案對照表，產生建議承辦機關" },
         { actor: "human", text: "研考人員確認分案（權責爭議、內容判斷不自動決定）" },
-        { actor: "robot", text: "比對回覆期限，對即將逾期案件寄提醒、產生催辦清單" },
-        { actor: "robot", text: "每月自動匯出並整理件數、結案率、逾期率統計表草稿" }
+        { actor: "robot", text: "彙整即將逾期、多次改分與展延案件，產生稽催清單" },
+        { actor: "robot", text: "每月整理多維度統計，產出首長決策用月報草稿" }
       ],
       benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
         quality: "分案與催辦時效一致；統計報表可直接供施政考核" },
       productType: "semi", estDays: 13,
-      productNote: "標準案；決標／簽約日視同回簽；低於公告金額門檻（待確認）；機器人在市府內網執行"
+      productNote: "50 萬屬公開取得報價／企劃書級距；或先拆 15 萬以下小額先導加快成案（待確認）"
     },
     {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",

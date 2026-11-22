@@ -176,6 +176,9 @@ check("回本：永達保經需省時數超過人工總工時", C.hoursNeededFor
 check("回本：永達保經月省低於續約每月攤提", C.roi("yungda-commission").monthlySave * 12 < C.caseQuote("yungda-commission").license, true);
 check("回本：新光三越複製到 4 館月數", C.roiPlan("skm-concession").alt.payback, 12);
 check("回本：新光三越複製館數", C.roiPlan("skm-concession").alt.flows, 4);
+const TC = C.roi("tc-1999-petition");
+check("回本：臺中研考會三年淨效益（萬，四捨五入一位）", Math.round(TC.net3y / 1000) / 10, 277.5);
+check("回本：臺中研考會三年淨效益 = 月省 × 36 － 三年成本", Math.round(TC.net3y), Math.round(TC.monthlySave * 36 - (TC.oneTime + TC.license * 2)));
 for (const c of DATA.cases) {
   if (C.hoursNeededForPayback(c.id) > C.benefit(c.id).monthlyHours && !(C.roiPlan(c.id).alt || {}).ok) assert(`回本：${c.id} 全自動也達不到門檻，須有 pilotGoal`, !!c.pilotGoal);
 }
