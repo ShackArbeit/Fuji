@@ -426,10 +426,10 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 #s-cases .case-sub { font-size: .84rem; } /* 14 家客戶時維持一屏 */
 #s-cases .slide-head h2 { font-size: 1.9rem; }
 @media print {
-  #ap-sources .as-group dl, #ap-sources .src-list { font-size: .76rem; line-height: 1.3; }
-  #ap-sources .src-list { columns: 3; }
+  #ap-sources .as-group dl, #s-sources .src-list { font-size: .76rem; line-height: 1.3; }
+  #s-sources .src-list { columns: 3; }
   #ap-sources .as-group { margin-bottom: .25rem; }
-  #ap-sources .ev-legend { font-size: .8rem; }
+  #s-sources .ev-legend { font-size: .8rem; }
   /* 個案假設較長：列印時允許跨欄，讓 4 欄平均分配（同一列 dt／dd 仍在同一欄） */
   #ap-sources .as-group { break-inside: auto; }
   #ap-sources .as-group h4 { break-after: avoid; }

@@ -902,7 +902,7 @@
       case "Home": go(0); break;
       case "End": go(sections.length - 1); break;
       default:
-        if (/^[1-9]$/.test(e.key)) go(+e.key - 1);
+        if (/^[0-9]$/.test(e.key)) go(e.key === "0" ? 9 : +e.key - 1);
         else handled = false;
     }
     if (handled) e.preventDefault();
