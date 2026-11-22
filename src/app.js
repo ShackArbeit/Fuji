@@ -202,11 +202,18 @@
     const { base, alt } = roiPlan(c.id);
     const wan = v => fmtWan(v);
     const pb = x => x.payback === null ? "回本需 60 個月以上" : `約 ${x.payback} 個月回本`;
+    const isGov = c.industry === "government";
     const laborTxt = c.roiOverride ? `每人每月 ${fmtWan(c.roiOverride.laborMonthly)}（${c.roiOverride.note}）` : `月薪 ${fmtNum(r.monthlySalary / 10000, 0)} 萬 × ${r.loadFactor}`;
     const lic0 = caseQuote(c.id).license;
     const never0 = lic0 && base.monthlySave * 12 < lic0;
-    const head = `人力成本以${laborTxt}計：月省約 ${wan(base.monthlySave)}${never0 ? ` ＜ 續約每月 ${fmtWan(lic0 / 12)}，單點不會回本` : `，${pb(base)}`}`;
-    if (base.ok) return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}</span></p>`;
+    const head = isGov
+      ? `等效人力價值（${laborTxt}）：月省 ${wan(base.monthlySave)} ≈ 釋放 ${fmtNum(benefit(c.id).fte, 1)} 人力${never0 ? "，單點不會回本" : `，${pb(base)}`}`
+      : `人力成本以${laborTxt}計：月省約 ${wan(base.monthlySave)}${never0 ? ` ＜ 續約每月 ${fmtWan(lic0 / 12)}，單點不會回本` : `，${pb(base)}`}`;
+    if (base.ok) {
+      const H = r.horizonMonths, renewN = Math.ceil(H / 12) - 1;
+      const cost3 = base.oneTime + base.license * renewN;
+      return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}${isGov ? "（等效價值，非實際減薪）" : ""}</span><br><span class="roi-calc">算法：${wan(base.monthlySave)} × ${H} 月 ＝ ${wan(base.monthlySave * H)} － 三年成本 ${wan(cost3)}（首年 ${wan(base.oneTime)}＋續約 ${wan(base.license)}×${renewN}）</span></p>`;
+    }
     const addTxt = c.replicate
       ? (alt && alt.flows > 2
         ? `複製到${c.replicate.label}，共 ${alt.flows} ${c.replicate.unit || "處"}（每${c.replicate.unit || "處"} ${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`
