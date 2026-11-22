@@ -152,7 +152,7 @@ for (const d of DATA.versionB.deals) {
 
 // 效益試算（Industry.md 第 2–7 節）
 const expSaved = {
-  "porite-delivery": 98, "teco-drawing-sync": 60, "tpi-stock-alert": 36, "skfiber-invoice-3way": 160,
+  "porite-delivery": 98, "teco-drawing-sync": 60, "tpi-stock-alert": 33.6, "skfiber-invoice-3way": 160,
   "yuan-omni-orders": 120, "ginza-store-daily": 31.2, "ntpc-traffic-adjudication": 212.4, "tc-1999-petition": 269.6, "coretronic-quality-report": 56, "yungda-commission": 48,
   "skm-concession": 40, "lin-land-expansion": 38.9, "lens-dual-erp-recon": 12.8
 };

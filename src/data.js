@@ -215,25 +215,28 @@ export const DATA = {
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
-      title: "安全庫存警示 + 盤點差異比對",
+      title: "每日淨需求低庫存預警（延伸：盤點差異比對）",
       background: [
-        { text: "主要製造銷售滾動軸承與碳鉻鋼珠；與日本 NTN 合作，自稱東南亞最大軸承製造商之一", sourceId: "tpi-reg" },
-        { text: "規模：員工約 950 人、實收資本額約 12.57 億元（資料年份較早，待更新）", sourceId: "tpi-reg" }
+        { text: "全台最大軸承製造商，年產軸承約 3.5 億只；1966 年由東元電機、日本 NTN 等合資成立，以 TPI 自有品牌行銷全球", sourceId: "tpi-cna" },
+        { text: "2016 年起推動智慧製造，導入 T-MES 即時掌握機台稼動與品質狀況", sourceId: "tpi-cna" },
+        { text: "2026 年策略：深化南韓、印度等亞洲市場、穩守歐美；已切入新能源車供應鏈，並拓展航太、半導體等高端應用", sourceId: "tpi-ctee" }
       ],
       challenge: [
-        "軸承規格、料號多，原料鋼材與成品都要控管安全庫存，常靠經驗或週報才發現低庫存",
-        "1 月年度盤點後，帳面與實盤差異要用 Excel 逐料號比對"
+        "型號多（內外徑、保持器、防塵蓋不同即不同料號），標準品備庫生產；熱門規格斷貨會掉單，鋼材不足會讓熱處理、車削停線",
+        "ERP 多半已有安全庫存／MRP 報表；缺的可能是每天撈表、扣掉在途採購與未交訂單算淨需求，再分送負責人",
+        "已有 T-MES，也可能有 WMS 或條碼盤點：先用提問確認現況，不假設仍用 Excel",
+        "年度盤點差異比對一年 1–2 次，當延伸場景，不當主軸"
       ],
       toBe: [
-        { actor: "robot", text: "每日匯出 ERP 庫存，比對安全庫存設定" },
-        { actor: "robot", text: "寄送低庫存清單給採購與倉管" },
-        { actor: "robot", text: "盤點期比對盤點表與帳面，產出差異清單" },
-        { actor: "human", text: "倉管確認盤差原因，主管決定是否調帳（不自動調帳）" }
+        { actor: "robot", text: "每日從 ERP 撈庫存、在途採購單、未交客戶訂單，算出淨需求低於安全庫存的料號" },
+        { actor: "robot", text: "原料低庫存推播給採購、成品低庫存推播給生管（Email／通訊軟體）" },
+        { actor: "robot", text: "延伸：年度盤點時比對系統帳與盤點表，產出差異清單" },
+        { actor: "human", text: "倉管查盤差原因、主管決定是否調帳（RPA 不自動調帳）" }
       ],
-      benefit: { count: 6, unit: "人天（2 人 × 3 天）", per: "month", minutes: 480, autoRate: 0.75,
-        quality: "Q1 正逢年度盤點，是切入時機" },
+      benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
+        quality: "缺料從事後發現變成每日預警；盤點期加班比對 Excel 是加分項" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案"
+      productNote: "半自動標準案；主軸為每日低庫存預警，盤點差異比對為延伸場景"
     },
     {
       id: "skfiber-invoice-3way", industry: "manufacturing", customer: "台灣新光合成纖維", customerSource: "fuji-other",
@@ -477,8 +480,10 @@ export const DATA = {
       urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/consultancy"] },
     { id: "porite-news", title: "經濟日報、工商時報｜台灣保來得", summary: "SOFC 連接板供應 Bloom Energy、產能倍增與擴廠",
       urls: ["https://money.udn.com/money/story/8521/8954654", "https://www.ctee.com.tw/news/20240823700194-439901"] },
-    { id: "tpi-reg", title: "公司登記資料｜東培工業", summary: "軸承與鋼珠製造；員工與資本額資料年份較早",
-      urls: ["https://twincn.com/item.aspx?no=07220508"] },
+    { id: "tpi-cna", title: "中央社｜全台最大軸承製造商東培（2025-10）", summary: "年產軸承 3.5 億只；1966 年由東元、NTN 等合資；2016 年起推動智慧製造、導入 T-MES",
+      urls: ["https://www.cna.com.tw/news/afe/202510070031.aspx"] },
+    { id: "tpi-ctee", title: "工商時報｜東培多元布局精密軸承（2026-01）", summary: "數據化管理與 T-MES；2026 年深化南韓、印度市場；切入新能源車供應鏈，拓展航太、半導體",
+      urls: ["https://www.ctee.com.tw/news/20260106701807-431203"] },
     { id: "skfiber-news", title: "1111、自由時報｜新光合纖", summary: "公司沿革、產品線、生產基地與減碳聚酯廠",
       urls: ["https://www.1111.com.tw/news/jobns/167846", "https://ec.ltn.com.tw/article/breakingnews/4767947"] },
     { id: "yuan-news", title: "Bella、蕃薯藤｜阿原", summary: "門市據點、官方商城、石門基地 GMP",
