@@ -523,7 +523,7 @@
         <input type="range" id="rate-${r.key}" data-rate="${r.key}" min="${r.min}" max="${r.max}" step="${r.step}">
       </div>`).join("")}
       <button type="button" class="btn btn-ghost" id="rate-reset">回到預設假設</button>
-      <p class="foot-note">調整後，摘要、漏斗、風險與假設表同步更新。客單價由案型組合帶出，不可調。</p>`;
+      <p class="foot-note">調整後，摘要、漏斗與風險同步更新。客單價由案型組合帶出，不可調。</p>`;
     $$("[data-rate]").forEach(inp => inp.addEventListener("input", e => {
       state.funnel[e.target.dataset.rate] = +e.target.value / 100;
       update();
@@ -612,13 +612,6 @@
       <div class="total-row"><span class="kpi-label">預期業績（× 平均客單 ${fmtWan(fw.avgTicket)}，由 A 版案型組合帶出）</span><strong class="big">${fmtWan(fw.amount)}</strong></div>
       ${statusHtml(vsTarget(fw.amount))}`;
 
-    // 備註
-    const pl = pocLoad(f);
-    const [abLo, abHi] = DATA.funnel.abmAccounts;
-    $("#funnel-notes").innerHTML = `
-      <div class="note"><h4>百貨／金融走 ABM</h4><p>鎖定 ${abLo}–${abHi} 家目標客戶，名單量不是重點，重點是關係人地圖與單點突破。</p></div>
-      <div class="note"><h4>PoC 團隊產能 ${ASSUME}</h4><p>A 版需 ${pl.poc} 場 Demo／PoC；若集中在 PoC 期約 ${fmtNum(pl.weeks, 1)} 週，平均每週 ${fmtNum(pl.perWeek, 1)} 場，需與團隊確認可支援量。</p></div>
-      <div class="note"><h4>Demo ≠ PoC</h4><p>Demo 用標準範本、半天內完成；PoC 用客戶真實資料，建議付費並可抵扣正式報價，篩出高意願案件。</p></div>`;
   }
 
   // ---------- 7. 時間軸 ----------
