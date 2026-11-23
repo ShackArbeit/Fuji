@@ -41,6 +41,7 @@
   const cfgFromCase = c => ({ caseId: c.id, productType: c.productType, extraSemi: 0, days: c.estDays, existingLicense: !!c.existingLicense });
   const state = {
     version: "A",
+    tier: "complete", // 第 5 章：conservative＝保守版（只列主力）／complete＝完整版（含待驗證）
     funnelMode: "back",
     industry: "all",
     openCase: DATA.meta.heroCaseId,
@@ -437,8 +438,14 @@
     </div>`;
   }
   function renderA() {
-    const a = versionATotal();
+    const a0 = versionATotal();
     const ta = tiersA();
+    const cons = state.tier === "conservative";
+    // 保守版只列主力；合計、案數、各產業金額都依目前顯示的列重算
+    const shownDeals = cons ? a0.deals.filter(d => dealTier(d.caseId) === "main") : a0.deals;
+    const byInd = {};
+    for (const d of shownDeals) { (byInd[d.industry] ||= { n: 0, amount: 0 }); byInd[d.industry].n += d.n; byInd[d.industry].amount += d.amount; }
+    const a = { ...a0, deals: shownDeals, byIndustry: byInd, total: shownDeals.reduce((s, d) => s + d.amount, 0), count: shownDeals.reduce((s, d) => s + d.n, 0) };
     const fd = flagshipDelayImpact();
     const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${d.caseId ? `<span class="nowrap"><button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(shortName(d.caseId))}</button>${tierBadge(d.caseId)}</span>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     const inds = Object.entries(a.byIndustry).map(([k, v]) => ({ label: IND[k].short, value: v.amount, text: `${fmtWan(v.amount)}｜${fmtPct(v.amount / a.total)}` }));
@@ -447,7 +454,7 @@
     $("#ab-a").innerHTML = `
       <div class="ab-grid">
         <div class="panel">
-          <h3>A 版：從零開始，新簽 ${a.count} 案</h3>
+          <h3>A 版：從零開始，新簽 ${a.count} 案<span class="tier-tag">${cons ? "保守版（只計主力）" : "完整版（含待驗證）"}</span></h3>
           <table class="tbl">
             <thead><tr><th>產業</th><th>客戶</th><th>案型</th><th class="num">案數</th><th class="num">金額</th></tr></thead>
             <tbody>${rows}</tbody>
@@ -457,8 +464,8 @@
         <div class="panel">
           <h3>各產業金額</h3>
           ${bars(inds, maxInd)}
-          ${targetBar([{ value: ta.main, cls: "renewal" }, { value: ta.pending, cls: "pendbiz" }], a.total)}
-          <ul class="legend"><li><span><span class="sw seg-semi"></span>主力 ${fmtWan(ta.main)}</span><span><span class="sw seg-pend"></span>待驗證 ${fmtWan(ta.pending)}</span></li></ul>
+          ${targetBar(cons ? [{ value: ta.main, cls: "renewal" }] : [{ value: ta.main, cls: "renewal" }, { value: ta.pending, cls: "pendbiz" }], a.total)}
+          <ul class="legend"><li><span><span class="sw seg-semi"></span>主力 ${fmtWan(ta.main)}</span><span>${cons ? `待驗證 ${fmtWan(ta.pending)}（未列入）` : `<span class="sw seg-pend"></span>待驗證 ${fmtWan(ta.pending)}`}</span></li></ul>
           ${tierBox(ta)}
           <h4>風險說明</h4>
           <ul class="plain">
@@ -507,20 +514,24 @@
 
     const SRC_LABEL = { existing: "既有客戶", new: "新客" };
     const tb = tiersB(state.renewalRate);
-    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<span class="nowrap"><button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(shortName(d.caseId))}</button>${tierBadge(d.caseId)}</span>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const consB = state.tier === "conservative";
+    const shownB = consB ? b.deals.filter(d => dealTier(d.caseId) === "main") : b.deals;
+    const shownNew = shownB.reduce((s, d) => s + d.amount, 0);
+    const shownCount = shownB.reduce((s, d) => s + d.n, 0);
+    const dealRows = shownB.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<span class="nowrap"><button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(shortName(d.caseId))}</button>${tierBadge(d.caseId)}</span>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     $("#b-comp").innerHTML = `
-      <h3>B 版：續約保底 + 新增 ${b.count} 案</h3>
+      <h3>B 版：續約保底 + 新增 ${shownCount} 案<span class="tier-tag">${consB ? "保守版（只計主力）" : "完整版（含待驗證）"}</span></h3>
       <table class="tbl">
         <thead><tr><th>來源</th><th>客戶</th><th>案型</th><th class="num">案數</th><th class="num">金額</th></tr></thead>
         <tbody>
           <tr><td>既有續約</td><td colspan="3">${fmtWan(DATA.versionB.renewalBase)} × ${pct(state.renewalRate)}</td><td class="num">${fmtWan(b.renewal)}</td></tr>
           ${dealRows}
         </tbody>
-        <tfoot><tr><td colspan="4">合計</td><td class="num">${fmtMoney(b.total)}</td></tr></tfoot>
+        <tfoot><tr><td colspan="4">合計</td><td class="num">${fmtMoney(b.renewal + shownNew)}</td></tr></tfoot>
       </table>
-      ${targetBar([{ value: b.renewal, cls: "renewal" }, { value: b.newTotal, cls: "newbiz" }], b.total)}
+      ${targetBar([{ value: b.renewal, cls: "renewal" }, { value: shownNew, cls: "newbiz" }], b.renewal + shownNew)}
       <ul class="legend">
-        <li><span><span class="sw seg-semi"></span>續約 ${fmtWan(b.renewal)}</span><span><span class="sw seg-dev"></span>新增 ${fmtWan(b.newTotal)}</span></li>
+        <li><span><span class="sw seg-semi"></span>續約 ${fmtWan(b.renewal)}</span><span><span class="sw seg-dev"></span>新增 ${fmtWan(shownNew)}${consB ? `（待驗證 ${fmtWan(tb.pending)} 未列入）` : ""}</span></li>
       </ul>
 `;
     $("#b-tier").innerHTML = `${tierBox(tb)}
@@ -531,6 +542,7 @@
   }
   function renderABToggle() {
     $$("[data-version]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.version === state.version)));
+    $$("[data-tier]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tier === state.tier)));
     $("#ab-a").classList.toggle("is-hidden", state.version !== "A");
     $("#ab-b").classList.toggle("is-hidden", state.version !== "B");
   }
@@ -845,7 +857,7 @@
   }
 
   // ---------- 更新（保留焦點）----------
-  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg"];
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version"];
   function update() {
     const act = document.activeElement;
     let restore = null;
@@ -929,7 +941,7 @@
   });
 
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-funnel-mode]");
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode]");
     if (!t) return;
     const d = t.dataset;
     if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
@@ -954,6 +966,8 @@
       return;
     } else if (d.version) {
       state.version = d.version;
+    } else if (d.tier) {
+      state.tier = d.tier;
     } else if (d.funnelMode) {
       state.funnelMode = d.funnelMode;
     }

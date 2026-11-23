@@ -108,9 +108,15 @@
         <p class="eyebrow">A／B 業績拆解</p>
         <h2 id="h-ab">兩種版本，同一個業績目標</h2>
       </div>
-      <div class="toggle" role="group" aria-label="切換版本">
-        <button type="button" class="toggle-btn" data-version="A" aria-pressed="true">A 版　從零開始</button>
-        <button type="button" class="toggle-btn" data-version="B" aria-pressed="false">B 版　續約 + 新增</button>
+      <div class="toggle-stack">
+        <div class="toggle" role="group" aria-label="切換版本">
+          <button type="button" class="toggle-btn" data-version="A" aria-pressed="true">A 版　從零開始</button>
+          <button type="button" class="toggle-btn" data-version="B" aria-pressed="false">B 版　續約 + 新增</button>
+        </div>
+        <div class="toggle toggle-tier" role="group" aria-label="切換保守版／完整版">
+          <button type="button" class="toggle-btn" data-tier="conservative" aria-pressed="false">保守版　只計主力</button>
+          <button type="button" class="toggle-btn" data-tier="complete" aria-pressed="true">完整版　含待驗證</button>
+        </div>
       </div>
     </header>
     <div id="ab-a" class="ab-panel"></div>
