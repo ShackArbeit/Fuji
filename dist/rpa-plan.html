@@ -501,6 +501,17 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .toggle-tier .toggle-btn { font-size: .9rem; padding: .3rem .9rem; }
 .tier-tag { font-size: .8rem; font-weight: 700; color: var(--muted); margin-left: .6rem; vertical-align: .15em; }
 @media print { .toggle-stack { display: none; } }
+/* 產業地圖：未選產業時只顯示評分表 */
+.industry-layout.no-detail { grid-template-columns: 1fr; }
+.industry-layout.no-detail .industry-detail { display: none; }
+.ind-tbl th.grp { text-align: center; border-bottom: 1px solid var(--line); }
+.ind-tbl .cnt-cons { background: rgba(10, 114, 84, .06); }
+.ind-tbl tfoot th, .ind-tbl tfoot td { font-weight: 700; }
+/* 點選產業、右側詳情打開時：評分只顯示數字，表頭不換行，避免表格被擠壓 */
+.industry-layout:not(.no-detail) .ind-tbl .meter { display: none; }
+.industry-layout:not(.no-detail) .ind-tbl th { white-space: nowrap; }
+.industry-layout:not(.no-detail) .ind-tbl .ind-name { white-space: nowrap; }
+.industry-layout:not(.no-detail) .ind-tbl td, .industry-layout:not(.no-detail) .ind-tbl th { padding-left: .45rem; padding-right: .45rem; }
 
 </style>
 </head>
@@ -1891,11 +1902,17 @@ function fmtNum(v, digits = 1) {
     const a = versionATotal();
     const keys = Object.keys(DATA.scoreLabels);
     const head = keys.map(k => `<th scope="col">${esc(DATA.scoreLabels[k].split("（")[0])}</th>`).join("");
+    // 各產業客戶數：A／B × 保守（只計主力）／完整（含待驗證）；B 版只算新增案（續約不屬於單一產業）
+    const bDealsAll = versionBTotal(state.renewalRate).deals;
+    const indOf = d => d.industry || CASE[d.caseId]?.industry;
+    const countFor = (deals, indId, consOnly) => deals.filter(d => indOf(d) === indId && (!consOnly || dealTier(d.caseId) === "main")).reduce((s, d) => s + d.n, 0);
+    const cols = [[a.deals, true], [a.deals, false], [bDealsAll, true], [bDealsAll, false]];
+    const totals = cols.map(() => 0);
     const rows = DATA.industries.map(ind => {
       const sel = state.industry === ind.id;
       const total = keys.reduce((s, k) => s + ind.score[k], 0);
       const nCases = DATA.cases.filter(c => c.industry === ind.id).length;
-      const nDeals = (a.byIndustry[ind.id] || { n: 0 }).n;
+      const counts = cols.map(([deals, cons], i) => { const n = countFor(deals, ind.id, cons); totals[i] += n; return n; });
       const cells = keys.map(k => {
         const v = ind.score[k];
         return `<td><span class="meter" aria-hidden="true"><span style="width:${(v / 5) * 100}%"></span></span><span class="meter-num">${v}</span></td>`;
@@ -1903,27 +1920,24 @@ function fmtNum(v, digits = 1) {
       return `<tr class="${sel ? "is-selected" : ""}">
         <th scope="row"><button type="button" class="ind-btn" data-industry="${ind.id}" aria-pressed="${sel}">
           <span class="ind-name">${esc(ind.name)}</span>${roleBadge(ind)}</button></th>
-        ${cells}<td class="num"><strong>${total}</strong></td><td class="num">${nDeals}</td><td class="num">${nCases}</td></tr>`;
+        ${cells}<td class="num"><strong>${total}</strong></td>${counts.map((n, i) => `<td class="num cnt${i % 2 === 0 ? " cnt-cons" : ""}">${n || "–"}</td>`).join("")}<td class="num">${nCases}</td></tr>`;
     }).join("");
     $("#industry-map").innerHTML = `
-      <table class="tbl">
-        <thead><tr><th scope="col">產業（角色）</th>${head}<th scope="col" class="num">合計</th><th scope="col" class="num">A 版案數</th><th scope="col" class="num">客戶卡</th></tr></thead>
+      <table class="tbl ind-tbl">
+        <thead>
+          <tr><th scope="col" rowspan="2">產業（角色）</th>${head.replace(/<th scope="col">/g, '<th scope="col" rowspan="2">')}<th scope="col" class="num" rowspan="2">合計</th><th scope="colgroup" colspan="2" class="num grp">A 版客戶數</th><th scope="colgroup" colspan="2" class="num grp">B 版客戶數</th><th scope="col" class="num" rowspan="2">客戶卡</th></tr>
+          <tr><th scope="col" class="num cnt-cons">保守</th><th scope="col" class="num">完整</th><th scope="col" class="num cnt-cons">保守</th><th scope="col" class="num">完整</th></tr>
+        </thead>
         <tbody>${rows}</tbody>
+        <tfoot><tr><th scope="row" colspan="${keys.length + 2}">合計</th>${totals.map((n, i) => `<td class="num${i % 2 === 0 ? " cnt-cons" : ""}">${n}</td>`).join("")}<td class="num">${DATA.cases.length}</td></tr></tfoot>
       </table>`;
-    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低)";
+    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低)；保守＝只計回本成立的主力，完整＝含待驗證；B 版只計新增案。";
 
     const ind = IND[state.industry];
     const det = $("#industry-detail");
-    if (!ind) {
-      det.innerHTML = `<h3>怎麼看這張表</h3>
-        <ul class="plain">
-          <li style="margin-bottom:40px">製造業：分數最高，作為主攻，A 版最多案數與金額在這裡。</li>
-          <li style="margin-bottom:40px">零售：決策快，但客單偏低，作為副攻。</li>
-          <li style="margin-bottom:40px">百貨、金融：家數少或審查長，走 ABM 單點突破與既有客戶擴充。</li>
-          <li style="margin-bottom:40px">公部門：作業量大、規則明確，但須走採購程序，A、B 版各放 1 案當業績緩衝。</li>
-        </ul>`;
-      return;
-    }
+    // 未選產業時不顯示右側說明框，評分表拉滿寬度；點產業才顯示該產業的規劃與目標客戶
+    $(".industry-layout").classList.toggle("no-detail", !ind);
+    if (!ind) { det.innerHTML = ""; return; }
     const cases = DATA.cases.filter(c => c.industry === ind.id);
     const nDeals = (a.byIndustry[ind.id] || { n: 0, amount: 0 });
     const bIn = versionBTotal().deals.filter(d => CASE[d.caseId]?.industry === ind.id);

@@ -494,3 +494,14 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .toggle-tier .toggle-btn { font-size: .9rem; padding: .3rem .9rem; }
 .tier-tag { font-size: .8rem; font-weight: 700; color: var(--muted); margin-left: .6rem; vertical-align: .15em; }
 @media print { .toggle-stack { display: none; } }
+/* 產業地圖：未選產業時只顯示評分表 */
+.industry-layout.no-detail { grid-template-columns: 1fr; }
+.industry-layout.no-detail .industry-detail { display: none; }
+.ind-tbl th.grp { text-align: center; border-bottom: 1px solid var(--line); }
+.ind-tbl .cnt-cons { background: rgba(10, 114, 84, .06); }
+.ind-tbl tfoot th, .ind-tbl tfoot td { font-weight: 700; }
+/* 點選產業、右側詳情打開時：評分只顯示數字，表頭不換行，避免表格被擠壓 */
+.industry-layout:not(.no-detail) .ind-tbl .meter { display: none; }
+.industry-layout:not(.no-detail) .ind-tbl th { white-space: nowrap; }
+.industry-layout:not(.no-detail) .ind-tbl .ind-name { white-space: nowrap; }
+.industry-layout:not(.no-detail) .ind-tbl td, .industry-layout:not(.no-detail) .ind-tbl th { padding-left: .45rem; padding-right: .45rem; }
