@@ -30,8 +30,8 @@ check("既有客戶擴充（15 人天）", C.dealAmount("expansion"), 300_000);
 
 const A = C.versionATotal();
 // 2026-11-20 Shack 同意：A 版新增公部門第 10 案（新北市交通事件裁決處），取代 CLAUDE.md §4 的 9 案／5,116,000 種子值
-check("A 版合計", A.total, 5_616_000);
-check("A 版案數", A.count, 10);
+check("A 版合計", A.total, 6_116_000); // 2026-11-23 Shack 同意新增寶雅第 11 案（補足保守版缺口）；原 10 案 5,616,000
+check("A 版案數", A.count, 11);
 assert("A 版未達目標", A.total >= DATA.meta.target);
 
 const B = C.versionBTotal(0.95);
@@ -41,10 +41,10 @@ check("B 版合計", B.total, 5_640_000); // 2026-11-22 Shack 同意新增公部
 check("B 版新增案數", B.count, 5);
 
 const FA = C.funnelA();
-check("A 漏斗 PoC", FA.byKey.poc.ceil, 20);
-check("A 漏斗 有效商機", FA.byKey.opp.ceil, 40);
-check("A 漏斗 名單", FA.byKey.lead.ceil, 200);
-check("A 覆蓋倍數 ≈ 4.49", Math.round(FA.coverage * 100) / 100, 4.49);
+check("A 漏斗 PoC", FA.byKey.poc.ceil, 22);
+check("A 漏斗 有效商機", FA.byKey.opp.ceil, 44);
+check("A 漏斗 名單", FA.byKey.lead.ceil, 220);
+check("A 覆蓋倍數 ≈ 4.89", Math.round(FA.coverage * 100) / 100, 4.89);
 
 const FB = C.funnelB();
 check("B 擴充商機（未進位）", FB.existing.byKey.opp.raw, 10 / 3, near(1e-9));
@@ -65,21 +65,21 @@ check("組合器 旗艦流程（30 人天全自動）", C.configure({ caseId: "s
 check("組合器 既有授權沿用（純人天 15）", C.configure({ caseId: "lin-land-expansion" }).total, 300_000);
 check("組合器 加購 1 半自動差距", C.configure({ extraSemi: 1 }).diffFromStandard, 64_000);
 const fw = C.funnelForward({ leads: FA.byKey.lead.ceil });
-check("正推 200 名單 → 成交案數", fw.wins, 10, near(1e-9));
+check("正推 220 名單 → 成交案數", fw.wins, 11, near(1e-9));
 check("正推金額 = A 版合計", Math.round(fw.amount), A.total);
 
 // 調整轉換率後漏斗須同步（funnelA 接受覆寫值）
 const FA2 = C.funnelA({ ...DATA.funnel, leadToOpp: 0.1 });
-check("轉換率覆寫：名單 10% → 名單需求加倍", FA2.byKey.lead.ceil, 400);
+check("轉換率覆寫：名單 10% → 名單需求加倍", FA2.byKey.lead.ceil, 440);
 
 // ---- 1b. 衍生計算（M1–M4 新增；數值由資料推導並經人工驗算）----
 const WD = C.workingDays();
 check("Q1 有效工作天（1/1–3/25，扣週末、春節空窗、元旦、228 補假）", WD.days, 51);
 check("回簽目標距季末天數", WD.bufferDays, 6);
 const FD = C.flagshipDelayImpact();
-check("旗艦延後：剩餘金額", FD.without, 4_440_000);
-check("旗艦延後：缺口", FD.shortfall, 560_000);
-check("旗艦延後：約需標準案", FD.standardCases, 2);
+check("旗艦延後：剩餘金額", FD.without, 4_940_000);
+check("旗艦延後：缺口", FD.shortfall, 60_000);
+check("旗艦延後：約需標準案", FD.standardCases, 1);
 const R90 = C.renewalSensitivity([0.9])[0];
 check("續約 90%：扣已規劃新增後仍差", R90.shortfall, 0);
 check("續約 90%：再加標準案", R90.extraStandardCases, 0);
@@ -89,9 +89,9 @@ const R100 = C.renewalSensitivity([1.0])[0];
 check("續約 100%：已規劃新增足夠", R100.shortfall, 0);
 const PL = C.pocLoad();
 check("PoC 期週數", Math.round(PL.weeks * 100) / 100, 3.71);
-check("PoC 每週場次", Math.round(PL.perWeek * 10) / 10, 5.4);
+check("PoC 每週場次", Math.round(PL.perWeek * 10) / 10, 5.9);
 const GD = C.govDelayImpact();
-check("公部門延後：剩餘金額", GD.without, 5_116_000);
+check("公部門延後：剩餘金額", GD.without, 5_616_000);
 check("公部門延後：仍達標（缺口 0）", GD.shortfall, 0);
 check("公部門延後（B 版）：剩餘金額", GD.b.without, 5_140_000);
 check("公部門延後（B 版）：仍達標（缺口 0）", GD.b.shortfall, 0);
@@ -177,6 +177,16 @@ check("回本：永達保經需省時數超過人工總工時", C.hoursNeededFor
 check("回本：永達保經月省低於續約每月攤提", C.roi("yungda-commission").monthlySave * 12 < C.caseQuote("yungda-commission").license, true);
 check("回本：新光三越複製到 4 館月數", C.roiPlan("skm-concession").alt.payback, 12);
 check("回本：新光三越複製館數", C.roiPlan("skm-concession").alt.flows, 4);
+// 保守版／完整版（2026-11-23 Shack 同意）
+const TA = C.tiersA(), TB = C.tiersB(0.95);
+check("A 保守版（主力）", TA.conservative, 5_116_000);
+check("A 完整版", TA.complete, 6_116_000);
+check("A 保守版缺口", TA.gap, 0);
+check("B 保守版（續約 95% + 主力）", TB.conservative, 4_800_000);
+check("B 保守版缺口", TB.gap, 200_000);
+check("B 保守版缺口 → 擴充案數", TB.gapExpansion, 1);
+check("東元改跨事業部複製後列主力", C.dealTier("teco-drawing-sync"), "main");
+check("寶雅列主力", C.dealTier("poya-omo-pickup"), "main");
 const TC = C.roi("tc-1999-petition");
 check("回本：臺中研考會三年淨效益（萬，四捨五入一位）", Math.round(TC.net3y / 1000) / 10, 277.5);
 check("回本：臺中研考會三年淨效益 = 月省 × 36 － 三年成本", Math.round(TC.net3y), Math.round(TC.monthlySave * 36 - (TC.oneTime + TC.license * 2)));
@@ -191,13 +201,13 @@ check("主打案例報價 = 標準案", C.configure({ caseId: DATA.meta.heroCase
 
 // 列印附錄（情境對照表）
 const FP = C.flagshipPhasedImpact();
-check("旗艦分階段：A 版業績", FP.total, 4_940_000);
-check("旗艦分階段：缺口", FP.shortfall, 60_000);
-check("旗艦分階段：補標準案", FP.standardCases, 1);
+check("旗艦分階段：A 版業績", FP.total, 5_440_000);
+check("旗艦分階段：缺口", FP.shortfall, 0);
+check("旗艦分階段：補標準案", FP.standardCases, 0);
 const GRID = C.leadsNeededGrid([0.1, 0.2], [0.5]);
-check("名單量表：預設情境", GRID[1].cells[0].leads, 200);
-check("名單量表：名單→商機 10%", GRID[0].cells[0].leads, 400);
-check("正向表：200 名單 = A 版業績", Math.round(C.forwardTable([200])[0].amount), 5_616_000);
+check("名單量表：預設情境", GRID[1].cells[0].leads, 220);
+check("名單量表：名單→商機 10%", GRID[0].cells[0].leads, 440);
+check("正向表：220 名單 = A 版業績", Math.round(C.forwardTable([220])[0].amount), 6_116_000);
 
 for (const s of DATA.scenarios) {
   for (const i of s.industries) assert(`情境 ${s.id} 產業不存在：${i}`, industryIds.has(i));

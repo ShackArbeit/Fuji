@@ -227,6 +227,7 @@ input[type="radio"] { width: 1.1rem; height: 1.1rem; accent-color: var(--primary
 .target-fill { height: 100%; background: var(--primary); border-radius: 6px 0 0 6px; }
 .target-fill.renewal { background: #5a8fd0; border-radius: 6px 0 0 6px; float: left; }
 .target-fill.newbiz { background: var(--primary); border-radius: 0; float: left; }
+.target-fill.pendbiz { background: repeating-linear-gradient(45deg, #e9c9a8, #e9c9a8 6px, #f6e4d2 6px, #f6e4d2 12px); border-radius: 0; float: left; }
 .target-marker { position: absolute; top: -1.6rem; bottom: -.3rem; border-left: 3px dashed var(--ink); }
 .target-marker span { position: absolute; right: .4rem; top: 0; font-size: .9rem; font-weight: 700; white-space: nowrap; }
 .sens tr.is-current { background: var(--primary-soft); font-weight: 800; }
@@ -421,9 +422,9 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   .ap-title { margin-bottom: 3mm; }
 }
 .tl-mark { background: var(--panel); }
-#s-cases .case-card { line-height: 1.28; padding: .12rem .65rem; }
-#s-cases .case-grid { gap: .2rem; }
-#s-cases .case-sub { font-size: .84rem; } /* 14 家客戶時維持一屏 */
+#s-cases .case-card { line-height: 1.22; padding: .08rem .65rem; }
+#s-cases .case-grid { gap: .16rem; }
+#s-cases .case-sub { font-size: .8rem; } /* 15 家客戶時維持一屏 */
 #s-cases .slide-head h2 { font-size: 1.9rem; }
 @media print {
   #ap-sources .as-group dl, #s-sources .src-list { font-size: .76rem; line-height: 1.3; }
@@ -476,3 +477,15 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   #s-cases .case-detail .case-sections { grid-template-columns: 1fr 1fr; }
 }
 .roi-goal { color: var(--primary); font-weight: 700; font-size: .9rem; }
+/* 保守版／完整版（開場摘要） */
+.tier-pair { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
+.tier-label { font-size: .85rem; color: var(--muted); line-height: 1.3; font-weight: 700; }
+.tier-full { margin-left: auto; text-align: right; font-size: .95rem; color: var(--muted); line-height: 1.35; }
+.tier-full strong { color: var(--ink); font-size: 1.15rem; }
+/* 主力／待驗證標籤 */
+.tier-badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: 0 .4em; border-radius: 4px; margin-left: .35rem; vertical-align: .1em; white-space: nowrap; }
+.tier-badge.main { background: var(--robot); color: #fff; }
+.tier-badge.pending { border: 1.5px dashed var(--human); color: var(--human); }
+.tier-box { border: 1px solid var(--line); border-radius: var(--radius); padding: .5rem .8rem; margin-top: .5rem; font-size: .95rem; }
+.tier-box p { margin: .1rem 0; }
+.sw.seg-pend { background: repeating-linear-gradient(45deg, #e9c9a8, #e9c9a8 3px, #f6e4d2 3px, #f6e4d2 6px); }

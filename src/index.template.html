@@ -26,13 +26,13 @@
     <div class="versions">
       <article class="vcard vcard-a">
         <p class="vcard-tag">A 版　從零開始</p>
-        <p class="big" data-bind="a.totalWan"></p>
+        <p class="tier-pair"><span class="big" data-bind="a.consWan"></span><span class="tier-label">保守版<br>只計回本成立</span><span class="tier-full">完整版 <strong data-bind="a.totalWan"></strong><br>含待驗證 <span data-bind="a.pendWan"></span></span></p>
         <p>新簽 <strong data-bind="a.count"></strong> 案：<span data-bind="a.mix"></span></p>
         <p class="status" data-bind="a.status"></p>
       </article>
       <article class="vcard vcard-b">
         <p class="vcard-tag">B 版　續約保底 + 新增</p>
-        <p class="big" data-bind="b.totalWan"></p>
+        <p class="tier-pair"><span class="big" data-bind="b.consWan"></span><span class="tier-label">保守版<br>只計回本成立</span><span class="tier-full">完整版 <strong data-bind="b.totalWan"></strong><br>含待驗證 <span data-bind="b.pendWan"></span></span></p>
         <p>續約 <strong data-bind="b.renewalWan"></strong>（續約率 <span data-bind="b.rate"></span>，<span class="tag-assume">假設</span>）+ 新增 <strong data-bind="b.count"></strong> 案</p>
         <p class="status" data-bind="b.status"></p>
       </article>

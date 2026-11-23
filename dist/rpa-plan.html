@@ -234,6 +234,7 @@ input[type="radio"] { width: 1.1rem; height: 1.1rem; accent-color: var(--primary
 .target-fill { height: 100%; background: var(--primary); border-radius: 6px 0 0 6px; }
 .target-fill.renewal { background: #5a8fd0; border-radius: 6px 0 0 6px; float: left; }
 .target-fill.newbiz { background: var(--primary); border-radius: 0; float: left; }
+.target-fill.pendbiz { background: repeating-linear-gradient(45deg, #e9c9a8, #e9c9a8 6px, #f6e4d2 6px, #f6e4d2 12px); border-radius: 0; float: left; }
 .target-marker { position: absolute; top: -1.6rem; bottom: -.3rem; border-left: 3px dashed var(--ink); }
 .target-marker span { position: absolute; right: .4rem; top: 0; font-size: .9rem; font-weight: 700; white-space: nowrap; }
 .sens tr.is-current { background: var(--primary-soft); font-weight: 800; }
@@ -428,9 +429,9 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   .ap-title { margin-bottom: 3mm; }
 }
 .tl-mark { background: var(--panel); }
-#s-cases .case-card { line-height: 1.28; padding: .12rem .65rem; }
-#s-cases .case-grid { gap: .2rem; }
-#s-cases .case-sub { font-size: .84rem; } /* 14 家客戶時維持一屏 */
+#s-cases .case-card { line-height: 1.22; padding: .08rem .65rem; }
+#s-cases .case-grid { gap: .16rem; }
+#s-cases .case-sub { font-size: .8rem; } /* 15 家客戶時維持一屏 */
 #s-cases .slide-head h2 { font-size: 1.9rem; }
 @media print {
   #ap-sources .as-group dl, #s-sources .src-list { font-size: .76rem; line-height: 1.3; }
@@ -483,6 +484,18 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   #s-cases .case-detail .case-sections { grid-template-columns: 1fr 1fr; }
 }
 .roi-goal { color: var(--primary); font-weight: 700; font-size: .9rem; }
+/* 保守版／完整版（開場摘要） */
+.tier-pair { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
+.tier-label { font-size: .85rem; color: var(--muted); line-height: 1.3; font-weight: 700; }
+.tier-full { margin-left: auto; text-align: right; font-size: .95rem; color: var(--muted); line-height: 1.35; }
+.tier-full strong { color: var(--ink); font-size: 1.15rem; }
+/* 主力／待驗證標籤 */
+.tier-badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: 0 .4em; border-radius: 4px; margin-left: .35rem; vertical-align: .1em; white-space: nowrap; }
+.tier-badge.main { background: var(--robot); color: #fff; }
+.tier-badge.pending { border: 1.5px dashed var(--human); color: var(--human); }
+.tier-box { border: 1px solid var(--line); border-radius: var(--radius); padding: .5rem .8rem; margin-top: .5rem; font-size: .95rem; }
+.tier-box p { margin: .1rem 0; }
+.sw.seg-pend { background: repeating-linear-gradient(45deg, #e9c9a8, #e9c9a8 3px, #f6e4d2 3px, #f6e4d2 6px); }
 
 </style>
 </head>
@@ -504,13 +517,13 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
     <div class="versions">
       <article class="vcard vcard-a">
         <p class="vcard-tag">A 版　從零開始</p>
-        <p class="big" data-bind="a.totalWan"></p>
+        <p class="tier-pair"><span class="big" data-bind="a.consWan"></span><span class="tier-label">保守版<br>只計回本成立</span><span class="tier-full">完整版 <strong data-bind="a.totalWan"></strong><br>含待驗證 <span data-bind="a.pendWan"></span></span></p>
         <p>新簽 <strong data-bind="a.count"></strong> 案：<span data-bind="a.mix"></span></p>
         <p class="status" data-bind="a.status"></p>
       </article>
       <article class="vcard vcard-b">
         <p class="vcard-tag">B 版　續約保底 + 新增</p>
-        <p class="big" data-bind="b.totalWan"></p>
+        <p class="tier-pair"><span class="big" data-bind="b.consWan"></span><span class="tier-label">保守版<br>只計回本成立</span><span class="tier-full">完整版 <strong data-bind="b.totalWan"></strong><br>含待驗證 <span data-bind="b.pendWan"></span></span></p>
         <p>續約 <strong data-bind="b.renewalWan"></strong>（續約率 <span data-bind="b.rate"></span>，<span class="tag-assume">假設</span>）+ 新增 <strong data-bind="b.count"></strong> 案</p>
         <p class="status" data-bind="b.status"></p>
       </article>
@@ -710,7 +723,7 @@ const DATA = {
     expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
   },
 
-  // A 版：從零 500 萬（共 10 案、561.6 萬；2026-11-20 新增公部門第 10 案）；每案對應一家具名客戶（見 Industry.md）
+  // A 版：從零 500 萬（共 11 案、611.6 萬；2026-11-20 新增公部門第 10 案；2026-11-23 新增寶雅第 11 案）；每案對應一家具名客戶（見 Industry.md）
   versionA: {
     deals: [
       { industry: "manufacturing", type: "standard", n: 1, caseId: "porite-delivery" },
@@ -719,6 +732,7 @@ const DATA = {
       { industry: "manufacturing", type: "flagship", n: 1, caseId: "skfiber-invoice-3way" },
       { industry: "retail",        type: "standard", n: 1, caseId: "yuan-omni-orders" },
       { industry: "retail",        type: "standard", n: 1, caseId: "greattree-pos-recon" }, // 2026-11-22 由銀座白石改為大樹藥局（量體與回本較成立）
+      { industry: "retail",        type: "standard", n: 1, caseId: "poya-omo-pickup" },     // 2026-11-23 新增：補足保守版（只計回本成立）缺口
       { industry: "hightech",      type: "standard", n: 1, caseId: "coretronic-quality-report" },
       { industry: "finance",       type: "standard", n: 1, caseId: "yungda-commission" },
       { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" },
@@ -904,9 +918,9 @@ const DATA = {
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
-      pilotGoal: "設變零漏改：消除核准到 ERP 的時間差，先驗證再擴到其他事業部",
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；先在導入 DocuWorks 的事業部試點，再橫向擴散"
+      productNote: "半自動標準案；先在導入 DocuWorks 的事業部驗證，再複製到其他事業部（Q2 起擴充）",
+      replicate: { days: 5, label: "其他事業部", unit: "事業部", maxCopies: 3 }
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
@@ -936,6 +950,7 @@ const DATA = {
     },
     {
       id: "skfiber-invoice-3way", industry: "manufacturing", customer: "台灣新光合成纖維", customerSource: "fuji-other",
+      short: "新光合纖",
       title: "供應商發票 OCR + 三方比對（旗艦）",
       background: [
         { text: "1967 年成立，隸屬新光集團；產品涵蓋 PET 粒、聚酯絲／棉、工程塑膠、薄膜與再生聚酯，生產基地含中壢、觀音、泰國、揚州", sourceId: "skfiber-news" },
@@ -1030,6 +1045,30 @@ const DATA = {
       productNote: "半自動標準案；先選一區門市試點，支付業者超過 5 家時人天可能增加"
     },
     {
+      id: "poya-omo-pickup", industry: "retail", customer: "寶雅", customerSource: "new",
+      title: "線上訂單門市取貨：到貨通知 + 逾期未取件追蹤",
+      background: [
+        { text: "2025 年底門市 470 店，長期目標 800 店；美妝店型 POYA Beauty 占比 2025 年 35%", sourceId: "poya-bnext" },
+        { text: "電商 2025 前三季營收年增近五成、占營收約 2.2%；線上訂購門市取貨比例約五成", sourceId: "poya-fugle" },
+        { text: "北、中、南三大物流中心，可支援約 720 家門市", sourceId: "poya-fugle" }
+      ],
+      challenge: [
+        "電商年增近五成、店取約五成：門市取貨量隨電商成長等比例增加",
+        "推估每月約 2.8 萬筆店取訂單（電商營收 × 店取五成 ÷ 客單約 800 元，待確認）",
+        "到貨通知、逾期未取件、POS 核銷可能分散在電商後台與門市系統（待確認）"
+      ],
+      toBe: [
+        { actor: "robot", text: "依物流中心出貨與門市到貨狀態，更新店取訂單並發取貨通知" },
+        { actor: "robot", text: "逾期未取件自動提醒，再逾期列入退回清單" },
+        { actor: "robot", text: "比對門市 POS 取件核銷與線上訂單，標記未核銷或金額不符" },
+        { actor: "human", text: "客服處理缺貨、改取件門市、退款等異常（不自動退款）" }
+      ],
+      benefit: { count: 28000, unit: "筆店取訂單", per: "month", minutes: 1, autoRate: 0.7,
+        quality: "店取量隨展店與電商成長，不必等比例增加客服與門市人力；未取件提早追回" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；先選一個物流中心轄區的門市試點"
+    },
+    {
       id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
       title: "每日品質／測試報表彙整與異常通報（首期一條產線）",
       background: [
@@ -1079,6 +1118,7 @@ const DATA = {
     },
     {
       id: "skm-concession", industry: "department", customer: "新光三越（單一館試點）", customerSource: "new",
+      short: "新光三越",
       title: "專櫃營業額彙整 + 抽成試算",
       background: [
         { text: "台灣百貨龍頭之一，全台 15 個據點（20 館），2023 年營業額約 945 億元", sourceId: "skm-news" },
@@ -1103,6 +1143,7 @@ const DATA = {
     },
     {
       id: "ntpc-traffic-adjudication", industry: "government", customer: "新北市政府交通事件裁決處", customerSource: "new",
+      short: "新北市交通裁決處",
       title: "線上申辦案件收件入案 + 電子公文點收",
       background: [
         { text: "負責交通違規案件的收件審查、入案、裁罰、申訴與催收；內部設有案件管理、違規裁罰、違規申訴、積案催收等課室", sourceId: "ntpc-org" },
@@ -1127,6 +1168,7 @@ const DATA = {
     },
     {
       id: "tc-1999-petition", industry: "government", customer: "臺中市政府研究發展考核委員會", customerSource: "new",
+      short: "臺中市研考會",
       industryNote: "公部門（1999 臺中市民一碼通）",
       title: "1999 陳情申訴案件分案 + 逾期追蹤",
       background: [
@@ -1152,6 +1194,7 @@ const DATA = {
     },
     {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
+      short: "林懇伶地政士",
       industryNote: "專業服務（地政士）",
       title: "第二流程：謄本調閱 + 案件進度通知",
       background: [
@@ -1246,6 +1289,10 @@ const DATA = {
       urls: ["https://blog.fugle.tw/post/earnings-call-6469-2026-03-26"] },
     { id: "greattree-uanalyze", title: "優分析｜大樹藥局展店年增 14%（2025-07）", summary: "2025 年 6 月底門市 407 家、上半年營收年增 12%；商圈據點導入高毛利商品",
       urls: ["https://uanalyze.com.tw/articles/6847825635"] },
+    { id: "poya-bnext", title: "數位時代｜寶雅 2025 年報解析（2026-02）", summary: "2025 年底達 470 店、目標 800 店；POYA Beauty 店型占比 35%；營收與純益連三年新高",
+      urls: ["https://www.bnext.com.tw/article/90144/poya-2025fiscalreport"] },
+    { id: "poya-fugle", title: "富果｜寶雅法說會重點（2025-10／12，AI 摘要）", summary: "電商前三季年增近五成、占營收 2.2%；門市取貨比例約五成；三大物流中心可支援 720 店",
+      urls: ["https://blog.fugle.tw/post/earnings-call-5904-2025-12-22", "https://blog.fugle.tw/post/earnings-call-5904-2025-10-30"] },
     { id: "dept-share", title: "NOWnews｜2025 百貨市占", summary: "市場集中，前三為新光三越、遠東百貨、遠東 SOGO（ABM 參考）",
       urls: ["https://www.nownews.com/news/6866139"] },
     { id: "fbtw-position", title: "商業周刊廣編｜富士軟片資訊自述", summary: "約四分之一企業辦公室使用其事務機；紙本數位化 + RPA 雙軌（公司自述）",
@@ -1341,7 +1388,7 @@ function defaultStages(f = DATA.funnel) {
   ];
 }
 
-const ceil = v => Math.ceil(v - 1e-9);
+const ceil = v => Math.ceil(v - 1e-9) + 0; // +0：避免 ceil(0) 產生 -0
 
 // 由成交案數反推各階段所需量。rates 由「最接近成交」往上排；預設用 DATA.funnel。
 // 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
@@ -1510,6 +1557,29 @@ function roiPlan(caseId, r = DATA.roi) {
   }
   return { base, alt };
 }
+
+// ---- 保守版／完整版（2026-11-23 Shack 同意）----
+// 主力：客戶算得過來（單一流程或擴大後在回本門檻內）→ 計入保守版；待驗證：工時回本不成立，列入內部討論，只計入完整版
+function dealTier(caseId) {
+  const p = roiPlan(caseId);
+  return p.base.ok || (p.alt && p.alt.ok) ? "main" : "pending";
+}
+function tierSplit(deals, base) {
+  const rows = deals.map(d => ({ ...d, tier: dealTier(d.caseId) }));
+  const main = rows.filter(r => r.tier === "main").reduce((s, r) => s + r.amount, 0);
+  const pending = rows.filter(r => r.tier === "pending").reduce((s, r) => s + r.amount, 0);
+  const conservative = base + main;
+  const gap = Math.max(0, DATA.meta.target - conservative);
+  return {
+    rows, main, pending, base,
+    conservative, complete: conservative + pending, gap,
+    gapStandard: ceil(gap / standardCaseAmount()),
+    gapExpansion: ceil(gap / dealAmount("expansion")),
+    pendingNames: rows.filter(r => r.tier === "pending").map(r => r.caseId)
+  };
+}
+function tiersA() { return tierSplit(versionATotal().deals, 0); }
+function tiersB(rate = DATA.versionB.renewalRate) { const b = versionBTotal(rate); return tierSplit(b.deals, b.renewal); }
 
 // 此案例在 A／B 版被列為哪些案型
 function dealsForCase(caseId) {
@@ -1745,6 +1815,10 @@ function fmtNum(v, digits = 1) {
     const std = dealBreakdown("standard");
     const wd = workingDays();
     const mix = Object.entries(a.byIndustry).map(([k, v]) => `${IND[k].short} ${v.n} 案`).join("、");
+    const ta = tiersA(), tb = tiersB(state.renewalRate);
+    const consStatus = t => t.gap > 0
+      ? { text: `保守版差 ${fmtWan(t.gap)} → 補 ${t.gapExpansion} 個擴充案或 ${t.gapStandard} 個標準案`, ok: false }
+      : { text: `✔ 保守版已達標，超出 ${fmtWan(t.conservative - DATA.meta.target)}`, ok: true };
     return {
       "meta.title": DATA.meta.title,
       "meta.thesis": DATA.meta.thesis,
@@ -1752,12 +1826,16 @@ function fmtNum(v, digits = 1) {
       "a.count": a.count,
       "a.totalWan": fmtWan(a.total),
       "a.mix": mix,
-      "a.status": vsTarget(a.total),
+      "a.status": consStatus(ta),
+      "a.consWan": fmtWan(ta.conservative),
+      "a.pendWan": fmtWan(ta.pending),
       "b.totalWan": fmtWan(b.total),
       "b.renewalWan": fmtWan(b.renewal),
       "b.rate": pct(state.renewalRate),
       "b.count": b.count,
-      "b.status": vsTarget(b.total),
+      "b.status": consStatus(tb),
+      "b.consWan": fmtWan(tb.conservative),
+      "b.pendWan": fmtWan(tb.pending),
       "std.totalWan": fmtWan(std.total),
       "std.licenseWan": fmtWan(std.license),
       "std.serviceWan": fmtWan(std.service),
@@ -2102,10 +2180,24 @@ function fmtNum(v, digits = 1) {
     return `<div class="target-bar" role="img" aria-label="合計 ${fmtWan(total)}，目標 ${fmtWan(DATA.meta.target)}">${segs}
       <span class="target-marker" style="left:${(DATA.meta.target / scale) * 100}%"><span>目標 ${fmtWan(DATA.meta.target)}</span></span></div>`;
   }
+  const shortName = id => CASE[id].short || CASE[id].customer.replace(/（.*）/, "");
+  const tierBadge = id => dealTier(id) === "main" ? `<span class="tier-badge main">主力</span>` : `<span class="tier-badge pending">待驗證</span>`;
+  function tierBox(t) {
+    const names = t.pendingNames.map(shortName).join("、");
+    const gapTxt = t.gap > 0
+      ? `<span data-state="bad">差 ${fmtWan(t.gap)} → 補 ${t.gapExpansion} 個擴充案（或 ${t.gapStandard} 個標準案），或待驗證案經 Discovery 轉主力</span>`
+      : `<span data-state="ok">✔ 已達標</span>`;
+    return `<div class="tier-box">
+      <p><b>保守版</b>（只計回本成立的主力）：<strong>${fmtWan(t.conservative)}</strong>　${gapTxt}</p>
+      <p><b>完整版</b>（含待驗證 ${fmtWan(t.pending)}：${esc(names)}）：<strong>${fmtWan(t.complete)}</strong></p>
+      <p class="foot-note">待驗證＝工時回本不成立，不硬推；列入內部討論，Discovery 確認量體後再決定是否轉主力。</p>
+    </div>`;
+  }
   function renderA() {
     const a = versionATotal();
+    const ta = tiersA();
     const fd = flagshipDelayImpact();
-    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${d.caseId ? `<span class="nowrap"><button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(shortName(d.caseId))}</button>${tierBadge(d.caseId)}</span>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     const inds = Object.entries(a.byIndustry).map(([k, v]) => ({ label: IND[k].short, value: v.amount, text: `${fmtWan(v.amount)}｜${fmtPct(v.amount / a.total)}` }));
     const maxInd = Math.max(...inds.map(i => i.value));
     const mfg = a.byIndustry.manufacturing || { amount: 0 };
@@ -2122,8 +2214,9 @@ function fmtNum(v, digits = 1) {
         <div class="panel">
           <h3>各產業金額</h3>
           ${bars(inds, maxInd)}
-          ${targetBar([{ value: a.total }], a.total)}
-          ${statusHtml(vsTarget(a.total))}
+          ${targetBar([{ value: ta.main, cls: "renewal" }, { value: ta.pending, cls: "pendbiz" }], a.total)}
+          <ul class="legend"><li><span><span class="sw seg-semi"></span>主力 ${fmtWan(ta.main)}</span><span><span class="sw seg-pend"></span>待驗證 ${fmtWan(ta.pending)}</span></li></ul>
+          ${tierBox(ta)}
           <h4>風險說明</h4>
           <ul class="plain">
             <li>全自動旗艦 ${a.deals.filter(d => d.type === "flagship").reduce((s, d) => s + d.n, 0)} 案佔 ${fmtPct(fd.share)}；若延後，需約 ${fd.standardCases} 個標準案補位。</li>
@@ -2144,6 +2237,7 @@ function fmtNum(v, digits = 1) {
             <input type="range" id="rr" min="${Math.round(lo * 100)}" max="${Math.round(hi * 100)}" step="1">
           </div>
           <div id="b-sens"></div>
+          <div id="b-tier"></div>
         </div>
         <div class="panel" id="b-comp"></div>
       </div>`;
@@ -2155,20 +2249,22 @@ function fmtNum(v, digits = 1) {
     $("#rr-out").textContent = pct(state.renewalRate);
     const rates = [...new Set([...DATA.versionB.sensitivityRates, state.renewalRate])].sort((x, y) => y - x);
     const sens = renewalSensitivity(rates);
+    const mainNew = tiersB(state.renewalRate).main;
+    const verdict = short => short <= 0 ? `<span data-state="ok">✔ 足夠</span>` : `<span data-state="bad">差 ${fmtWan(short)}</span>`;
     const rows = sens.map(s => {
       const cur = Math.abs(s.rate - state.renewalRate) < 1e-9;
-      const after = s.shortfall === 0 ? `<span data-state="ok">✔ 已規劃足夠</span>` : `<span data-state="bad">差 ${fmtWan(s.shortfall)} → +${s.extraStandardCases} 標準案</span>`;
-      return `<tr class="${cur ? "is-current" : ""}"><td>${pct(s.rate)}</td><td class="num">${fmtWan(s.renewal)}</td><td class="num">${fmtWan(s.gap)}</td><td class="num">${s.standardCases} 案</td><td>${after}</td></tr>`;
+      return `<tr class="${cur ? "is-current" : ""}"><td>${pct(s.rate)}</td><td class="num">${fmtWan(s.renewal)}</td><td class="num">${fmtWan(s.gap)}</td><td class="num">${s.standardCases} 案</td><td>${verdict(s.gap - mainNew)}</td><td>${verdict(s.shortfall)}</td></tr>`;
     }).join("");
     $("#b-sens").innerHTML = `
       <table class="tbl sens">
-        <thead><tr><th>續約率</th><th class="num">續約金額</th><th class="num">缺口</th><th class="num">約需標準案</th><th>加上已規劃新增 ${fmtWan(b.newTotal)} 後</th></tr></thead>
+        <thead><tr><th>續約率</th><th class="num">續約金額</th><th class="num">缺口</th><th class="num">約需標準案</th><th>保守版<br>＋主力 ${fmtWan(mainNew)}</th><th>完整版<br>＋全部 ${fmtWan(b.newTotal)}</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p class="foot-note">缺口 = 目標 − 續約金額；「約需標準案」= 缺口 ÷ 標準案金額，無條件進位。</p>`;
 
     const SRC_LABEL = { existing: "既有客戶", new: "新客" };
-    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const tb = tiersB(state.renewalRate);
+    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<span class="nowrap"><button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(shortName(d.caseId))}</button>${tierBadge(d.caseId)}</span>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     $("#b-comp").innerHTML = `
       <h3>B 版：續約保底 + 新增 ${b.count} 案</h3>
       <table class="tbl">
@@ -2183,7 +2279,8 @@ function fmtNum(v, digits = 1) {
       <ul class="legend">
         <li><span><span class="sw seg-semi"></span>續約 ${fmtWan(b.renewal)}</span><span><span class="sw seg-dev"></span>新增 ${fmtWan(b.newTotal)}</span></li>
       </ul>
-      ${statusHtml(vsTarget(b.total))}
+`;
+    $("#b-tier").innerHTML = `${tierBox(tb)}
       <ul class="plain">
         <li>擴充案免新授權採購、回簽快；公部門案以決標日視同回簽，當緩衝。</li>
         <li>續約率每降 5 個百分點，續約少 ${fmtWan(DATA.versionB.renewalBase * 0.05)}，約等於 ${fmtNum((DATA.versionB.renewalBase * 0.05) / standardCaseAmount(), 1)} 個標準案。</li>

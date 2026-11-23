@@ -58,6 +58,10 @@
     const std = dealBreakdown("standard");
     const wd = workingDays();
     const mix = Object.entries(a.byIndustry).map(([k, v]) => `${IND[k].short} ${v.n} 案`).join("、");
+    const ta = tiersA(), tb = tiersB(state.renewalRate);
+    const consStatus = t => t.gap > 0
+      ? { text: `保守版差 ${fmtWan(t.gap)} → 補 ${t.gapExpansion} 個擴充案或 ${t.gapStandard} 個標準案`, ok: false }
+      : { text: `✔ 保守版已達標，超出 ${fmtWan(t.conservative - DATA.meta.target)}`, ok: true };
     return {
       "meta.title": DATA.meta.title,
       "meta.thesis": DATA.meta.thesis,
@@ -65,12 +69,16 @@
       "a.count": a.count,
       "a.totalWan": fmtWan(a.total),
       "a.mix": mix,
-      "a.status": vsTarget(a.total),
+      "a.status": consStatus(ta),
+      "a.consWan": fmtWan(ta.conservative),
+      "a.pendWan": fmtWan(ta.pending),
       "b.totalWan": fmtWan(b.total),
       "b.renewalWan": fmtWan(b.renewal),
       "b.rate": pct(state.renewalRate),
       "b.count": b.count,
-      "b.status": vsTarget(b.total),
+      "b.status": consStatus(tb),
+      "b.consWan": fmtWan(tb.conservative),
+      "b.pendWan": fmtWan(tb.pending),
       "std.totalWan": fmtWan(std.total),
       "std.licenseWan": fmtWan(std.license),
       "std.serviceWan": fmtWan(std.service),
@@ -415,10 +423,24 @@
     return `<div class="target-bar" role="img" aria-label="合計 ${fmtWan(total)}，目標 ${fmtWan(DATA.meta.target)}">${segs}
       <span class="target-marker" style="left:${(DATA.meta.target / scale) * 100}%"><span>目標 ${fmtWan(DATA.meta.target)}</span></span></div>`;
   }
+  const shortName = id => CASE[id].short || CASE[id].customer.replace(/（.*）/, "");
+  const tierBadge = id => dealTier(id) === "main" ? `<span class="tier-badge main">主力</span>` : `<span class="tier-badge pending">待驗證</span>`;
+  function tierBox(t) {
+    const names = t.pendingNames.map(shortName).join("、");
+    const gapTxt = t.gap > 0
+      ? `<span data-state="bad">差 ${fmtWan(t.gap)} → 補 ${t.gapExpansion} 個擴充案（或 ${t.gapStandard} 個標準案），或待驗證案經 Discovery 轉主力</span>`
+      : `<span data-state="ok">✔ 已達標</span>`;
+    return `<div class="tier-box">
+      <p><b>保守版</b>（只計回本成立的主力）：<strong>${fmtWan(t.conservative)}</strong>　${gapTxt}</p>
+      <p><b>完整版</b>（含待驗證 ${fmtWan(t.pending)}：${esc(names)}）：<strong>${fmtWan(t.complete)}</strong></p>
+      <p class="foot-note">待驗證＝工時回本不成立，不硬推；列入內部討論，Discovery 確認量體後再決定是否轉主力。</p>
+    </div>`;
+  }
   function renderA() {
     const a = versionATotal();
+    const ta = tiersA();
     const fd = flagshipDelayImpact();
-    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const rows = a.deals.map(d => `<tr><td>${esc(IND[d.industry].short)}</td><td>${d.caseId ? `<span class="nowrap"><button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(shortName(d.caseId))}</button>${tierBadge(d.caseId)}</span>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     const inds = Object.entries(a.byIndustry).map(([k, v]) => ({ label: IND[k].short, value: v.amount, text: `${fmtWan(v.amount)}｜${fmtPct(v.amount / a.total)}` }));
     const maxInd = Math.max(...inds.map(i => i.value));
     const mfg = a.byIndustry.manufacturing || { amount: 0 };
@@ -435,8 +457,9 @@
         <div class="panel">
           <h3>各產業金額</h3>
           ${bars(inds, maxInd)}
-          ${targetBar([{ value: a.total }], a.total)}
-          ${statusHtml(vsTarget(a.total))}
+          ${targetBar([{ value: ta.main, cls: "renewal" }, { value: ta.pending, cls: "pendbiz" }], a.total)}
+          <ul class="legend"><li><span><span class="sw seg-semi"></span>主力 ${fmtWan(ta.main)}</span><span><span class="sw seg-pend"></span>待驗證 ${fmtWan(ta.pending)}</span></li></ul>
+          ${tierBox(ta)}
           <h4>風險說明</h4>
           <ul class="plain">
             <li>全自動旗艦 ${a.deals.filter(d => d.type === "flagship").reduce((s, d) => s + d.n, 0)} 案佔 ${fmtPct(fd.share)}；若延後，需約 ${fd.standardCases} 個標準案補位。</li>
@@ -457,6 +480,7 @@
             <input type="range" id="rr" min="${Math.round(lo * 100)}" max="${Math.round(hi * 100)}" step="1">
           </div>
           <div id="b-sens"></div>
+          <div id="b-tier"></div>
         </div>
         <div class="panel" id="b-comp"></div>
       </div>`;
@@ -468,20 +492,22 @@
     $("#rr-out").textContent = pct(state.renewalRate);
     const rates = [...new Set([...DATA.versionB.sensitivityRates, state.renewalRate])].sort((x, y) => y - x);
     const sens = renewalSensitivity(rates);
+    const mainNew = tiersB(state.renewalRate).main;
+    const verdict = short => short <= 0 ? `<span data-state="ok">✔ 足夠</span>` : `<span data-state="bad">差 ${fmtWan(short)}</span>`;
     const rows = sens.map(s => {
       const cur = Math.abs(s.rate - state.renewalRate) < 1e-9;
-      const after = s.shortfall === 0 ? `<span data-state="ok">✔ 已規劃足夠</span>` : `<span data-state="bad">差 ${fmtWan(s.shortfall)} → +${s.extraStandardCases} 標準案</span>`;
-      return `<tr class="${cur ? "is-current" : ""}"><td>${pct(s.rate)}</td><td class="num">${fmtWan(s.renewal)}</td><td class="num">${fmtWan(s.gap)}</td><td class="num">${s.standardCases} 案</td><td>${after}</td></tr>`;
+      return `<tr class="${cur ? "is-current" : ""}"><td>${pct(s.rate)}</td><td class="num">${fmtWan(s.renewal)}</td><td class="num">${fmtWan(s.gap)}</td><td class="num">${s.standardCases} 案</td><td>${verdict(s.gap - mainNew)}</td><td>${verdict(s.shortfall)}</td></tr>`;
     }).join("");
     $("#b-sens").innerHTML = `
       <table class="tbl sens">
-        <thead><tr><th>續約率</th><th class="num">續約金額</th><th class="num">缺口</th><th class="num">約需標準案</th><th>加上已規劃新增 ${fmtWan(b.newTotal)} 後</th></tr></thead>
+        <thead><tr><th>續約率</th><th class="num">續約金額</th><th class="num">缺口</th><th class="num">約需標準案</th><th>保守版<br>＋主力 ${fmtWan(mainNew)}</th><th>完整版<br>＋全部 ${fmtWan(b.newTotal)}</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p class="foot-note">缺口 = 目標 − 續約金額；「約需標準案」= 缺口 ÷ 標準案金額，無條件進位。</p>`;
 
     const SRC_LABEL = { existing: "既有客戶", new: "新客" };
-    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(CASE[d.caseId].customer)}</button>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
+    const tb = tiersB(state.renewalRate);
+    const dealRows = b.deals.map(d => `<tr><td>${SRC_LABEL[d.source]}</td><td>${d.caseId ? `<span class="nowrap"><button type="button" class="link-btn" data-open-case="${d.caseId}">${esc(shortName(d.caseId))}</button>${tierBadge(d.caseId)}</span>` : ""}</td><td>${esc(d.label)}</td><td class="num">${d.n}</td><td class="num">${fmtWan(d.amount)}</td></tr>`).join("");
     $("#b-comp").innerHTML = `
       <h3>B 版：續約保底 + 新增 ${b.count} 案</h3>
       <table class="tbl">
@@ -496,7 +522,8 @@
       <ul class="legend">
         <li><span><span class="sw seg-semi"></span>續約 ${fmtWan(b.renewal)}</span><span><span class="sw seg-dev"></span>新增 ${fmtWan(b.newTotal)}</span></li>
       </ul>
-      ${statusHtml(vsTarget(b.total))}
+`;
+    $("#b-tier").innerHTML = `${tierBox(tb)}
       <ul class="plain">
         <li>擴充案免新授權採購、回簽快；公部門案以決標日視同回簽，當緩衝。</li>
         <li>續約率每降 5 個百分點，續約少 ${fmtWan(DATA.versionB.renewalBase * 0.05)}，約等於 ${fmtNum((DATA.versionB.renewalBase * 0.05) / standardCaseAmount(), 1)} 個標準案。</li>

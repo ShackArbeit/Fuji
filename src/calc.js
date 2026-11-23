@@ -83,7 +83,7 @@ function defaultStages(f = DATA.funnel) {
   ];
 }
 
-const ceil = v => Math.ceil(v - 1e-9);
+const ceil = v => Math.ceil(v - 1e-9) + 0; // +0：避免 ceil(0) 產生 -0
 
 // 由成交案數反推各階段所需量。rates 由「最接近成交」往上排；預設用 DATA.funnel。
 // 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
@@ -252,6 +252,29 @@ export function roiPlan(caseId, r = DATA.roi) {
   }
   return { base, alt };
 }
+
+// ---- 保守版／完整版（2026-11-23 Shack 同意）----
+// 主力：客戶算得過來（單一流程或擴大後在回本門檻內）→ 計入保守版；待驗證：工時回本不成立，列入內部討論，只計入完整版
+export function dealTier(caseId) {
+  const p = roiPlan(caseId);
+  return p.base.ok || (p.alt && p.alt.ok) ? "main" : "pending";
+}
+function tierSplit(deals, base) {
+  const rows = deals.map(d => ({ ...d, tier: dealTier(d.caseId) }));
+  const main = rows.filter(r => r.tier === "main").reduce((s, r) => s + r.amount, 0);
+  const pending = rows.filter(r => r.tier === "pending").reduce((s, r) => s + r.amount, 0);
+  const conservative = base + main;
+  const gap = Math.max(0, DATA.meta.target - conservative);
+  return {
+    rows, main, pending, base,
+    conservative, complete: conservative + pending, gap,
+    gapStandard: ceil(gap / standardCaseAmount()),
+    gapExpansion: ceil(gap / dealAmount("expansion")),
+    pendingNames: rows.filter(r => r.tier === "pending").map(r => r.caseId)
+  };
+}
+export function tiersA() { return tierSplit(versionATotal().deals, 0); }
+export function tiersB(rate = DATA.versionB.renewalRate) { const b = versionBTotal(rate); return tierSplit(b.deals, b.renewal); }
 
 // 此案例在 A／B 版被列為哪些案型
 export function dealsForCase(caseId) {

@@ -25,7 +25,7 @@ export const DATA = {
     expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
   },
 
-  // A 版：從零 500 萬（共 10 案、561.6 萬；2026-11-20 新增公部門第 10 案）；每案對應一家具名客戶（見 Industry.md）
+  // A 版：從零 500 萬（共 11 案、611.6 萬；2026-11-20 新增公部門第 10 案；2026-11-23 新增寶雅第 11 案）；每案對應一家具名客戶（見 Industry.md）
   versionA: {
     deals: [
       { industry: "manufacturing", type: "standard", n: 1, caseId: "porite-delivery" },
@@ -34,6 +34,7 @@ export const DATA = {
       { industry: "manufacturing", type: "flagship", n: 1, caseId: "skfiber-invoice-3way" },
       { industry: "retail",        type: "standard", n: 1, caseId: "yuan-omni-orders" },
       { industry: "retail",        type: "standard", n: 1, caseId: "greattree-pos-recon" }, // 2026-11-22 由銀座白石改為大樹藥局（量體與回本較成立）
+      { industry: "retail",        type: "standard", n: 1, caseId: "poya-omo-pickup" },     // 2026-11-23 新增：補足保守版（只計回本成立）缺口
       { industry: "hightech",      type: "standard", n: 1, caseId: "coretronic-quality-report" },
       { industry: "finance",       type: "standard", n: 1, caseId: "yungda-commission" },
       { industry: "department",    type: "starter",  n: 1, caseId: "skm-concession" },
@@ -219,9 +220,9 @@ export const DATA = {
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
-      pilotGoal: "設變零漏改：消除核准到 ERP 的時間差，先驗證再擴到其他事業部",
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；先在導入 DocuWorks 的事業部試點，再橫向擴散"
+      productNote: "半自動標準案；先在導入 DocuWorks 的事業部驗證，再複製到其他事業部（Q2 起擴充）",
+      replicate: { days: 5, label: "其他事業部", unit: "事業部", maxCopies: 3 }
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
@@ -251,6 +252,7 @@ export const DATA = {
     },
     {
       id: "skfiber-invoice-3way", industry: "manufacturing", customer: "台灣新光合成纖維", customerSource: "fuji-other",
+      short: "新光合纖",
       title: "供應商發票 OCR + 三方比對（旗艦）",
       background: [
         { text: "1967 年成立，隸屬新光集團；產品涵蓋 PET 粒、聚酯絲／棉、工程塑膠、薄膜與再生聚酯，生產基地含中壢、觀音、泰國、揚州", sourceId: "skfiber-news" },
@@ -345,6 +347,30 @@ export const DATA = {
       productNote: "半自動標準案；先選一區門市試點，支付業者超過 5 家時人天可能增加"
     },
     {
+      id: "poya-omo-pickup", industry: "retail", customer: "寶雅", customerSource: "new",
+      title: "線上訂單門市取貨：到貨通知 + 逾期未取件追蹤",
+      background: [
+        { text: "2025 年底門市 470 店，長期目標 800 店；美妝店型 POYA Beauty 占比 2025 年 35%", sourceId: "poya-bnext" },
+        { text: "電商 2025 前三季營收年增近五成、占營收約 2.2%；線上訂購門市取貨比例約五成", sourceId: "poya-fugle" },
+        { text: "北、中、南三大物流中心，可支援約 720 家門市", sourceId: "poya-fugle" }
+      ],
+      challenge: [
+        "電商年增近五成、店取約五成：門市取貨量隨電商成長等比例增加",
+        "推估每月約 2.8 萬筆店取訂單（電商營收 × 店取五成 ÷ 客單約 800 元，待確認）",
+        "到貨通知、逾期未取件、POS 核銷可能分散在電商後台與門市系統（待確認）"
+      ],
+      toBe: [
+        { actor: "robot", text: "依物流中心出貨與門市到貨狀態，更新店取訂單並發取貨通知" },
+        { actor: "robot", text: "逾期未取件自動提醒，再逾期列入退回清單" },
+        { actor: "robot", text: "比對門市 POS 取件核銷與線上訂單，標記未核銷或金額不符" },
+        { actor: "human", text: "客服處理缺貨、改取件門市、退款等異常（不自動退款）" }
+      ],
+      benefit: { count: 28000, unit: "筆店取訂單", per: "month", minutes: 1, autoRate: 0.7,
+        quality: "店取量隨展店與電商成長，不必等比例增加客服與門市人力；未取件提早追回" },
+      productType: "semi", estDays: 13,
+      productNote: "半自動標準案；先選一個物流中心轄區的門市試點"
+    },
+    {
       id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
       title: "每日品質／測試報表彙整與異常通報（首期一條產線）",
       background: [
@@ -394,6 +420,7 @@ export const DATA = {
     },
     {
       id: "skm-concession", industry: "department", customer: "新光三越（單一館試點）", customerSource: "new",
+      short: "新光三越",
       title: "專櫃營業額彙整 + 抽成試算",
       background: [
         { text: "台灣百貨龍頭之一，全台 15 個據點（20 館），2023 年營業額約 945 億元", sourceId: "skm-news" },
@@ -418,6 +445,7 @@ export const DATA = {
     },
     {
       id: "ntpc-traffic-adjudication", industry: "government", customer: "新北市政府交通事件裁決處", customerSource: "new",
+      short: "新北市交通裁決處",
       title: "線上申辦案件收件入案 + 電子公文點收",
       background: [
         { text: "負責交通違規案件的收件審查、入案、裁罰、申訴與催收；內部設有案件管理、違規裁罰、違規申訴、積案催收等課室", sourceId: "ntpc-org" },
@@ -442,6 +470,7 @@ export const DATA = {
     },
     {
       id: "tc-1999-petition", industry: "government", customer: "臺中市政府研究發展考核委員會", customerSource: "new",
+      short: "臺中市研考會",
       industryNote: "公部門（1999 臺中市民一碼通）",
       title: "1999 陳情申訴案件分案 + 逾期追蹤",
       background: [
@@ -467,6 +496,7 @@ export const DATA = {
     },
     {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",
+      short: "林懇伶地政士",
       industryNote: "專業服務（地政士）",
       title: "第二流程：謄本調閱 + 案件進度通知",
       background: [
@@ -561,6 +591,10 @@ export const DATA = {
       urls: ["https://blog.fugle.tw/post/earnings-call-6469-2026-03-26"] },
     { id: "greattree-uanalyze", title: "優分析｜大樹藥局展店年增 14%（2025-07）", summary: "2025 年 6 月底門市 407 家、上半年營收年增 12%；商圈據點導入高毛利商品",
       urls: ["https://uanalyze.com.tw/articles/6847825635"] },
+    { id: "poya-bnext", title: "數位時代｜寶雅 2025 年報解析（2026-02）", summary: "2025 年底達 470 店、目標 800 店；POYA Beauty 店型占比 35%；營收與純益連三年新高",
+      urls: ["https://www.bnext.com.tw/article/90144/poya-2025fiscalreport"] },
+    { id: "poya-fugle", title: "富果｜寶雅法說會重點（2025-10／12，AI 摘要）", summary: "電商前三季年增近五成、占營收 2.2%；門市取貨比例約五成；三大物流中心可支援 720 店",
+      urls: ["https://blog.fugle.tw/post/earnings-call-5904-2025-12-22", "https://blog.fugle.tw/post/earnings-call-5904-2025-10-30"] },
     { id: "dept-share", title: "NOWnews｜2025 百貨市占", summary: "市場集中，前三為新光三越、遠東百貨、遠東 SOGO（ABM 參考）",
       urls: ["https://www.nownews.com/news/6866139"] },
     { id: "fbtw-position", title: "商業周刊廣編｜富士軟片資訊自述", summary: "約四分之一企業辦公室使用其事務機；紙本數位化 + RPA 雙軌（公司自述）",
