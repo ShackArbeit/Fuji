@@ -528,3 +528,16 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   #s-timeline .timeline { padding-top: .5rem; padding-bottom: .5rem; }
   #s-timeline .phase-card ul { font-size: .9rem; }
 }
+/* 第 10 章：依客戶來源分頁 */
+.src-toggle { margin: .6rem 0 .2rem; }
+.src-panel.is-hidden { display: none; }
+.src-panel > li { padding: .35rem 0; }
+.src-panel > li > ul { list-style: disc; margin: .15rem 0 0; padding-left: 1.2rem; }
+.src-panel > li > ul > li { padding: .05rem 0; }
+.src-other { font-size: .8rem; color: var(--muted); margin-top: .6rem; line-height: 1.45; }
+@media print { .src-panel.is-hidden { display: block; } .src-toggle { display: none; } .src-panel::before { content: attr(aria-label); display: block; font-weight: 700; column-span: all; } }
+.src-other > span { display: block; }
+.src-other > span::before { content: "・"; }
+.src-other { columns: 2; column-gap: 1.6rem; }
+.src-other > strong { column-span: all; display: block; }
+.src-other > span { break-inside: avoid; }

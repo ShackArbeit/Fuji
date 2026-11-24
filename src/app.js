@@ -44,6 +44,7 @@
     tier: "complete", // 第 5 章：conservative＝保守版（只列主力）／complete＝完整版（含待驗證）
     funnelMode: "fwd", // 2026-11-24 只保留正向
     funnelVer: "A",    // 第 6 章：A 版／B 版試算
+    srcGroup: "fuji-rpa", // 第 10 章：客戶來源分頁
     bNewLeads: null, bExpOpps: null,
     industry: "all",
     openCase: DATA.meta.heroCaseId,
@@ -807,12 +808,20 @@
         <p>${infoTag("fact")} 有公開來源可查（附連結）</p>
         <p>${infoTag("guess")} 依產業常見痛點 × 該公司營運型態推論，需 Discovery 驗證</p>
         <p>${infoTag("assume")} 效益數字為假設，非客戶實績</p>
-        <p>客戶來源：${Object.entries(cs).map(([k, n]) => `${srcBadge(k)} ${n} 家`).join("　")}</p>
       </div>
-      <ul class="src-list">${DATA.sources.map(s => {
-        const cited = citedBy(s.id);
-        return `<li>${srcLinks(s.id)}：${esc(s.summary)}${cited.length ? ` <span class="cited">→ ${cited.map(c => esc(c.customer)).join("、")}</span>` : ""}</li>`;
-      }).join("")}</ul>
+      <div class="toggle src-toggle" role="group" aria-label="依客戶來源切換連結列表">${Object.entries(cs).map(([k, n]) =>
+        `<button type="button" class="toggle-btn" data-src-group="${k}" aria-pressed="${state.srcGroup === k}">${esc(DATA.customerSources[k])}　${n} 家</button>`).join("")}</div>
+      ${Object.keys(cs).map(k => {
+        const custs = DATA.cases.filter(c => c.customerSource === k);
+        return `<ul class="src-list src-panel${state.srcGroup === k ? "" : " is-hidden"}" data-src-panel="${k}" aria-label="${esc(DATA.customerSources[k])}">${custs.map(c => {
+          const ids = [...new Set(c.background.map(b => b.sourceId).filter(id => SRC[id]))];
+          return `<li><strong>${esc(c.customer)}</strong><ul>${ids.map(id => `<li>${srcLinks(id)}：${esc(SRC[id].summary)}</li>`).join("")}</ul></li>`;
+        }).join("")}</ul>`;
+      }).join("")}
+      ${(() => {
+        const other = DATA.sources.filter(s => !citedBy(s.id).length);
+        return other.length ? `<p class="src-other"><strong>產業與市場參考（不屬特定客戶）</strong>${other.map(s => `<span>${srcLinks(s.id)}：${esc(s.summary)}</span>`).join("")}</p>` : "";
+      })()}
       <p class="foot-note">客戶背景皆取自公開資訊；「挑戰／流程現況」為外部觀察推估，不代表該公司一定有此問題，亦不涉及富士軟片內部客戶資料。</p>`;
   }
 
@@ -881,7 +890,7 @@
   }
 
   // ---------- 更新（保留焦點）----------
-  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver"];
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver", "data-src-group"];
   function update() {
     const act = document.activeElement;
     let restore = null;
@@ -965,7 +974,7 @@
   });
 
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver]");
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver],[data-src-group]");
     if (!t) return;
     const d = t.dataset;
     if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
@@ -992,6 +1001,8 @@
       state.version = d.version;
     } else if (d.tier) {
       state.tier = d.tier;
+    } else if (d.srcGroup) {
+      state.srcGroup = d.srcGroup;
     } else if (d.funnelVer) {
       state.funnelVer = d.funnelVer;
     } else if (d.funnelMode) {
