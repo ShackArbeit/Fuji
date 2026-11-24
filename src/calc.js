@@ -432,6 +432,7 @@ export function collectAssumptions(overrides = {}) {
   list.push({ group: g2, label: "回本門檻", value: `${r.paybackLimit} 個月` });
   list.push({ group: g2, label: "淨效益期間", value: `${r.horizonMonths / 12} 年（授權每年續約）` });
   list.push({ group: g2, label: "授權計算", value: "年訂閱，第 13 個月起每年續約（計算方式待向富士確認）", wrap: true });
+  list.push({ group: g2, label: "授權範圍", value: "按機器人／使用者計，不按門市或據點；總部集中處理的流程 1 套涵蓋全部門市，單日量跑不完再加購（待向富士確認）", wrap: true });
   list.push({ group: g2, label: "同單位加流程", value: "沿用同一套授權，只加開發人天", wrap: true });
   list.push({ group: g2, label: "跨使用者複製", value: `每處加購 1 個半自動（${DATA.price.semi / 10000} 萬／年）`, wrap: true });
   list.push({ group: g2, label: "多流程攤提", value: `最多 ${r.maxFlows} 個流程；第 2 個起每個 ${dealTypeDays("expansion")} 人天`, wrap: true });

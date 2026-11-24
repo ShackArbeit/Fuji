@@ -341,7 +341,7 @@ export const DATA = {
       benefit: { count: 428, unit: "店", per: "day", workDays: 30, minutes: 3, autoRate: 0.7,
         quality: "展店不必等比例增加對帳人力；差異隔天就知道，降低漏帳" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；先選一區門市試點，支付業者超過 5 家時人天可能增加"
+      productNote: "總部財務集中操作，1 套授權涵蓋全部門市：先在一區驗證，再開到全部門市，不用加購"
     },
     {
       id: "poya-omo-pickup", industry: "retail", customer: "寶雅", customerSource: "new",
@@ -360,13 +360,13 @@ export const DATA = {
         { actor: "robot", text: "客服每天點一下啟動，機器人依到貨狀態更新訂單、通知客人來取" },
         { actor: "robot", text: "逾期沒取自動再提醒，還是沒來就列入退回清單" },
         { actor: "robot", text: "自動比對門市 POS 取件紀錄和線上訂單，找出沒核銷或金額不對的" },
-        { actor: "human", text: "缺貨、換取件門市、退款，由客服處理，機器人不會自己退款" }
+        { actor: "human", text: "缺貨、換門市、退款由客服處理，機器人不會自己退款" }
       ],
       benefit: { count: 28000, unit: "筆店取訂單", per: "month", minutes: 1, autoRate: 0.7,
-        countNote: "2.8 萬筆怎麼來：前三季營收約 187 億 × 電商 2.2% ÷ 9 個月 × 店取五成 ÷ 客單約 800 元（客單為假設）",
-        quality: "店取量隨展店與電商成長，不必等比例增加客服與門市人力；未取件提早追回" },
+        countNote: "2.8 萬筆＝前三季營收 187 億 × 電商 2.2% ÷ 9 個月 × 店取五成 ÷ 客單約 800 元（假設）",
+        quality: "店取量變多也不必等比例加人力；未取件提早追回" },
       productType: "semi", estDays: 13,
-      productNote: "半自動標準案；先選一個物流中心轄區的門市試點"
+      productNote: "總部客服集中操作，1 套授權涵蓋全部門市：先在一區驗證，再開到全部門市，不用加購"
     },
     {
       id: "coretronic-quality-report", industry: "hightech", customer: "中強光電", customerSource: "fuji-other",
@@ -414,7 +414,7 @@ export const DATA = {
         quality: "價值在降低對帳出錯與漏追、縮短佣金結算週期；效益以擴到全部 20 家計" },
       pilotGoal: "降低對帳出錯與漏追、縮短佣金結算週期",
       productType: "semi", estDays: 13,
-      productNote: "先導模組（PoV）；需事先約定格式改版的維護範圍；金融資安審查期長，Q1 回簽有風險"
+      productNote: "先導模組（PoV）：首期 3–5 家，效益以同一套授權擴到 20 家計；需約定格式改版的維護範圍；金融資安審查期長，Q1 回簽有風險"
     },
     {
       id: "skm-concession", industry: "department", customer: "新光三越（單一館試點）", customerSource: "new",

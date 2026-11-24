@@ -201,7 +201,7 @@ export const DATA = {
 - `customerSourceSummary()`：統計客戶來源（富士既有 RPA／富士既有非 RPA／集團外新客）。（取代原 `evidenceSummary()`）
 - `benefit(caseId)`、`benefitFormula(caseId)`、`measureOf(b)`：效益試算（月工時、節省工時、人力當量），皆為假設。`minutes` 是**人工**處理一個計量單位（`measure`，預設取 `unit` 第一個字）的分鐘數，RPA 執行時間不計；卡片第 4 段逐步標註「人工現況 → 導入後（機器人處理 X%，其餘例外仍人工）」。
 - `dealsForCase(caseId)`：該客戶在 A／B 版對應的案型與金額。
-- `laborMonthlyOf(caseId)`、`addFlowCostOf(caseId)`：回本試算的個案覆寫——卡片可設 `roiOverride.laborMonthly`（該職務實際月成本，如中強光電工程師 8 萬）與 `replicate.days`（同一報表複製到下一條產線的人天，如 5 人天），未設定則用共用規則（月薪 5 萬 × 1.3；每多一個流程 15 人天）。`replicate.maxCopies` 可覆寫最多複製處數（新光三越 4 館）；`replicate.extraRobot`（`extraRobotOf(caseId)`）＝複製到不同使用者時每處加購 1 個半自動機器人（年訂閱、每年續約；東元 true，中強光電、新光三越 false，前提以 `robotNote` 顯示「待確認」）；同單位新增流程沿用同一套授權只加人天；授權計算方式待向富士確認；`pilotGoal` 為「全自動也達不到回本門檻」時卡片顯示的單點目標。
+- `laborMonthlyOf(caseId)`、`addFlowCostOf(caseId)`：回本試算的個案覆寫——卡片可設 `roiOverride.laborMonthly`（該職務實際月成本，如中強光電工程師 8 萬）與 `replicate.days`（同一報表複製到下一條產線的人天，如 5 人天），未設定則用共用規則（月薪 5 萬 × 1.3；每多一個流程 15 人天）。`replicate.maxCopies` 可覆寫最多複製處數（新光三越 4 館）；`replicate.extraRobot`（`extraRobotOf(caseId)`）＝複製到不同使用者時每處加購 1 個半自動機器人（年訂閱、每年續約；東元 true，中強光電、新光三越 false，前提以 `robotNote` 顯示「待確認」）；同單位新增流程沿用同一套授權只加人天；（2026-11-24）授權按機器人／使用者計、不按門市或據點：總部集中處理的流程（大樹、寶雅、新光三越）1 套涵蓋全部門市，試點只是導入節奏，效益以全部門市計，單日量跑不完再依使用量加購；授權計算方式待向富士確認；`pilotGoal` 為「全自動也達不到回本門檻」時卡片顯示的單點目標。
 - `dealTier(caseId)`、`tiersA()`、`tiersB(rate)`：保守版／完整版分層。主力＝回本成立（單一流程或擴大後在門檻內），計入保守版；待驗證＝工時回本不成立，只計入完整版。回傳保守／完整金額、缺口與補法（約需擴充案／標準案數）。
 - `caseQuote(caseId)`：卡片報價；只出現在 B 版最低授權組合的客戶（銀座白石）以不含開發的 24 萬計，回本試算也用此報價。
 - `roi(caseId, flows)`、`roiPlan(caseId)`、`hoursNeededForPayback(caseId)`：回本試算（月省金額、回本月數、三年淨效益；超過門檻時找出多流程攤提方案，仍不達標則回傳所需每月省時），皆為試算假設。
