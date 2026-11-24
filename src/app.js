@@ -271,7 +271,7 @@
     return `<ol class="benefit-steps">
       <li><b>人工現況</b>：${esc(vol)} × 每${esc(measureOf(b))} ${b.minutes} 分 ＝ 月 ${fmtNum(b.monthlyHours, 0)} 小時</li>
       <li><b>導入後</b>：機器人處理 ${auto}%，省 ${fmtNum(b.savedHours, 0)} 小時；${100 - auto}% 例外仍人工 ${fmtNum(b.monthlyHours - b.savedHours, 0)} 小時</li>
-    </ol>`;
+    </ol>${b.countNote ? `<p class="benefit-note">${esc(b.countNote)}</p>` : ""}`;
   }
 
   function caseDetailHtml(c) {
@@ -296,7 +296,7 @@
         </section>
         <div class="sec-stack">
         <section class="sec">
-          <h4><span class="sec-no">3</span>解決方案</h4>
+          <h4><span class="sec-no">3</span>解決方案<span class="muted roi-sub">${c.productType === "full" ? "（全自動：排程執行，無人值守）" : "（半自動：由人點一下啟動，機器人跑完）"}</span></h4>
           <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
         </section>
         <section class="sec sec-roi">

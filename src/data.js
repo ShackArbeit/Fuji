@@ -188,9 +188,9 @@ export const DATA = {
         "供應商用 Email、電話、LINE 各種方式回覆，光整理回覆就很花時間"
       ],
       toBe: [
-        { actor: "robot", text: "每天自動從 kintone 找出還沒交貨的採購單，提前寄信問供應商交期（交期長的料件可以更早問）" },
-        { actor: "robot", text: "照固定表格回覆的，機器人自動讀出交期、填回 kintone" },
-        { actor: "robot", text: "沒回、回得不清楚的，自動列進「交期異常清單」" },
+        { actor: "robot", text: "採購每天點一下啟動，機器人從 kintone 找出未交貨的採購單，提前寄信問交期" },
+        { actor: "robot", text: "請供應商改用 kintone 回覆表單；照表單回的，機器人讀出交期、填回系統" },
+        { actor: "robot", text: "沒回、用電話或 LINE 回的，自動列進「交期異常清單」" },
         { actor: "human", text: "採購看清單打電話或 LINE 追，提早通知生管調整排程" }
       ],
       benefit: { count: 80, unit: "筆", per: "day", workDays: 21, minutes: 5, autoRate: 0.7,
@@ -211,13 +211,13 @@ export const DATA = {
         "這種錯誤造成的損失，往往比行政工時本身還大"
       ],
       toBe: [
-        { actor: "robot", text: "圖面一核准，機器人就自動抓出圖號、版次、料號" },
+        { actor: "robot", text: "文管每天點一下啟動，機器人抓出新核准圖面的圖號、版次、料號" },
         { actor: "robot", text: "自動登入 ERP 更新版次和圖面連結；讀不到的轉給人處理" },
-        { actor: "robot", text: "自動寄設變通知給採購、生管、品保，附上最新版圖面" },
+        { actor: "robot", text: "寄設變通知給採購、生管、品保，附最新版圖面，舊版自動標記「作廢」" },
         { actor: "human", text: "已下單或做到一半的料件要怎麼處理，由工程與生管決定" }
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
-        quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
+        quality: "消除核准到 ERP 的時間差與漏改；用錯舊圖的報廢與重工沒有數據，保守不計，工時是下限" },
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；先在導入 DocuWorks 的事業部驗證，再複製到其他事業部（Q2 起擴充）",
       replicate: { days: 5, label: "其他事業部", unit: "事業部", maxCopies: 3, extraRobot: true, robotNote: "各事業部使用者不同，每處加購 1 個半自動" }
@@ -236,9 +236,9 @@ export const DATA = {
         "算完還要一個個通知採購與生管，常常慢了一步"
       ],
       toBe: [
-        { actor: "robot", text: "每天自動從 ERP 撈庫存、在途採購、未交訂單，找出快不夠的料號" },
+        { actor: "robot", text: "生管每天點一下啟動，機器人從 ERP 撈庫存、在途、未交訂單，找出快不夠的料號" },
         { actor: "robot", text: "原料不夠通知採購，成品不夠通知生管" },
-        { actor: "robot", text: "年度盤點時，也能自動比對系統帳和盤點表，列出差異" },
+        { actor: "robot", text: "延伸（不算進效益）：年度盤點時比對系統帳和盤點表，列出差異" },
         { actor: "human", text: "盤點差異的原因由倉管查、主管決定要不要調帳" }
       ],
       benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
@@ -262,7 +262,7 @@ export const DATA = {
       ],
       toBe: [
         { actor: "robot", text: "電子發票直接讀取；紙本和國外發票用 OCR 辨識" },
-        { actor: "robot", text: "自動把發票和採購單、收貨單對單價、數量、統編、稅額；對得上的標記「可付款」" },
+        { actor: "robot", text: "以採購單項次累計收貨和開票數量，分批交貨也對得起來；單價、稅額相符才標「可付款」" },
         { actor: "robot", text: "對不上的自動分給負責的人：價格問題給採購、數量問題給倉庫、發票開錯通知供應商重開" },
         { actor: "human", text: "會計確認後才付款，機器人不會自己付錢" }
       ],
@@ -284,7 +284,7 @@ export const DATA = {
         "檔期組合、贈品拆單一多，人工整理就容易漏單或對不上"
       ],
       toBe: [
-        { actor: "robot", text: "定時把各電商平台的訂單抓下來，組合品、贈品自動拆好，匯入 ERP" },
+        { actor: "robot", text: "客服每天點一下啟動，機器人抓下各平台訂單，拆好組合與贈品，匯入 ERP" },
         { actor: "robot", text: "出貨後自動把物流單號填回各平台" },
         { actor: "robot", text: "和門市 POS 的銷售合併，每天產出全通路銷售與對帳報表" },
         { actor: "human", text: "取消、退款、地址有問題的，由客服處理，機器人不會自己退款" }
@@ -307,7 +307,7 @@ export const DATA = {
         "每店每天交易不多，重點是「不出錯」，而不是省很多人力"
       ],
       toBe: [
-        { actor: "robot", text: "每晚自動匯出各店 POS 銷售，寫進 Ragic 並核對庫存" },
+        { actor: "robot", text: "會計每天點一下啟動，機器人匯出各店 POS 銷售，寫進 Ragic 並核對庫存" },
         { actor: "robot", text: "自動比對訂金和尾款，列出還沒收尾款、逾期沒來取的訂製單" },
         { actor: "robot", text: "自動產出總部日報和會計入帳用的底稿" },
         { actor: "human", text: "特殊交易（訂金、尾款）由會計確認後才入帳" }
@@ -333,7 +333,7 @@ export const DATA = {
         "線上下單、門市取貨的訂單，還要跨系統再對一次帳"
       ],
       toBe: [
-        { actor: "robot", text: "每天自動下載刷卡、行動支付撥款和 POS 日結，逐店對帳" },
+        { actor: "robot", text: "財務每天點一下啟動，機器人下載刷卡、行動支付撥款和 POS 日結，逐店對帳" },
         { actor: "robot", text: "自動比對線上訂單和門市取貨，找出沒取件或金額不對" },
         { actor: "robot", text: "差異清單自動分給門市和財務，並產出全通路日報" },
         { actor: "human", text: "差異原因由財務確認後才調帳，機器人不會自己改帳" }
@@ -357,12 +357,13 @@ export const DATA = {
         "漏通知或漏核銷，客人白跑一趟，門市也要花時間善後"
       ],
       toBe: [
-        { actor: "robot", text: "貨一到門市，自動更新訂單狀態並通知客人來取" },
+        { actor: "robot", text: "客服每天點一下啟動，機器人依到貨狀態更新訂單、通知客人來取" },
         { actor: "robot", text: "逾期沒取自動再提醒，還是沒來就列入退回清單" },
         { actor: "robot", text: "自動比對門市 POS 取件紀錄和線上訂單，找出沒核銷或金額不對的" },
         { actor: "human", text: "缺貨、換取件門市、退款，由客服處理，機器人不會自己退款" }
       ],
       benefit: { count: 28000, unit: "筆店取訂單", per: "month", minutes: 1, autoRate: 0.7,
+        countNote: "2.8 萬筆怎麼來：前三季營收約 187 億 × 電商 2.2% ÷ 9 個月 × 店取五成 ÷ 客單約 800 元（客單為假設）",
         quality: "店取量隨展店與電商成長，不必等比例增加客服與門市人力；未取件提早追回" },
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；先選一個物流中心轄區的門市試點"
@@ -380,8 +381,8 @@ export const DATA = {
         "報表一晚出來，產線異常就晚一步發現"
       ],
       toBe: [
-        { actor: "robot", text: "每天自動讀取前一天的測試機台紀錄和 MES 資料（只讀不改，不動生產系統）" },
-        { actor: "robot", text: "自動算好良率、做好圖表，早會前寄出" },
+        { actor: "robot", text: "工程師上班點一下啟動，機器人讀取前一天測試紀錄和 MES（只讀不改）" },
+        { actor: "robot", text: "算好良率、做好圖表，早會前寄出" },
         { actor: "robot", text: "數字超標就馬上通知負責的工程師" },
         { actor: "human", text: "異常原因和怎麼處理，由工程師判斷" }
       ],
@@ -430,7 +431,7 @@ export const DATA = {
       ],
       toBe: [
         { actor: "robot", text: "自動彙整單一館各櫃 POS 營業額，套用一般抽成先算好，產出對帳單草稿" },
-        { actor: "robot", text: "保底、級距、檔期分攤這類特殊條件不硬算，只標記出來讓人看" },
+        { actor: "robot", text: "保底、級距等條件常隨品牌換約改變，不寫進程式，只標記出來給人看" },
         { actor: "human", text: "財務核對特殊條件後才寄給品牌" }
       ],
       benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
@@ -452,7 +453,7 @@ export const DATA = {
       challenge: [
         "線上申辦案件越來越多，收件後要人工審查、比對車號與駕照資料再入案",
         "每天的電子公文要人工一件件分到各課室，量大時容易延誤或分錯",
-        "系統要憑證登入，所以由承辦人登入後，再交給機器人批次處理"
+        "缺件的補件通知要一封封寫、寄，承辦時間被行政工作吃掉"
       ],
       toBe: [
         { actor: "robot", text: "承辦人憑證登入後，機器人批次讀申辦、比對車號駕照" },
@@ -481,7 +482,7 @@ export const DATA = {
         "逾期案件的催辦、每月給首長的報表，也要人工整理"
       ],
       toBe: [
-        { actor: "robot", text: "依關鍵字和過去的派案紀錄，自動建議該分給哪個局處" },
+        { actor: "robot", text: "AI 依關鍵字和過去派案紀錄建議承辦局處，機器人把建議填進系統（RPA + AI）" },
         { actor: "human", text: "研考人員確認後才分案；權責有爭議的，由人決定" },
         { actor: "robot", text: "自動列出快逾期、改分多次、展延的案件，提醒催辦" },
         { actor: "robot", text: "每月自動整理統計，產出給首長的月報草稿" }
@@ -529,7 +530,7 @@ export const DATA = {
         "月結時兩邊的庫存與金額，仍要人工核對（約 16 小時）"
       ],
       toBe: [
-        { actor: "robot", text: "每天檢查前一天的同步紀錄，同步失敗或數量不對，當天就通知" },
+        { actor: "robot", text: "會計每天點一下啟動，機器人檢查前一天同步紀錄，失敗或數量不對當天通知" },
         { actor: "robot", text: "月結前自動匯出兩邊的庫存和交易明細，產出差異報告" },
         { actor: "human", text: "差異原因由會計和倉管確認，機器人不會自己調帳" }
       ],
