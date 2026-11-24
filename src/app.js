@@ -439,7 +439,7 @@
     return `<div class="tier-box">
       <p><b>保守版</b>（只計回本成立的主力）：<strong>${fmtWan(t.conservative)}</strong>　${gapTxt}</p>
       <p><b>完整版</b>（含待驗證 ${fmtWan(t.pending)}：${esc(names)}）：<strong>${fmtWan(t.complete)}</strong></p>
-      <p class="foot-note">待驗證＝工時回本不成立，不硬推；列入內部討論，Discovery 確認量體後再決定是否轉主力。</p>
+      <p class="foot-note">待驗證：客戶目前省下的人力，還不夠付回授權和開發費，所以先不硬推。會帶回團隊討論，等實際拜訪確認工作量夠大，再改列主力。</p>
     </div>`;
   }
   function renderA() {
