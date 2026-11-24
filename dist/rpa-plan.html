@@ -514,6 +514,10 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .industry-layout:not(.no-detail) .ind-tbl td, .industry-layout:not(.no-detail) .ind-tbl th { padding-left: .45rem; padding-right: .45rem; }
 /* 2026-11-24 移除各章大標題後：標題列靠上對齊，讓章節小標與其他章節同高 */
 .row-head { align-items: flex-start; }
+/* 2026-11-24：各章大標題移除後，章節小標即為章節標題，字級放大 */
+.slide .slide-head .eyebrow { font-size: 1.8rem; letter-spacing: .02em; line-height: 1.25; }
+@media print { .slide .slide-head .eyebrow { font-size: 1.3rem; } }
+@media screen and (max-height: 800px) { #s-summary .slide-head .eyebrow { font-size: 1.4rem; } }
 
 </style>
 </head>
