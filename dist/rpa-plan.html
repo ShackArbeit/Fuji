@@ -2013,8 +2013,8 @@ function fmtNum(v, digits = 1) {
     const lic0 = caseQuote(c.id).license;
     const never0 = lic0 && base.monthlySave * 12 < lic0;
     const head = isGov
-      ? `等效人力價值（${laborTxt}）：月省 ${wan(base.monthlySave)} ≈ 釋放 ${fmtNum(benefit(c.id).fte, 1)} 人力${never0 ? "，單點不會回本" : `，${pb(base)}`}`
-      : `人力成本以${laborTxt}計：月省約 ${wan(base.monthlySave)}${never0 ? ` ＜ 續約每月 ${fmtWan(lic0 / 12)}，單點不會回本` : `，${pb(base)}`}`;
+      ? `等效人力價值（${laborTxt}）：月省 ${wan(base.monthlySave)} ≈ 釋放 ${fmtNum(benefit(c.id).fte, 1)} 人力${never0 ? "，光做這一個流程回不了本" : `，${pb(base)}`}`
+      : `人力成本以${laborTxt}計：月省約 ${wan(base.monthlySave)}${never0 ? `，比每月續約費 ${fmtWan(lic0 / 12)} 還少，光做這一個流程回不了本` : `，${pb(base)}`}`;
     if (base.ok) {
       const H = r.horizonMonths, renewN = Math.ceil(H / 12) - 1;
       const cost3 = base.oneTime + base.license * renewN;
@@ -2027,7 +2027,7 @@ function fmtNum(v, digits = 1) {
         : `複製到${c.replicate.label}（${c.replicate.days} 人天 ${fmtWan(addFlowCostOf(c.id))}${robotTxt}）`)
       : `同一套授權加 ${alt ? alt.flows - 1 : 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）`;
     const premise = c.replicate && c.replicate.robotNote ? `<br><span class="roi-calc">前提：${esc(c.replicate.robotNote)}（待確認）</span>` : "";
-    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span>${premise}${c.pilotGoal ? `<br><span class="roi-goal">單點目標：${esc(c.pilotGoal)}</span>` : ""}</p>`;
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span>${premise}${c.pilotGoal ? `<br><span class="roi-goal">做的理由：${esc(c.pilotGoal)}</span>` : ""}</p>`;
     const need = hoursNeededForPayback(c.id);
     const q = caseQuote(c.id);
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
@@ -2037,16 +2037,16 @@ function fmtNum(v, digits = 1) {
     const labor = laborMonthlyOf(c.id);
     // 月省怎麼來；月省低於授權年費攤提時，直接說明不會回本
     const saveTxt = `月省 ${wan(base.monthlySave)} ≈ ${fmtNum(b.savedHours, 0)} 小時 ÷ ${FTE_HOURS} × ${fmtWan(labor)}`;
-    const neverTxt = q.license && base.monthlySave * 12 < q.license ? ` ＜ 續約每月 ${fmtWan(q.license / 12)} → 不會回本` : `，${pb(base)}`;
+    const neverTxt = q.license && base.monthlySave * 12 < q.license ? `，比每月續約費 ${fmtWan(q.license / 12)} 還少，回不了本` : `，${pb(base)}`;
     // 全自動也達不到門檻：不列不可能的門檻，改寫上限與單點目標
     if (need > b.monthlyHours) {
       const cap = b.monthlyHours / FTE_HOURS * labor;
-      return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">⚠ 單點試點：人工總工時僅 ${fmtNum(b.monthlyHours, 0)} 小時，全自動上限月省 ${wan(cap)}，不走工時回本</span><br><span class="roi-goal">目標：${esc(c.pilotGoal || "Discovery 確認更多量體，或併入其他流程一起評估")}</span></p>`;
+      return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">⚠ 工作量太小：這個流程每月人工只有 ${fmtNum(b.monthlyHours, 0)} 小時，就算全自動也只省 ${wan(cap)}，光靠省人力回不了本</span><br><span class="roi-goal">做的理由：${esc(c.pilotGoal || "拜訪時確認是否還有其他工作量，或和其他流程一起評估")}</span></p>`;
     }
     // 換算成「每件要省幾分鐘」：量接近門檻時，說明只要每件多省一點就達標
     const perMonthCount = b.count * b.perMonth;
     const minNeed = need * 60 / perMonthCount, minNow = b.minutes * b.autoRate;
-    const warn = `⚠ 量體待驗證：${r.paybackLimit} 個月回本需每月省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(b.savedHours, 0)}，差 ${fmtNum(need - b.savedHours, 0)}）＝ 每${esc(measureOf(b))}省 ${fmtNum(minNeed, 1)} 分（目前 ${fmtNum(minNow, 1)} 分）`;
+    const warn = `⚠ 工作量還差一點：要 ${r.paybackLimit} 個月內回本，每月得省 ${fmtNum(need, 0)} 小時（目前 ${fmtNum(b.savedHours, 0)}，還差 ${fmtNum(need - b.savedHours, 0)}），等於每${esc(measureOf(b))}要省 ${fmtNum(minNeed, 1)} 分（目前 ${fmtNum(minNow, 1)} 分）`;
     return `<p class="roi-line">${saveTxt}${neverTxt}<br><span class="roi-warn">${warn}</span><br><span class="roi-calc">算法：${costTxt} ÷ ${r.paybackLimit} ＝ 月 ${fmtWan(cost / r.paybackLimit)}；÷ ${fmtWan(labor)} × ${FTE_HOURS} ＝ ${fmtNum(need, 0)} 小時</span></p>`;
   }
 
