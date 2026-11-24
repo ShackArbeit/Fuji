@@ -569,7 +569,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
     <header class="slide-head">
       <p class="eyebrow">產業與痛點地圖</p>
       <h2 id="h-industry">先選對產業，再選對流程</h2>
-      <p class="lead">評分是我依「成交週期、市場規模、客單、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看目標客戶。</p>
+      <p class="lead">評分是我依「成交週期、市場規模、客單潛力、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看目標客戶。</p>
     </header>
     <div class="industry-layout">
       <div id="industry-map" class="industry-map"></div>
@@ -942,7 +942,7 @@ const DATA = {
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；先在導入 DocuWorks 的事業部驗證，再複製到其他事業部（Q2 起擴充）",
-      replicate: { days: 5, label: "其他事業部", unit: "事業部", maxCopies: 3 }
+      replicate: { days: 5, label: "其他事業部", unit: "事業部", maxCopies: 3, extraRobot: true, robotNote: "各事業部使用者不同，每處加購 1 個半自動" }
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
@@ -1103,17 +1103,17 @@ const DATA = {
         "可能已有 Power BI／Tableau 或自寫 VBA／Python；RPA 補的是封閉測試機台介面匯出、與 MES 合併、排程推播的最後一哩路（待確認）"
       ],
       toBe: [
-        { actor: "robot", text: "唯讀擷取前一日測試機台 Log 與 MES 資料（不寫回生產系統）" },
+        { actor: "robot", text: "唯讀擷取前日機台 Log 與 MES（不寫回生產系統）" },
         { actor: "robot", text: "合併計算良率、不良柏拉圖，早會前寄出報表" },
-        { actor: "robot", text: "超出門檻時通報負責工程師；全程留存稽核軌跡，寄送權限受控" },
+        { actor: "robot", text: "超標即通報負責工程師；留存稽核軌跡、權限受控" },
         { actor: "human", text: "工程師判斷異常原因與處置" }
       ],
       benefit: { count: 5, unit: "份報表", per: "day", workDays: 21, minutes: 40, autoRate: 0.8,
         quality: "釋放工程師做真正的異常分析；稽核軌跡符合既有資安與防外洩規範" },
       productType: "semi", estDays: 13,
       productNote: "首期一條產線驗證；再複製到其他產線、廠區與子公司（如奧圖碼）",
-      roiOverride: { laborMonthly: 80_000, note: "光電廠品質工程師，含分紅獎金" },
-      replicate: { days: 5, label: "第 2 條產線" }
+      roiOverride: { laborMonthly: 80_000, note: "工程師含分紅" },
+      replicate: { days: 5, label: "第 2 條產線", extraRobot: false, robotNote: "同一品保團隊操作，沿用授權" }
     },
     {
       id: "yungda-commission", industry: "finance", customer: "永達保險經紀人", customerSource: "new",
@@ -1161,7 +1161,7 @@ const DATA = {
       productType: "semi", estDays: 10,
       productNote: "入門包：先拿一館試點；模板驗證後複製到其他分館",
       pilotGoal: "縮短關帳天數、減少抽成算錯爭議，驗證可複製的分館模板",
-      replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4 }
+      replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4, extraRobot: false, robotNote: "總部財務集中操作，沿用授權" }
     },
     {
       id: "ntpc-traffic-adjudication", industry: "government", customer: "新北市政府交通事件裁決處", customerSource: "new",
@@ -1541,6 +1541,11 @@ function addFlowCostOf(caseId) {
   const c = DATA.cases.find(x => x.id === caseId);
   return c && c.replicate ? c.replicate.days * DATA.price.day : dealAmount("expansion");
 }
+// 每多複製一處要加購的授權（年費）：只有 replicate.extraRobot 為 true 時才加 1 個半自動機器人
+function extraRobotOf(caseId) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  return c && c.replicate && c.replicate.extraRobot ? DATA.price.semi : 0;
+}
 function roi(caseId, flows = 1, r = DATA.roi) {
   const q = caseQuote(caseId);
   const b = benefit(caseId);
@@ -1548,15 +1553,18 @@ function roi(caseId, flows = 1, r = DATA.roi) {
   const savePerFlow = b.fte * laborMonthly;
   const monthlySave = savePerFlow * flows;
   const addFlowCost = addFlowCostOf(caseId);
-  const oneTime = q.total + (flows - 1) * addFlowCost;
-  const costAt = m => oneTime + q.license * (Math.ceil(m / 12) - 1);
+  // 複製到不同使用者（replicate.extraRobot）時，每多一處加購 1 個半自動機器人，同樣是年訂閱、每年續約
+  const robotPerCopy = extraRobotOf(caseId);
+  const license = q.license + (flows - 1) * robotPerCopy;
+  const oneTime = q.total + (flows - 1) * (addFlowCost + robotPerCopy);
+  const costAt = m => oneTime + license * (Math.ceil(m / 12) - 1);
   let payback = null;
   for (let m = 1; m <= 60; m++) {
     if (m * monthlySave >= costAt(m)) { payback = m; break; }
   }
   const H = r.horizonMonths;
   const net3y = H * monthlySave - costAt(H);
-  return { caseId, flows, laborMonthly, monthlySave, oneTime, license: q.license, payback, net3y, ok: payback !== null && payback <= r.paybackLimit };
+  return { caseId, flows, laborMonthly, monthlySave, oneTime, license, robotPerCopy, payback, net3y, ok: payback !== null && payback <= r.paybackLimit };
 }
 // 單一流程要在 paybackLimit 個月內回本，每月至少需省多少小時
 function dealTypeDays(k) { return DATA.dealTypes[k].days; }
@@ -1736,6 +1744,9 @@ function collectAssumptions(overrides = {}) {
   list.push({ group: g2, label: "人力成本", value: `月薪 ${r.monthlySalary / 10000} 萬 × ${r.loadFactor}` });
   list.push({ group: g2, label: "回本門檻", value: `${r.paybackLimit} 個月` });
   list.push({ group: g2, label: "淨效益期間", value: `${r.horizonMonths / 12} 年（授權每年續約）` });
+  list.push({ group: g2, label: "授權計算", value: "年訂閱，第 13 個月起每年續約（計算方式待向富士確認）", wrap: true });
+  list.push({ group: g2, label: "同單位加流程", value: "沿用同一套授權，只加開發人天", wrap: true });
+  list.push({ group: g2, label: "跨使用者複製", value: `每處加購 1 個半自動（${DATA.price.semi / 10000} 萬／年）`, wrap: true });
   list.push({ group: g2, label: "多流程攤提", value: `最多 ${r.maxFlows} 個流程；第 2 個起每個 ${dealTypeDays("expansion")} 人天`, wrap: true });
   for (const c of DATA.cases) {
     if (c.roiOverride) list.push({ group: g2, label: c.customer + "人力成本", value: `每人每月 ${c.roiOverride.laborMonthly / 10000} 萬（${c.roiOverride.note}）`, wrap: true });
@@ -2009,12 +2020,14 @@ function fmtNum(v, digits = 1) {
       const cost3 = base.oneTime + base.license * renewN;
       return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}${isGov ? "（等效價值，非實際減薪）" : ""}</span><br><span class="roi-calc">算法：${fmtNum(base.monthlySave / 10000, 2)} 萬 × ${H} 月 ＝ ${wan(base.monthlySave * H)} － 三年成本 ${wan(cost3)}（首年 ${wan(base.oneTime)}＋續約 ${wan(base.license)}×${renewN}）</span></p>`;
     }
+    const robotTxt = c.replicate && c.replicate.extraRobot ? ` + 半自動 ${fmtWan(DATA.price.semi)}／年` : "，沿用授權";
     const addTxt = c.replicate
       ? (alt && alt.flows > 2
-        ? `複製到${c.replicate.label}，共 ${alt.flows} ${c.replicate.unit || "處"}（每${c.replicate.unit || "處"} ${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`
-        : `複製到${c.replicate.label}（${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`)
+        ? `複製到${c.replicate.label}，共 ${alt.flows} ${c.replicate.unit || "處"}（每${c.replicate.unit || "處"} ${c.replicate.days} 人天 ${fmtWan(addFlowCostOf(c.id))}${robotTxt}）`
+        : `複製到${c.replicate.label}（${c.replicate.days} 人天 ${fmtWan(addFlowCostOf(c.id))}${robotTxt}）`)
       : `同一套授權加 ${alt ? alt.flows - 1 : 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）`;
-    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span>${c.pilotGoal ? `<br><span class="roi-goal">單點目標：${esc(c.pilotGoal)}</span>` : ""}</p>`;
+    const premise = c.replicate && c.replicate.robotNote ? `<br><span class="roi-calc">前提：${esc(c.replicate.robotNote)}（待確認）</span>` : "";
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span>${premise}${c.pilotGoal ? `<br><span class="roi-goal">單點目標：${esc(c.pilotGoal)}</span>` : ""}</p>`;
     const need = hoursNeededForPayback(c.id);
     const q = caseQuote(c.id);
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
@@ -2074,7 +2087,7 @@ function fmtNum(v, digits = 1) {
           <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
         </section>
         <section class="sec sec-roi">
-          <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（接第 4 段效益 × 第 5 段報價）</span></h4>
+          <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（效益 × 報價；授權計算方式待向富士確認）</span></h4>
           ${roiHtml(c)}
         </section>
         </div>

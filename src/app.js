@@ -230,12 +230,14 @@
       const cost3 = base.oneTime + base.license * renewN;
       return `<p class="roi-line">${head}<br><span class="roi-ok">✔ 三年淨效益約 ${wan(base.net3y)}${isGov ? "（等效價值，非實際減薪）" : ""}</span><br><span class="roi-calc">算法：${fmtNum(base.monthlySave / 10000, 2)} 萬 × ${H} 月 ＝ ${wan(base.monthlySave * H)} － 三年成本 ${wan(cost3)}（首年 ${wan(base.oneTime)}＋續約 ${wan(base.license)}×${renewN}）</span></p>`;
     }
+    const robotTxt = c.replicate && c.replicate.extraRobot ? ` + 半自動 ${fmtWan(DATA.price.semi)}／年` : "，沿用授權";
     const addTxt = c.replicate
       ? (alt && alt.flows > 2
-        ? `複製到${c.replicate.label}，共 ${alt.flows} ${c.replicate.unit || "處"}（每${c.replicate.unit || "處"} ${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`
-        : `複製到${c.replicate.label}（${fmtWan(addFlowCostOf(c.id))}／${c.replicate.days} 人天）`)
+        ? `複製到${c.replicate.label}，共 ${alt.flows} ${c.replicate.unit || "處"}（每${c.replicate.unit || "處"} ${c.replicate.days} 人天 ${fmtWan(addFlowCostOf(c.id))}${robotTxt}）`
+        : `複製到${c.replicate.label}（${c.replicate.days} 人天 ${fmtWan(addFlowCostOf(c.id))}${robotTxt}）`)
       : `同一套授權加 ${alt ? alt.flows - 1 : 1} 個流程（${fmtWan(dealAmount("expansion"))}／${DATA.dealTypes.expansion.days} 人天）`;
-    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span>${c.pilotGoal ? `<br><span class="roi-goal">單點目標：${esc(c.pilotGoal)}</span>` : ""}</p>`;
+    const premise = c.replicate && c.replicate.robotNote ? `<br><span class="roi-calc">前提：${esc(c.replicate.robotNote)}（待確認）</span>` : "";
+    if (alt && alt.ok) return `<p class="roi-line">${head}<br><span class="roi-alt">→ ${addTxt}：約 ${alt.payback} 個月回本、三年淨效益 ${wan(alt.net3y)}</span>${premise}${c.pilotGoal ? `<br><span class="roi-goal">單點目標：${esc(c.pilotGoal)}</span>` : ""}</p>`;
     const need = hoursNeededForPayback(c.id);
     const q = caseQuote(c.id);
     const renew = q.license * (Math.ceil(r.paybackLimit / 12) - 1);
@@ -295,7 +297,7 @@
           <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
         </section>
         <section class="sec sec-roi">
-          <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（接第 4 段效益 × 第 5 段報價）</span></h4>
+          <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（效益 × 報價；授權計算方式待向富士確認）</span></h4>
           ${roiHtml(c)}
         </section>
         </div>

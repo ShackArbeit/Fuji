@@ -214,6 +214,11 @@ export function addFlowCostOf(caseId) {
   const c = DATA.cases.find(x => x.id === caseId);
   return c && c.replicate ? c.replicate.days * DATA.price.day : dealAmount("expansion");
 }
+// 每多複製一處要加購的授權（年費）：只有 replicate.extraRobot 為 true 時才加 1 個半自動機器人
+export function extraRobotOf(caseId) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  return c && c.replicate && c.replicate.extraRobot ? DATA.price.semi : 0;
+}
 export function roi(caseId, flows = 1, r = DATA.roi) {
   const q = caseQuote(caseId);
   const b = benefit(caseId);
@@ -221,15 +226,18 @@ export function roi(caseId, flows = 1, r = DATA.roi) {
   const savePerFlow = b.fte * laborMonthly;
   const monthlySave = savePerFlow * flows;
   const addFlowCost = addFlowCostOf(caseId);
-  const oneTime = q.total + (flows - 1) * addFlowCost;
-  const costAt = m => oneTime + q.license * (Math.ceil(m / 12) - 1);
+  // 複製到不同使用者（replicate.extraRobot）時，每多一處加購 1 個半自動機器人，同樣是年訂閱、每年續約
+  const robotPerCopy = extraRobotOf(caseId);
+  const license = q.license + (flows - 1) * robotPerCopy;
+  const oneTime = q.total + (flows - 1) * (addFlowCost + robotPerCopy);
+  const costAt = m => oneTime + license * (Math.ceil(m / 12) - 1);
   let payback = null;
   for (let m = 1; m <= 60; m++) {
     if (m * monthlySave >= costAt(m)) { payback = m; break; }
   }
   const H = r.horizonMonths;
   const net3y = H * monthlySave - costAt(H);
-  return { caseId, flows, laborMonthly, monthlySave, oneTime, license: q.license, payback, net3y, ok: payback !== null && payback <= r.paybackLimit };
+  return { caseId, flows, laborMonthly, monthlySave, oneTime, license, robotPerCopy, payback, net3y, ok: payback !== null && payback <= r.paybackLimit };
 }
 // 單一流程要在 paybackLimit 個月內回本，每月至少需省多少小時
 function dealTypeDays(k) { return DATA.dealTypes[k].days; }
@@ -409,6 +417,9 @@ export function collectAssumptions(overrides = {}) {
   list.push({ group: g2, label: "人力成本", value: `月薪 ${r.monthlySalary / 10000} 萬 × ${r.loadFactor}` });
   list.push({ group: g2, label: "回本門檻", value: `${r.paybackLimit} 個月` });
   list.push({ group: g2, label: "淨效益期間", value: `${r.horizonMonths / 12} 年（授權每年續約）` });
+  list.push({ group: g2, label: "授權計算", value: "年訂閱，第 13 個月起每年續約（計算方式待向富士確認）", wrap: true });
+  list.push({ group: g2, label: "同單位加流程", value: "沿用同一套授權，只加開發人天", wrap: true });
+  list.push({ group: g2, label: "跨使用者複製", value: `每處加購 1 個半自動（${DATA.price.semi / 10000} 萬／年）`, wrap: true });
   list.push({ group: g2, label: "多流程攤提", value: `最多 ${r.maxFlows} 個流程；第 2 個起每個 ${dealTypeDays("expansion")} 人天`, wrap: true });
   for (const c of DATA.cases) {
     if (c.roiOverride) list.push({ group: g2, label: c.customer + "人力成本", value: `每人每月 ${c.roiOverride.laborMonthly / 10000} 萬（${c.roiOverride.note}）`, wrap: true });

@@ -187,6 +187,11 @@ check("B 保守版缺口", TB.gap, 200_000);
 check("B 保守版缺口 → 擴充案數", TB.gapExpansion, 1);
 check("東元改跨事業部複製後列主力", C.dealTier("teco-drawing-sync"), "main");
 check("寶雅列主力", C.dealTier("poya-omo-pickup"), "main");
+// 複製時是否加購半自動機器人（2026-11-24 Shack 同意：跨不同使用者才加購）
+check("東元複製每處加購半自動（年費）", C.extraRobotOf("teco-drawing-sync"), 64_000);
+check("中強光電複製沿用授權", C.extraRobotOf("coretronic-quality-report"), 0);
+check("新光三越複製沿用授權", C.extraRobotOf("skm-concession"), 0);
+check("回本：東元 3 事業部（含加購）月數", C.roiPlan("teco-drawing-sync").alt.payback, 12);
 const TC = C.roi("tc-1999-petition");
 check("回本：臺中研考會三年淨效益（萬，四捨五入一位）", Math.round(TC.net3y / 1000) / 10, 277.5);
 check("回本：臺中研考會三年淨效益 = 月省 × 36 － 三年成本", Math.round(TC.net3y), Math.round(TC.monthlySave * 36 - (TC.oneTime + TC.license * 2)));

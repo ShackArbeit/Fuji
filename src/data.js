@@ -222,7 +222,7 @@ export const DATA = {
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
       productType: "semi", estDays: 13,
       productNote: "半自動標準案；先在導入 DocuWorks 的事業部驗證，再複製到其他事業部（Q2 起擴充）",
-      replicate: { days: 5, label: "其他事業部", unit: "事業部", maxCopies: 3 }
+      replicate: { days: 5, label: "其他事業部", unit: "事業部", maxCopies: 3, extraRobot: true, robotNote: "各事業部使用者不同，每處加購 1 個半自動" }
     },
     {
       id: "tpi-stock-alert", industry: "manufacturing", customer: "東培工業", customerSource: "new",
@@ -383,17 +383,17 @@ export const DATA = {
         "可能已有 Power BI／Tableau 或自寫 VBA／Python；RPA 補的是封閉測試機台介面匯出、與 MES 合併、排程推播的最後一哩路（待確認）"
       ],
       toBe: [
-        { actor: "robot", text: "唯讀擷取前一日測試機台 Log 與 MES 資料（不寫回生產系統）" },
+        { actor: "robot", text: "唯讀擷取前日機台 Log 與 MES（不寫回生產系統）" },
         { actor: "robot", text: "合併計算良率、不良柏拉圖，早會前寄出報表" },
-        { actor: "robot", text: "超出門檻時通報負責工程師；全程留存稽核軌跡，寄送權限受控" },
+        { actor: "robot", text: "超標即通報負責工程師；留存稽核軌跡、權限受控" },
         { actor: "human", text: "工程師判斷異常原因與處置" }
       ],
       benefit: { count: 5, unit: "份報表", per: "day", workDays: 21, minutes: 40, autoRate: 0.8,
         quality: "釋放工程師做真正的異常分析；稽核軌跡符合既有資安與防外洩規範" },
       productType: "semi", estDays: 13,
       productNote: "首期一條產線驗證；再複製到其他產線、廠區與子公司（如奧圖碼）",
-      roiOverride: { laborMonthly: 80_000, note: "光電廠品質工程師，含分紅獎金" },
-      replicate: { days: 5, label: "第 2 條產線" }
+      roiOverride: { laborMonthly: 80_000, note: "工程師含分紅" },
+      replicate: { days: 5, label: "第 2 條產線", extraRobot: false, robotNote: "同一品保團隊操作，沿用授權" }
     },
     {
       id: "yungda-commission", industry: "finance", customer: "永達保險經紀人", customerSource: "new",
@@ -441,7 +441,7 @@ export const DATA = {
       productType: "semi", estDays: 10,
       productNote: "入門包：先拿一館試點；模板驗證後複製到其他分館",
       pilotGoal: "縮短關帳天數、減少抽成算錯爭議，驗證可複製的分館模板",
-      replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4 }
+      replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4, extraRobot: false, robotNote: "總部財務集中操作，沿用授權" }
     },
     {
       id: "ntpc-traffic-adjudication", industry: "government", customer: "新北市政府交通事件裁決處", customerSource: "new",
