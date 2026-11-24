@@ -51,6 +51,12 @@ check("B 擴充商機（未進位）", FB.existing.byKey.opp.raw, 10 / 3, near(1
 check("B 擴充商機（進位）", FB.existing.byKey.opp.ceil, 4);
 check("B 新客商機", FB.fresh.byKey.opp.ceil, 12);
 check("B 新客名單", FB.fresh.byKey.lead.ceil, 60);
+// B 版正向試算（第 6 章，2026-11-24）：新客 60 名單 → 3 案 × 41.3 萬；擴充商機 4 → 2.4 案 × 30 萬；續約 380 萬
+const FFB = C.funnelForwardB({ newLeads: 60, expOpps: 4 });
+check("B 正向 新客回簽", FFB.fresh.wins, 3, near(1e-9));
+check("B 正向 新客金額", FFB.fresh.amount, 1_240_000, near(1e-6));
+check("B 正向 擴充金額", FFB.expAmount, 720_000, near(1e-6));
+check("B 正向 合計", FFB.amount, 5_760_000, near(1e-6));
 
 const expSens = new Map([[1.0, [1_000_000, 2]], [0.95, [1_200_000, 3]], [0.9, [1_400_000, 3]], [0.85, [1_600_000, 4]]]);
 for (const s of C.renewalSensitivity()) {

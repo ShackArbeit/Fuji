@@ -121,14 +121,21 @@
 
   <!-- 6. 成案率回推與漏斗 -->
   <section class="slide" id="s-funnel" data-title="成案率回推" tabindex="-1" aria-label="成案率回推">
-    <header class="slide-head">
-      <p class="eyebrow">成案率回推與漏斗</p>
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">成案率回推與漏斗</p>
+      </div>
+      <div class="toggle" role="group" aria-label="切換 A 版／B 版試算">
+        <button type="button" class="toggle-btn" data-funnel-ver="A" aria-pressed="true">A 版　從零開始</button>
+        <button type="button" class="toggle-btn" data-funnel-ver="B" aria-pressed="false">B 版　續約 + 新增</button>
+      </div>
     </header>
-    <!-- 2026-11-24：只保留「正向：由名單試算」（反向回推與切換按鈕已移除） -->
+    <!-- 2026-11-24：只保留「正向：由名單試算」；A／B 版各一個試算 -->
     <div class="funnel-layout">
       <div class="panel funnel-rates" id="funnel-rates"></div>
       <div class="funnel-main">
         <div id="funnel-fwd" class="funnel-panel"></div>
+        <div id="funnel-fwd-b" class="funnel-panel"></div>
       </div>
     </div>
   </section>

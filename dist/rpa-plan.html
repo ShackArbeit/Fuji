@@ -518,6 +518,15 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .slide .slide-head .eyebrow { font-size: 1.8rem; letter-spacing: .02em; line-height: 1.25; }
 @media print { .slide .slide-head .eyebrow { font-size: 1.3rem; } }
 @media screen and (max-height: 800px) { #s-summary .slide-head .eyebrow { font-size: 1.4rem; } }
+/* 第 6 章 B 版試算 */
+.fwd-b-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.fwd-b-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; margin-top: .3rem; }
+.fwd-b-cols h4 { margin: 0 0 .2rem; }
+#funnel-rates .field.is-hidden { display: none; }
+@media print { #funnel-rates .field.is-hidden { display: block; } }
+.fwd-b-cols .f-row { grid-template-columns: 5.6rem minmax(0, 1fr) 5.2rem; }
+.fwd-b-cols .f-row > span:first-child { white-space: nowrap; }
+.fwd-b-cols .f-row { grid-template-columns: 6.2rem minmax(0, 1fr) 5.2rem; }
 
 </style>
 </head>
@@ -634,14 +643,21 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 
   <!-- 6. 成案率回推與漏斗 -->
   <section class="slide" id="s-funnel" data-title="成案率回推" tabindex="-1" aria-label="成案率回推">
-    <header class="slide-head">
-      <p class="eyebrow">成案率回推與漏斗</p>
+    <header class="slide-head row-head">
+      <div>
+        <p class="eyebrow">成案率回推與漏斗</p>
+      </div>
+      <div class="toggle" role="group" aria-label="切換 A 版／B 版試算">
+        <button type="button" class="toggle-btn" data-funnel-ver="A" aria-pressed="true">A 版　從零開始</button>
+        <button type="button" class="toggle-btn" data-funnel-ver="B" aria-pressed="false">B 版　續約 + 新增</button>
+      </div>
     </header>
-    <!-- 2026-11-24：只保留「正向：由名單試算」（反向回推與切換按鈕已移除） -->
+    <!-- 2026-11-24：只保留「正向：由名單試算」；A／B 版各一個試算 -->
     <div class="funnel-layout">
       <div class="panel funnel-rates" id="funnel-rates"></div>
       <div class="funnel-main">
         <div id="funnel-fwd" class="funnel-panel"></div>
+        <div id="funnel-fwd-b" class="funnel-panel"></div>
       </div>
     </div>
   </section>
@@ -1405,6 +1421,20 @@ const ceil = v => Math.ceil(v - 1e-9) + 0; // +0：避免 ceil(0) 產生 -0
 
 // 由成交案數反推各階段所需量。rates 由「最接近成交」往上排；預設用 DATA.funnel。
 // 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
+// B 版正向試算（2026-11-24）：新客名單 → 商機 → PoC → 回簽 × 新客平均客單；既有客戶擴充商機 × 擴充回簽率 × 擴充案金額；再加續約
+function funnelForwardB({ newLeads, expOpps, rates = {}, renewalRate = DATA.versionB.renewalRate }) {
+  const f = { ...DATA.funnel, ...rates };
+  const newDeals = DATA.versionB.deals.filter(d => d.source === "new");
+  const newCount = newDeals.reduce((a, d) => a + d.n, 0);
+  const newTicket = newDeals.reduce((a, d) => a + dealAmount(d.type) * d.n, 0) / newCount;
+  const expTicket = dealAmount("expansion");
+  const fresh = funnelForward({ leads: newLeads, rates: f, avgTicket: newTicket });
+  const expWins = expOpps * f.existingOppToWin;
+  const expAmount = expWins * expTicket;
+  const renewal = Math.round(DATA.versionB.renewalBase * renewalRate);
+  const amount = renewal + fresh.amount + expAmount;
+  return { fresh, newTicket, expOpps, expWins, expTicket, expAmount, renewal, amount, gapToTarget: DATA.meta.target - amount };
+}
 function funnelBack({ deals, rates }) {
   const stages = rates || defaultStages();
   let raw = deals;
@@ -1824,6 +1854,8 @@ function fmtNum(v, digits = 1) {
     version: "A",
     tier: "complete", // 第 5 章：conservative＝保守版（只列主力）／complete＝完整版（含待驗證）
     funnelMode: "fwd", // 2026-11-24 只保留正向
+    funnelVer: "A",    // 第 6 章：A 版／B 版試算
+    bNewLeads: null, bExpOpps: null,
     industry: "all",
     openCase: DATA.meta.heroCaseId,
     renewalRate: DATA.versionB.renewalRate,
@@ -2337,12 +2369,13 @@ function fmtNum(v, digits = 1) {
   const RATE_DEFS = [
     { key: "leadToOpp", label: "名單 → 有效商機", min: 5, max: 50, step: 1 },
     { key: "oppToPoc", label: "商機 → Demo／PoC", min: 20, max: 90, step: 5 },
-    { key: "pocToWin", label: "PoC → 回簽", min: 20, max: 90, step: 5 }
+    { key: "pocToWin", label: "PoC → 回簽", min: 20, max: 90, step: 5 },
+    { key: "existingOppToWin", label: "既有客戶擴充：商機 → 回簽", min: 30, max: 90, step: 5, onlyB: true }
   ];
   function buildFunnel() {
     $("#funnel-rates").innerHTML = `
       <h3>轉換率 ${ASSUME}</h3>
-      ${RATE_DEFS.map(r => `<div class="field">
+      ${RATE_DEFS.map(r => `<div class="field${r.onlyB ? " only-b" : ""}">
         <label for="rate-${r.key}">${esc(r.label)}：<output id="rate-${r.key}-out" for="rate-${r.key}"></output></label>
         <input type="range" id="rate-${r.key}" data-rate="${r.key}" min="${r.min}" max="${r.max}" step="${r.step}">
       </div>`).join("")}
@@ -2352,7 +2385,7 @@ function fmtNum(v, digits = 1) {
       state.funnel[e.target.dataset.rate] = +e.target.value / 100;
       update();
     }));
-    $("#rate-reset").addEventListener("click", () => { state.funnel = { ...DATA.funnel }; state.leads = null; update(); });
+    $("#rate-reset").addEventListener("click", () => { state.funnel = { ...DATA.funnel }; state.leads = null; state.bNewLeads = null; state.bExpOpps = null; update(); });
 
     $("#funnel-fwd").innerHTML = `
       <div class="panel">
@@ -2363,6 +2396,23 @@ function fmtNum(v, digits = 1) {
         <div id="fwd-result"></div>
       </div>`;
     $("#leads").addEventListener("input", e => { state.leads = +e.target.value; update(); });
+
+    $("#funnel-fwd-b").innerHTML = `
+      <div class="panel">
+        <div class="fwd-b-sliders">
+          <div class="field">
+            <label for="b-leads">新客名單數：<output id="b-leads-out" for="b-leads"></output> 份</label>
+            <input type="range" id="b-leads" min="0" max="300" step="5">
+          </div>
+          <div class="field">
+            <label for="b-exp">既有客戶擴充商機：<output id="b-exp-out" for="b-exp"></output> 個</label>
+            <input type="range" id="b-exp" min="0" max="20" step="1">
+          </div>
+        </div>
+        <div id="fwd-result-b"></div>
+      </div>`;
+    $("#b-leads").addEventListener("input", e => { state.bNewLeads = +e.target.value; update(); });
+    $("#b-exp").addEventListener("input", e => { state.bExpOpps = +e.target.value; update(); });
   }
   function funnelRows(items) {
     const top = Math.max(...items.map(i => i.value), 1);
@@ -2399,6 +2449,42 @@ function fmtNum(v, digits = 1) {
       ])}
       <div class="total-row"><span class="kpi-label">預期業績（× 平均客單 ${fmtWan(fw.avgTicket)}，由 A 版案型組合帶出）</span><strong class="big">${fmtWan(fw.amount)}</strong></div>
       ${statusHtml(vsTarget(fw.amount))}`;
+
+    // B 版：新客名單 + 既有客戶擴充商機 + 續約
+    const isB = state.funnelVer === "B";
+    document.querySelectorAll("[data-funnel-ver]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.funnelVer === state.funnelVer)));
+    $("#funnel-fwd").classList.toggle("is-hidden", isB);
+    $("#funnel-fwd-b").classList.toggle("is-hidden", !isB);
+    document.querySelectorAll("#funnel-rates .only-b").forEach(el => el.classList.toggle("is-hidden", !isB));
+    const fbk = funnelB(f);
+    const bLeads = state.bNewLeads ?? fbk.fresh.byKey.lead.ceil;
+    const bExp = state.bExpOpps ?? fbk.existing.byKey.opp.ceil;
+    $("#b-leads").value = bLeads; $("#b-leads-out").textContent = bLeads;
+    $("#b-exp").value = bExp; $("#b-exp-out").textContent = bExp;
+    const fwb = funnelForwardB({ newLeads: bLeads, expOpps: bExp, rates: f, renewalRate: state.renewalRate });
+    $("#fwd-result-b").innerHTML = `
+      <div class="fwd-b-cols">
+        <div>
+          <h4>新客</h4>
+          ${funnelRows([
+            { label: "名單", value: fwb.fresh.leads, text: `${fwb.fresh.leads} 份` },
+            { label: "有效商機", value: fwb.fresh.opp, text: `${fmtNum(fwb.fresh.opp, 1)} 個`, rate: f.leadToOpp },
+            { label: "Demo／PoC", value: fwb.fresh.poc, text: `${fmtNum(fwb.fresh.poc, 1)} 場`, rate: f.oppToPoc },
+            { label: "預期回簽", value: fwb.fresh.wins, text: `${fmtNum(fwb.fresh.wins, 1)} 案`, rate: f.pocToWin, win: true }
+          ])}
+          <p class="foot-note">× 新客平均客單 ${fmtWan(fwb.newTicket)} ＝ ${fmtWan(fwb.fresh.amount)}</p>
+        </div>
+        <div>
+          <h4>既有客戶擴充</h4>
+          ${funnelRows([
+            { label: "擴充商機", value: fwb.expOpps, text: `${fwb.expOpps} 個` },
+            { label: "預期回簽", value: fwb.expWins, text: `${fmtNum(fwb.expWins, 1)} 案`, rate: f.existingOppToWin, win: true }
+          ])}
+          <p class="foot-note">× 擴充案 ${fmtWan(fwb.expTicket)} ＝ ${fmtWan(fwb.expAmount)}</p>
+        </div>
+      </div>
+      <div class="total-row"><span class="kpi-label">預期業績＝續約 ${fmtWan(fwb.renewal)}（續約率 ${pct(state.renewalRate)}）＋ 新客 ${fmtWan(fwb.fresh.amount)} ＋ 擴充 ${fmtWan(fwb.expAmount)}</span><strong class="big">${fmtWan(fwb.amount)}</strong></div>
+      ${statusHtml(vsTarget(fwb.amount))}`;
 
   }
 
@@ -2606,7 +2692,7 @@ function fmtNum(v, digits = 1) {
   }
 
   // ---------- 更新（保留焦點）----------
-  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version"];
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver"];
   function update() {
     const act = document.activeElement;
     let restore = null;
@@ -2690,7 +2776,7 @@ function fmtNum(v, digits = 1) {
   });
 
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode]");
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver]");
     if (!t) return;
     const d = t.dataset;
     if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
@@ -2717,6 +2803,8 @@ function fmtNum(v, digits = 1) {
       state.version = d.version;
     } else if (d.tier) {
       state.tier = d.tier;
+    } else if (d.funnelVer) {
+      state.funnelVer = d.funnelVer;
     } else if (d.funnelMode) {
       state.funnelMode = d.funnelMode;
     }

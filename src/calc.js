@@ -87,6 +87,20 @@ const ceil = v => Math.ceil(v - 1e-9) + 0; // +0：避免 ceil(0) 產生 -0
 
 // 由成交案數反推各階段所需量。rates 由「最接近成交」往上排；預設用 DATA.funnel。
 // 每層同時給未進位（raw）與進位（ceil）值；鏈式計算使用 raw，避免進位誤差累積。
+// B 版正向試算（2026-11-24）：新客名單 → 商機 → PoC → 回簽 × 新客平均客單；既有客戶擴充商機 × 擴充回簽率 × 擴充案金額；再加續約
+export function funnelForwardB({ newLeads, expOpps, rates = {}, renewalRate = DATA.versionB.renewalRate }) {
+  const f = { ...DATA.funnel, ...rates };
+  const newDeals = DATA.versionB.deals.filter(d => d.source === "new");
+  const newCount = newDeals.reduce((a, d) => a + d.n, 0);
+  const newTicket = newDeals.reduce((a, d) => a + dealAmount(d.type) * d.n, 0) / newCount;
+  const expTicket = dealAmount("expansion");
+  const fresh = funnelForward({ leads: newLeads, rates: f, avgTicket: newTicket });
+  const expWins = expOpps * f.existingOppToWin;
+  const expAmount = expWins * expTicket;
+  const renewal = Math.round(DATA.versionB.renewalBase * renewalRate);
+  const amount = renewal + fresh.amount + expAmount;
+  return { fresh, newTicket, expOpps, expWins, expTicket, expAmount, renewal, amount, gapToTarget: DATA.meta.target - amount };
+}
 export function funnelBack({ deals, rates }) {
   const stages = rates || defaultStages();
   let raw = deals;

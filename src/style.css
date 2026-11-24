@@ -511,3 +511,12 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .slide .slide-head .eyebrow { font-size: 1.8rem; letter-spacing: .02em; line-height: 1.25; }
 @media print { .slide .slide-head .eyebrow { font-size: 1.3rem; } }
 @media screen and (max-height: 800px) { #s-summary .slide-head .eyebrow { font-size: 1.4rem; } }
+/* 第 6 章 B 版試算 */
+.fwd-b-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.fwd-b-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; margin-top: .3rem; }
+.fwd-b-cols h4 { margin: 0 0 .2rem; }
+#funnel-rates .field.is-hidden { display: none; }
+@media print { #funnel-rates .field.is-hidden { display: block; } }
+.fwd-b-cols .f-row { grid-template-columns: 5.6rem minmax(0, 1fr) 5.2rem; }
+.fwd-b-cols .f-row > span:first-child { white-space: nowrap; }
+.fwd-b-cols .f-row { grid-template-columns: 6.2rem minmax(0, 1fr) 5.2rem; }

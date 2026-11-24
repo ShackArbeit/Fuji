@@ -43,6 +43,8 @@
     version: "A",
     tier: "complete", // 第 5 章：conservative＝保守版（只列主力）／complete＝完整版（含待驗證）
     funnelMode: "fwd", // 2026-11-24 只保留正向
+    funnelVer: "A",    // 第 6 章：A 版／B 版試算
+    bNewLeads: null, bExpOpps: null,
     industry: "all",
     openCase: DATA.meta.heroCaseId,
     renewalRate: DATA.versionB.renewalRate,
@@ -556,12 +558,13 @@
   const RATE_DEFS = [
     { key: "leadToOpp", label: "名單 → 有效商機", min: 5, max: 50, step: 1 },
     { key: "oppToPoc", label: "商機 → Demo／PoC", min: 20, max: 90, step: 5 },
-    { key: "pocToWin", label: "PoC → 回簽", min: 20, max: 90, step: 5 }
+    { key: "pocToWin", label: "PoC → 回簽", min: 20, max: 90, step: 5 },
+    { key: "existingOppToWin", label: "既有客戶擴充：商機 → 回簽", min: 30, max: 90, step: 5, onlyB: true }
   ];
   function buildFunnel() {
     $("#funnel-rates").innerHTML = `
       <h3>轉換率 ${ASSUME}</h3>
-      ${RATE_DEFS.map(r => `<div class="field">
+      ${RATE_DEFS.map(r => `<div class="field${r.onlyB ? " only-b" : ""}">
         <label for="rate-${r.key}">${esc(r.label)}：<output id="rate-${r.key}-out" for="rate-${r.key}"></output></label>
         <input type="range" id="rate-${r.key}" data-rate="${r.key}" min="${r.min}" max="${r.max}" step="${r.step}">
       </div>`).join("")}
@@ -571,7 +574,7 @@
       state.funnel[e.target.dataset.rate] = +e.target.value / 100;
       update();
     }));
-    $("#rate-reset").addEventListener("click", () => { state.funnel = { ...DATA.funnel }; state.leads = null; update(); });
+    $("#rate-reset").addEventListener("click", () => { state.funnel = { ...DATA.funnel }; state.leads = null; state.bNewLeads = null; state.bExpOpps = null; update(); });
 
     $("#funnel-fwd").innerHTML = `
       <div class="panel">
@@ -582,6 +585,23 @@
         <div id="fwd-result"></div>
       </div>`;
     $("#leads").addEventListener("input", e => { state.leads = +e.target.value; update(); });
+
+    $("#funnel-fwd-b").innerHTML = `
+      <div class="panel">
+        <div class="fwd-b-sliders">
+          <div class="field">
+            <label for="b-leads">新客名單數：<output id="b-leads-out" for="b-leads"></output> 份</label>
+            <input type="range" id="b-leads" min="0" max="300" step="5">
+          </div>
+          <div class="field">
+            <label for="b-exp">既有客戶擴充商機：<output id="b-exp-out" for="b-exp"></output> 個</label>
+            <input type="range" id="b-exp" min="0" max="20" step="1">
+          </div>
+        </div>
+        <div id="fwd-result-b"></div>
+      </div>`;
+    $("#b-leads").addEventListener("input", e => { state.bNewLeads = +e.target.value; update(); });
+    $("#b-exp").addEventListener("input", e => { state.bExpOpps = +e.target.value; update(); });
   }
   function funnelRows(items) {
     const top = Math.max(...items.map(i => i.value), 1);
@@ -618,6 +638,42 @@
       ])}
       <div class="total-row"><span class="kpi-label">預期業績（× 平均客單 ${fmtWan(fw.avgTicket)}，由 A 版案型組合帶出）</span><strong class="big">${fmtWan(fw.amount)}</strong></div>
       ${statusHtml(vsTarget(fw.amount))}`;
+
+    // B 版：新客名單 + 既有客戶擴充商機 + 續約
+    const isB = state.funnelVer === "B";
+    document.querySelectorAll("[data-funnel-ver]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.funnelVer === state.funnelVer)));
+    $("#funnel-fwd").classList.toggle("is-hidden", isB);
+    $("#funnel-fwd-b").classList.toggle("is-hidden", !isB);
+    document.querySelectorAll("#funnel-rates .only-b").forEach(el => el.classList.toggle("is-hidden", !isB));
+    const fbk = funnelB(f);
+    const bLeads = state.bNewLeads ?? fbk.fresh.byKey.lead.ceil;
+    const bExp = state.bExpOpps ?? fbk.existing.byKey.opp.ceil;
+    $("#b-leads").value = bLeads; $("#b-leads-out").textContent = bLeads;
+    $("#b-exp").value = bExp; $("#b-exp-out").textContent = bExp;
+    const fwb = funnelForwardB({ newLeads: bLeads, expOpps: bExp, rates: f, renewalRate: state.renewalRate });
+    $("#fwd-result-b").innerHTML = `
+      <div class="fwd-b-cols">
+        <div>
+          <h4>新客</h4>
+          ${funnelRows([
+            { label: "名單", value: fwb.fresh.leads, text: `${fwb.fresh.leads} 份` },
+            { label: "有效商機", value: fwb.fresh.opp, text: `${fmtNum(fwb.fresh.opp, 1)} 個`, rate: f.leadToOpp },
+            { label: "Demo／PoC", value: fwb.fresh.poc, text: `${fmtNum(fwb.fresh.poc, 1)} 場`, rate: f.oppToPoc },
+            { label: "預期回簽", value: fwb.fresh.wins, text: `${fmtNum(fwb.fresh.wins, 1)} 案`, rate: f.pocToWin, win: true }
+          ])}
+          <p class="foot-note">× 新客平均客單 ${fmtWan(fwb.newTicket)} ＝ ${fmtWan(fwb.fresh.amount)}</p>
+        </div>
+        <div>
+          <h4>既有客戶擴充</h4>
+          ${funnelRows([
+            { label: "擴充商機", value: fwb.expOpps, text: `${fwb.expOpps} 個` },
+            { label: "預期回簽", value: fwb.expWins, text: `${fmtNum(fwb.expWins, 1)} 案`, rate: f.existingOppToWin, win: true }
+          ])}
+          <p class="foot-note">× 擴充案 ${fmtWan(fwb.expTicket)} ＝ ${fmtWan(fwb.expAmount)}</p>
+        </div>
+      </div>
+      <div class="total-row"><span class="kpi-label">預期業績＝續約 ${fmtWan(fwb.renewal)}（續約率 ${pct(state.renewalRate)}）＋ 新客 ${fmtWan(fwb.fresh.amount)} ＋ 擴充 ${fmtWan(fwb.expAmount)}</span><strong class="big">${fmtWan(fwb.amount)}</strong></div>
+      ${statusHtml(vsTarget(fwb.amount))}`;
 
   }
 
@@ -825,7 +881,7 @@
   }
 
   // ---------- 更新（保留焦點）----------
-  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version"];
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver"];
   function update() {
     const act = document.activeElement;
     let restore = null;
@@ -909,7 +965,7 @@
   });
 
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode]");
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver]");
     if (!t) return;
     const d = t.dataset;
     if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
@@ -936,6 +992,8 @@
       state.version = d.version;
     } else if (d.tier) {
       state.tier = d.tier;
+    } else if (d.funnelVer) {
+      state.funnelVer = d.funnelVer;
     } else if (d.funnelMode) {
       state.funnelMode = d.funnelMode;
     }
