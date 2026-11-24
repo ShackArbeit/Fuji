@@ -520,3 +520,11 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .fwd-b-cols .f-row { grid-template-columns: 5.6rem minmax(0, 1fr) 5.2rem; }
 .fwd-b-cols .f-row > span:first-child { white-space: nowrap; }
 .fwd-b-cols .f-row { grid-template-columns: 6.2rem minmax(0, 1fr) 5.2rem; }
+@media screen and (max-height: 800px) {
+  #s-timeline .tl-row { min-height: 2rem; }
+  #s-timeline .tl-track { height: 2rem; }
+  #s-timeline .tl-bar { top: .25rem; bottom: .25rem; }
+  #s-timeline .tl-marks .tl-track { min-height: 3.8rem; }
+  #s-timeline .timeline { padding-top: .5rem; padding-bottom: .5rem; }
+  #s-timeline .phase-card ul { font-size: .9rem; }
+}
