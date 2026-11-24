@@ -61,7 +61,7 @@
     const mix = Object.entries(a.byIndustry).map(([k, v]) => `${IND[k].short} ${v.n} 案`).join("、");
     const ta = tiersA(), tb = tiersB(state.renewalRate);
     const consStatus = t => t.gap > 0
-      ? { text: `保守版差 ${fmtWan(t.gap)} → 補 ${t.gapExpansion} 個擴充案或 ${t.gapStandard} 個標準案`, ok: false }
+      ? { text: `保守版還差 ${fmtWan(t.gap)}，再多簽 ${t.gapExpansion} 個既有客戶加購就補上`, ok: false }
       : { text: `✔ 保守版已達標，超出 ${fmtWan(t.conservative - DATA.meta.target)}`, ok: true };
     return {
       "meta.title": DATA.meta.title,
@@ -152,7 +152,7 @@
         <tbody>${rows}</tbody>
         <tfoot><tr><th scope="row" colspan="${keys.length + 2}">合計</th>${totals.map((n, i) => `<td class="num${i % 2 === 0 ? " cnt-cons" : ""}">${n}</td>`).join("")}<td class="num">${DATA.cases.length}</td></tr></tfoot>
       </table>`;
-    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低)；保守＝只計回本成立的主力，完整＝含待驗證；B 版只計新增案。";
+    $("#industry-note").textContent = "評分 1–5 為主觀假設，分數越高越有利（成交週期越短、導入阻力越低)；保守＝只算客戶划得來的案子，完整＝再加上還要確認的；B 版只算新增案。";
 
     const ind = IND[state.industry];
     const det = $("#industry-detail");
@@ -434,11 +434,11 @@
   function tierBox(t) {
     const names = t.pendingNames.map(shortName).join("、");
     const gapTxt = t.gap > 0
-      ? `<span data-state="bad">差 ${fmtWan(t.gap)} → 補 ${t.gapExpansion} 個擴充案（或 ${t.gapStandard} 個標準案），或待驗證案經 Discovery 轉主力</span>`
+      ? `<span data-state="bad">還差 ${fmtWan(t.gap)}：再多簽 ${t.gapExpansion} 個既有客戶加購（或 ${t.gapStandard} 個新客標準案）就補上；或拜訪後確認待驗證客戶的工作量夠大，改列主力</span>`
       : `<span data-state="ok">✔ 已達標</span>`;
     return `<div class="tier-box">
-      <p><b>保守版</b>（只計回本成立的主力）：<strong>${fmtWan(t.conservative)}</strong>　${gapTxt}</p>
-      <p><b>完整版</b>（含待驗證 ${fmtWan(t.pending)}：${esc(names)}）：<strong>${fmtWan(t.complete)}</strong></p>
+      <p><b>保守版</b>（只算客戶划得來的案子）：<strong>${fmtWan(t.conservative)}</strong>　${gapTxt}</p>
+      <p><b>完整版</b>（再加上還要確認的 ${fmtWan(t.pending)}：${esc(names)}）：<strong>${fmtWan(t.complete)}</strong></p>
       <p class="foot-note">待驗證：客戶目前省下的人力，還不夠付回授權和開發費，所以先不硬推。會帶回團隊討論，等實際拜訪確認工作量夠大，再改列主力。</p>
     </div>`;
   }
