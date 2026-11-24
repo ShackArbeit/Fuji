@@ -121,19 +121,13 @@
 
   <!-- 6. 成案率回推與漏斗 -->
   <section class="slide" id="s-funnel" data-title="成案率回推" tabindex="-1" aria-label="成案率回推">
-    <header class="slide-head row-head">
-      <div>
-        <p class="eyebrow">成案率回推與漏斗</p>
-      </div>
-      <div class="toggle" role="group" aria-label="切換漏斗模式">
-        <button type="button" class="toggle-btn" data-funnel-mode="back" aria-pressed="true">反向：由目標回推</button>
-        <button type="button" class="toggle-btn" data-funnel-mode="fwd" aria-pressed="false">正向：由名單試算</button>
-      </div>
+    <header class="slide-head">
+      <p class="eyebrow">成案率回推與漏斗</p>
     </header>
+    <!-- 2026-11-24：只保留「正向：由名單試算」（反向回推與切換按鈕已移除） -->
     <div class="funnel-layout">
       <div class="panel funnel-rates" id="funnel-rates"></div>
       <div class="funnel-main">
-        <div id="funnel-back" class="funnel-panel"></div>
         <div id="funnel-fwd" class="funnel-panel"></div>
       </div>
     </div>

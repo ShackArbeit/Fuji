@@ -42,7 +42,7 @@
   const state = {
     version: "A",
     tier: "complete", // 第 5 章：conservative＝保守版（只列主力）／complete＝完整版（含待驗證）
-    funnelMode: "back",
+    funnelMode: "fwd", // 2026-11-24 只保留正向
     industry: "all",
     openCase: DATA.meta.heroCaseId,
     renewalRate: DATA.versionB.renewalRate,
@@ -556,8 +556,7 @@
   const RATE_DEFS = [
     { key: "leadToOpp", label: "名單 → 有效商機", min: 5, max: 50, step: 1 },
     { key: "oppToPoc", label: "商機 → Demo／PoC", min: 20, max: 90, step: 5 },
-    { key: "pocToWin", label: "PoC → 回簽", min: 20, max: 90, step: 5 },
-    { key: "existingOppToWin", label: "既有客戶擴充：商機 → 回簽", min: 30, max: 90, step: 5 }
+    { key: "pocToWin", label: "PoC → 回簽", min: 20, max: 90, step: 5 }
   ];
   function buildFunnel() {
     $("#funnel-rates").innerHTML = `
@@ -601,45 +600,9 @@
       $(`#rate-${r.key}`).value = Math.round(f[r.key] * 100);
       $(`#rate-${r.key}-out`).textContent = pct(f[r.key]);
     });
-    $$("[data-funnel-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.funnelMode === state.funnelMode)));
-    $("#funnel-back").classList.toggle("is-hidden", state.funnelMode !== "back");
-    $("#funnel-fwd").classList.toggle("is-hidden", state.funnelMode !== "fwd");
-
     const a = versionATotal();
     const fa = funnelA(f);
-    const fb = funnelB(f);
     const k = fa.byKey;
-    const cov = { text: `${fmtNum(fa.coverage, 2)} 倍`, ok: fa.coverage >= fa.coverageTarget };
-    const bk = fb.fresh.byKey;
-    $("#funnel-back").innerHTML = `
-      <div class="funnel-cols">
-        <div class="panel">
-          <h3>A 版：回簽 ${a.count} 案，需要…</h3>
-          ${funnelRows([
-            { label: "名單", value: k.lead.raw, text: `${k.lead.ceil} 份`, sub: rawSub(k.lead) },
-            { label: "有效商機", value: k.opp.raw, text: `${k.opp.ceil} 個`, sub: rawSub(k.opp), rate: f.leadToOpp },
-            { label: "Demo／PoC", value: k.poc.raw, text: `${k.poc.ceil} 場`, sub: rawSub(k.poc), rate: f.oppToPoc },
-            { label: "回簽", value: a.count, text: `${a.count} 案`, rate: f.pocToWin, win: true }
-          ])}
-          <p class="coverage">商機加權覆蓋：${fmtNum(k.opp.raw, 1)} 個商機 × 平均客單 ${fmtWan(fa.avgTicket)} ÷ 目標 ${fmtWan(DATA.meta.target)} =
-            <strong data-state="${cov.ok ? "ok" : "bad"}">${cov.text}</strong>（目標 ${fa.coverageTarget} 倍 ${ASSUME}）</p>
-        </div>
-        <div class="panel">
-          <h3>B 版：新增案件需要…</h3>
-          <h4>既有客戶擴充</h4>
-          ${funnelRows([
-            { label: "擴充商機", value: fb.existing.byKey.opp.raw, text: `${fb.existing.byKey.opp.ceil} 個`, sub: rawSub(fb.existing.byKey.opp) },
-            { label: "回簽", value: fb.existing.deals, text: `${fb.existing.deals} 案`, rate: f.existingOppToWin, win: true }
-          ])}
-          <h4>新客</h4>
-          ${funnelRows([
-            { label: "名單", value: bk.lead.raw, text: `${bk.lead.ceil} 份`, sub: rawSub(bk.lead) },
-            { label: "有效商機", value: bk.opp.raw, text: `${bk.opp.ceil} 個`, sub: rawSub(bk.opp), rate: f.leadToOpp },
-            { label: "Demo／PoC", value: bk.poc.raw, text: `${bk.poc.ceil} 場`, sub: rawSub(bk.poc), rate: f.oppToPoc },
-            { label: "回簽", value: fb.fresh.deals, text: `${fb.fresh.deals} 案`, rate: f.pocToWin, win: true }
-          ])}
-        </div>
-      </div>`;
 
     // 正向
     const leads = state.leads ?? k.lead.ceil;
