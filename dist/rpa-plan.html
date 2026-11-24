@@ -931,15 +931,15 @@ const DATA = {
         { text: "富士既有客戶：kintone 處理請購、採購與不良品管制；Apeos 事務機由 130 台減至 30 台以下", sourceId: "fbtw-mfg" }
       ],
       challenge: [
-        "供應商、料件都多，一家交期延誤，就會拖到下游車廠與能源客戶出貨",
+        "供應商、料件都多，一家交期延誤，就會拖到下游客戶出貨",
         "追交期常靠人工：匯出未交單 → 寄信 → 讀回信 → 手動更新系統",
         "供應商用 Email、電話、LINE 各種方式回覆，光整理回覆就很花時間"
       ],
       toBe: [
-        { actor: "robot", text: "每日從 kintone 抓未交貨採購單，依料件交期提前寄確認信（7 天為示範，長交期料件可設 14–30 天）" },
-        { actor: "robot", text: "固定格式的回覆自動擷取交期，回填 kintone" },
-        { actor: "robot", text: "非制式、模糊或未回覆者歸入「待人工確認」，產生交期異常預警清單" },
-        { actor: "human", text: "採購確認異常、電話／LINE 跟催，提早與生管調整排程" }
+        { actor: "robot", text: "每天自動從 kintone 找出還沒交貨的採購單，提前寄信問供應商交期（交期長的料件可以更早問）" },
+        { actor: "robot", text: "照固定表格回覆的，機器人自動讀出交期、填回 kintone" },
+        { actor: "robot", text: "沒回、回得不清楚的，自動列進「交期異常清單」" },
+        { actor: "human", text: "採購看清單打電話或 LINE 追，提早通知生管調整排程" }
       ],
       benefit: { count: 80, unit: "筆", per: "day", workDays: 21, minutes: 5, autoRate: 0.7,
         quality: "被動追單變主動預警：提早發現延遲、調整排程，降低缺料停線風險" },
@@ -959,10 +959,10 @@ const DATA = {
         "這種錯誤造成的損失，往往比行政工時本身還大"
       ],
       toBe: [
-        { actor: "robot", text: "監看已核准資料夾／DocuWorks／PLM 匯出，依標準化檔名或屬性擷取圖號、版次、料號" },
-        { actor: "robot", text: "登入 ERP 更新版次與圖面連結；讀不到者轉人工" },
-        { actor: "robot", text: "依料號寄設變通知給採購、生管、品保，附最新唯一版圖面" },
-        { actor: "human", text: "在途訂單與半成品怎麼處置，由工程與生管判斷" }
+        { actor: "robot", text: "圖面一核准，機器人就自動抓出圖號、版次、料號" },
+        { actor: "robot", text: "自動登入 ERP 更新版次和圖面連結；讀不到的轉給人處理" },
+        { actor: "robot", text: "自動寄設變通知給採購、生管、品保，附上最新版圖面" },
+        { actor: "human", text: "已下單或做到一半的料件要怎麼處理，由工程與生管決定" }
       ],
       benefit: { count: 300, unit: "份圖面／ECN", per: "month", minutes: 15, autoRate: 0.8,
         quality: "消除核准到 ERP 的時間差與漏改：各部門幾分鐘內拿到最新唯一版本" },
@@ -984,10 +984,10 @@ const DATA = {
         "算完還要一個個通知採購與生管，常常慢了一步"
       ],
       toBe: [
-        { actor: "robot", text: "每日從 ERP 撈庫存、在途採購、未交訂單，找出低於安全庫存的料號" },
-        { actor: "robot", text: "原料缺料推給採購、成品缺料推給生管" },
-        { actor: "robot", text: "延伸：年度盤點時比對系統帳與盤點表，產出差異清單" },
-        { actor: "human", text: "倉管查盤差原因、主管決定是否調帳（RPA 不自動調帳）" }
+        { actor: "robot", text: "每天自動從 ERP 撈庫存、在途採購、未交訂單，找出快不夠的料號" },
+        { actor: "robot", text: "原料不夠通知採購，成品不夠通知生管" },
+        { actor: "robot", text: "年度盤點時，也能自動比對系統帳和盤點表，列出差異" },
+        { actor: "human", text: "盤點差異的原因由倉管查、主管決定要不要調帳" }
       ],
       benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
         quality: "缺料從事後發現變成每日預警；盤點期加班比對 Excel 是加分項" },
@@ -1004,15 +1004,15 @@ const DATA = {
         { text: "富士既有客戶：DocuWorks 整合採購文件與多種電子簽章格式（可串接 DocuSign、Adobe Sign）", sourceId: "fbtw-mfg" }
       ],
       challenge: [
-        "供應商多、進項發票量大，常常一張訂單分好幾批交貨、分好幾次開票",
+        "供應商多、發票量大，常常一張訂單分好幾批交貨、開票",
         "會計要逐張把發票、採購單、驗收單三份對起來，對不上就要回頭查",
         "紙本與國外發票格式不一，人工登打容易出錯"
       ],
       toBe: [
-        { actor: "robot", text: "電子發票直接解析結構化資料；紙本與國外發票以 OCR 擷取" },
-        { actor: "robot", text: "比對採購單、收貨單的單價、數量、品名、統編、稅額；相符者標記待付款" },
-        { actor: "robot", text: "差異依歸責分派：單價／稅額→採購；數量→倉儲收料；抬頭／統編錯→通知供應商重開" },
-        { actor: "human", text: "會計覆核後才放行付款與傳票拋轉（不自動付款）" }
+        { actor: "robot", text: "電子發票直接讀取；紙本和國外發票用 OCR 辨識" },
+        { actor: "robot", text: "自動把發票和採購單、收貨單對單價、數量、統編、稅額；對得上的標記「可付款」" },
+        { actor: "robot", text: "對不上的自動分給負責的人：價格問題給採購、數量問題給倉庫、發票開錯通知供應商重開" },
+        { actor: "human", text: "會計確認後才付款，機器人不會自己付錢" }
       ],
       benefit: { count: 3000, unit: "張發票", per: "month", minutes: 4, autoRate: 0.8,
         quality: "付款前把關，減少溢付與重複付款；台灣成功後作為集團標竿複製到海外廠" },
@@ -1032,10 +1032,10 @@ const DATA = {
         "檔期組合、贈品拆單一多，人工整理就容易漏單或對不上"
       ],
       toBe: [
-        { actor: "robot", text: "定時抓取未串接通路的訂單，依檔期組合／贈品規則拆單，轉成 ERP 格式匯入" },
-        { actor: "robot", text: "出貨後回填物流單號到各平台" },
-        { actor: "robot", text: "併入門市 POS 日結，產出每日全通路銷售與對帳彙整" },
-        { actor: "human", text: "客服處理取消、退款、地址異常（不自動退款）" }
+        { actor: "robot", text: "定時把各電商平台的訂單抓下來，組合品、贈品自動拆好，匯入 ERP" },
+        { actor: "robot", text: "出貨後自動把物流單號填回各平台" },
+        { actor: "robot", text: "和門市 POS 的銷售合併，每天產出全通路銷售與對帳報表" },
+        { actor: "human", text: "取消、退款、地址有問題的，由客服處理，機器人不會自己退款" }
       ],
       benefit: { count: 150, unit: "筆訂單", per: "day", workDays: 30, minutes: 2, autoRate: 0.8,
         quality: "檔期爆單不必加派人手；不改各平台與 ERP 的 API 就能串起資料流" },
@@ -1055,10 +1055,10 @@ const DATA = {
         "每店每天交易不多，重點是「不出錯」，而不是省很多人力"
       ],
       toBe: [
-        { actor: "robot", text: "每晚匯出各店 POS 銷售，寫入 Ragic 並比對庫存異動" },
-        { actor: "robot", text: "比對訂金與尾款，列出未核銷、逾期未取件的訂製單" },
-        { actor: "robot", text: "產出總部日報與會計分錄底稿" },
-        { actor: "human", text: "會計確認訂金、尾款等特殊交易後才入帳" }
+        { actor: "robot", text: "每晚自動匯出各店 POS 銷售，寫進 Ragic 並核對庫存" },
+        { actor: "robot", text: "自動比對訂金和尾款，列出還沒收尾款、逾期沒來取的訂製單" },
+        { actor: "robot", text: "自動產出總部日報和會計入帳用的底稿" },
+        { actor: "human", text: "特殊交易（訂金、尾款）由會計確認後才入帳" }
       ],
       benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
         quality: "價值主張改為降低漏帳與客訴風險；量體小，先輕量訪談驗證再決定是否推進" },
@@ -1081,10 +1081,10 @@ const DATA = {
         "線上下單、門市取貨的訂單，還要跨系統再對一次帳"
       ],
       toBe: [
-        { actor: "robot", text: "每日下載各支付業者撥款明細與 POS 日結，逐店逐筆比對" },
-        { actor: "robot", text: "比對線上訂單與門市取貨紀錄，標記未取件或金額不符" },
-        { actor: "robot", text: "差異清單分派門市與財務，並彙整全通路日報" },
-        { actor: "human", text: "財務確認差異原因後才沖帳或調整（不自動調帳）" }
+        { actor: "robot", text: "每天自動下載刷卡、行動支付撥款和 POS 日結，逐店對帳" },
+        { actor: "robot", text: "自動比對線上訂單和門市取貨，找出沒取件或金額不對" },
+        { actor: "robot", text: "差異清單自動分給門市和財務，並產出全通路日報" },
+        { actor: "human", text: "差異原因由財務確認後才調帳，機器人不會自己改帳" }
       ],
       benefit: { count: 428, unit: "店", per: "day", workDays: 30, minutes: 3, autoRate: 0.7,
         quality: "展店不必等比例增加對帳人力；差異隔天就知道，降低漏帳" },
@@ -1105,10 +1105,10 @@ const DATA = {
         "漏通知或漏核銷，客人白跑一趟，門市也要花時間善後"
       ],
       toBe: [
-        { actor: "robot", text: "依物流中心出貨與門市到貨狀態，更新店取訂單並發取貨通知" },
-        { actor: "robot", text: "逾期未取件自動提醒，再逾期列入退回清單" },
-        { actor: "robot", text: "比對門市 POS 取件核銷與線上訂單，標記未核銷或金額不符" },
-        { actor: "human", text: "客服處理缺貨、改取件門市、退款等異常（不自動退款）" }
+        { actor: "robot", text: "貨一到門市，自動更新訂單狀態並通知客人來取" },
+        { actor: "robot", text: "逾期沒取自動再提醒，還是沒來就列入退回清單" },
+        { actor: "robot", text: "自動比對門市 POS 取件紀錄和線上訂單，找出沒核銷或金額不對的" },
+        { actor: "human", text: "缺貨、換取件門市、退款，由客服處理，機器人不會自己退款" }
       ],
       benefit: { count: 28000, unit: "筆店取訂單", per: "month", minutes: 1, autoRate: 0.7,
         quality: "店取量隨展店與電商成長，不必等比例增加客服與門市人力；未取件提早追回" },
@@ -1128,10 +1128,10 @@ const DATA = {
         "報表一晚出來，產線異常就晚一步發現"
       ],
       toBe: [
-        { actor: "robot", text: "唯讀擷取前日機台 Log 與 MES（不寫回生產系統）" },
-        { actor: "robot", text: "合併計算良率、不良柏拉圖，早會前寄出報表" },
-        { actor: "robot", text: "超標即通報負責工程師；留存稽核軌跡、權限受控" },
-        { actor: "human", text: "工程師判斷異常原因與處置" }
+        { actor: "robot", text: "每天自動讀取前一天的測試機台紀錄和 MES 資料（只讀不改，不動生產系統）" },
+        { actor: "robot", text: "自動算好良率、做好圖表，早會前寄出" },
+        { actor: "robot", text: "數字超標就馬上通知負責的工程師" },
+        { actor: "human", text: "異常原因和怎麼處理，由工程師判斷" }
       ],
       benefit: { count: 5, unit: "份報表", per: "day", workDays: 21, minutes: 40, autoRate: 0.8,
         quality: "釋放工程師做真正的異常分析；稽核軌跡符合既有資安與防外洩規範" },
@@ -1152,10 +1152,10 @@ const DATA = {
         "業績持續成長，對帳量跟著增加，人力會越來越吃緊"
       ],
       toBe: [
-        { actor: "robot", text: "首期先做格式穩定（Excel／CSV）、佣金量最大的 3–5 家，轉成統一欄位" },
-        { actor: "robot", text: "PDF 明細以 OCR 擷取，信心度不足者轉人工" },
-        { actor: "robot", text: "與內部應收佣金比對，標記差異並產出追討清單" },
-        { actor: "human", text: "財務確認差異後才入帳、分配業務員佣金" }
+        { actor: "robot", text: "先從格式固定、佣金量最大的 3–5 家保險公司做，把明細轉成同一種格式" },
+        { actor: "robot", text: "PDF 明細用 OCR 辨識，沒把握的轉給人看" },
+        { actor: "robot", text: "自動和公司應收的佣金比對，列出差異和要追討的清單" },
+        { actor: "human", text: "財務確認後才入帳、發給業務員，機器人不會自己入帳" }
       ],
       benefit: { count: 20, unit: "家保險公司", per: "month", minutes: 180, autoRate: 0.8,
         quality: "價值在降低對帳出錯與漏追、縮短佣金結算週期；效益以擴到全部 20 家計" },
@@ -1177,9 +1177,9 @@ const DATA = {
         "算錯就要和品牌來回溝通，影響合作關係"
       ],
       toBe: [
-        { actor: "robot", text: "彙整單一館各櫃 POS 營業額，套用標準抽成初算，產出對帳單草稿" },
-        { actor: "robot", text: "保底、級距、跨檔期分攤等特殊條件只標記，列入檢核清單" },
-        { actor: "human", text: "財務依檢核清單覆核特殊條款後才寄出" }
+        { actor: "robot", text: "自動彙整單一館各櫃 POS 營業額，套用一般抽成先算好，產出對帳單草稿" },
+        { actor: "robot", text: "保底、級距、檔期分攤這類特殊條件不硬算，只標記出來讓人看" },
+        { actor: "human", text: "財務核對特殊條件後才寄給品牌" }
       ],
       benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
         quality: "縮短每月關帳天數、減少算錯抽成的帳務爭議；驗證可複製到其他分館的模板" },
@@ -1203,10 +1203,10 @@ const DATA = {
         "系統要憑證登入，所以由承辦人登入後，再交給機器人批次處理"
       ],
       toBe: [
-        { actor: "robot", text: "承辦人憑證登入後，批次讀取線上申辦、比對車號與駕照" },
-        { actor: "robot", text: "齊全者入案分派；缺件產補件草稿，承辦人確認後發送" },
-        { actor: "robot", text: "依課室、公文類型與標題篩選並點收電子公文" },
-        { actor: "human", text: "承辦人審核申訴內容與裁罰判斷（不自動裁決）" }
+        { actor: "robot", text: "承辦人憑證登入後，機器人批次讀申辦、比對車號駕照" },
+        { actor: "robot", text: "資料齊全就入案；缺件產生補件通知，承辦人確認再寄" },
+        { actor: "robot", text: "每天的電子公文，自動依課室和類型分好、點收" },
+        { actor: "human", text: "申訴內容和裁罰由承辦人判斷，機器人不會自己裁決" }
       ],
       benefit: { count: 84975, unit: "件線上申辦", per: "year", minutes: 3, autoRate: 0.6,
         quality: "不增編制就能吸收年增近萬件、縮短申訴與退費天數；公文點收效益未計入（保守）" },
@@ -1229,10 +1229,10 @@ const DATA = {
         "逾期案件的催辦、每月給首長的報表，也要人工整理"
       ],
       toBe: [
-        { actor: "robot", text: "依關鍵字與歷史派案對照表，產生建議承辦機關" },
-        { actor: "human", text: "研考人員確認分案（權責爭議、內容判斷不自動決定）" },
-        { actor: "robot", text: "彙整即將逾期、多次改分與展延案件，產生稽催清單" },
-        { actor: "robot", text: "每月整理多維度統計，產出首長決策用月報草稿" }
+        { actor: "robot", text: "依關鍵字和過去的派案紀錄，自動建議該分給哪個局處" },
+        { actor: "human", text: "研考人員確認後才分案；權責有爭議的，由人決定" },
+        { actor: "robot", text: "自動列出快逾期、改分多次、展延的案件，提醒催辦" },
+        { actor: "robot", text: "每月自動整理統計，產出給首長的月報草稿" }
       ],
       benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
         quality: "分案與催辦時效一致；統計報表可直接供施政考核" },
@@ -1254,10 +1254,10 @@ const DATA = {
         "案子一多，同仁大半時間都花在「查進度、回報進度」"
       ],
       toBe: [
-        { actor: "robot", text: "人工插卡登入後，依案件清單批次查詢進度" },
-        { actor: "robot", text: "僅在狀態變為登記完畢／異動完成時才下載謄本並歸檔" },
-        { actor: "robot", text: "寄通知，大客戶依其指定格式產出進度回報表" },
-        { actor: "human", text: "登記補正、異常狀態由地政士判斷處理" }
+        { actor: "robot", text: "同仁插卡登入後，機器人依案件清單批次查進度" },
+        { actor: "robot", text: "狀態變成「登記完畢」才下載謄本歸檔，不重複下載浪費規費" },
+        { actor: "robot", text: "自動寄進度通知；大客戶要的指定格式報表也自動產出" },
+        { actor: "human", text: "需要補正或狀態異常的，由地政士判斷處理" }
       ],
       benefit: { count: 4000, unit: "件案件", per: "year", minutes: 10, autoRate: 0.7,
         quality: "登記一完成就通知建商與銀行，掌握撥款與交屋時程；第一流程已見效，擴充阻力低" },
@@ -1277,9 +1277,9 @@ const DATA = {
         "月結時兩邊的庫存與金額，仍要人工核對（約 16 小時）"
       ],
       toBe: [
-        { actor: "robot", text: "每日比對前一日同步紀錄，同步失敗或數量不符當天通知" },
-        { actor: "robot", text: "月結前匯出兩邊庫存與交易明細，產出差異報告" },
-        { actor: "human", text: "會計與倉管確認差異原因、決定調整（不自動調帳）" }
+        { actor: "robot", text: "每天檢查前一天的同步紀錄，同步失敗或數量不對，當天就通知" },
+        { actor: "robot", text: "月結前自動匯出兩邊的庫存和交易明細，產出差異報告" },
+        { actor: "human", text: "差異原因由會計和倉管確認，機器人不會自己調帳" }
       ],
       benefit: { count: 1, unit: "次月結核對", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
         quality: "同步異常當天發現，不必月底回頭追；月結提早 1–2 天" },
