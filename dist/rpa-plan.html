@@ -512,6 +512,8 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .industry-layout:not(.no-detail) .ind-tbl th { white-space: nowrap; }
 .industry-layout:not(.no-detail) .ind-tbl .ind-name { white-space: nowrap; }
 .industry-layout:not(.no-detail) .ind-tbl td, .industry-layout:not(.no-detail) .ind-tbl th { padding-left: .45rem; padding-right: .45rem; }
+/* 2026-11-24 移除各章大標題後：標題列靠上對齊，讓章節小標與其他章節同高 */
+.row-head { align-items: flex-start; }
 
 </style>
 </head>
@@ -565,10 +567,9 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 2. 產業與痛點地圖 -->
-  <section class="slide" id="s-industry" data-title="產業與痛點地圖" tabindex="-1" aria-labelledby="h-industry">
+  <section class="slide" id="s-industry" data-title="產業與痛點地圖" tabindex="-1" aria-label="產業與痛點地圖">
     <header class="slide-head">
       <p class="eyebrow">產業與痛點地圖</p>
-      <h2 id="h-industry">先選對產業，再選對流程</h2>
       <p class="lead">評分是我依「成交週期、市場規模、客單潛力、效益可量化、導入阻力」做的主觀判斷 <span class="tag-assume">假設</span>，點產業可看目標客戶。</p>
     </header>
     <div class="industry-layout">
@@ -579,11 +580,10 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 3. 痛點互動卡片 -->
-  <section class="slide" id="s-cases" data-title="客戶案例" tabindex="-1" aria-labelledby="h-cases">
+  <section class="slide" id="s-cases" data-title="客戶案例" tabindex="-1" aria-label="客戶案例">
     <header class="slide-head row-head">
       <div>
         <p class="eyebrow">客戶案例卡片</p>
-        <h2 id="h-cases">一家公司、一個流程、一張報價單</h2>
         <p class="lead">一家公司＝背景（公開事實）→ 挑戰（推估）→ 方案 → 效益（試算）→ 報價</p>
       </div>
       <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
@@ -595,10 +595,9 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 4. 計價與組合器 -->
-  <section class="slide" id="s-pricing" data-title="計價與組合器" tabindex="-1" aria-labelledby="h-pricing">
+  <section class="slide" id="s-pricing" data-title="計價與組合器" tabindex="-1" aria-label="計價與組合器">
     <header class="slide-head">
       <p class="eyebrow">計價與組合器</p>
-      <h2 id="h-pricing">選一個流程，報價就出來</h2>
       <p class="lead">必要組合 = 開發工具 1 套 + 機器人（全自動或半自動擇 1）；其餘依使用量加購。授權為年訂閱，開發為一次性人天。</p>
     </header>
     <div class="pricing-layout">
@@ -609,11 +608,10 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 5. A / B 業績拆解 -->
-  <section class="slide" id="s-ab" data-title="A／B 業績拆解" tabindex="-1" aria-labelledby="h-ab">
+  <section class="slide" id="s-ab" data-title="A／B 業績拆解" tabindex="-1" aria-label="A／B 業績拆解">
     <header class="slide-head row-head">
       <div>
         <p class="eyebrow">A／B 業績拆解</p>
-        <h2 id="h-ab">兩種版本，同一個業績目標</h2>
       </div>
       <div class="toggle-stack">
         <div class="toggle" role="group" aria-label="切換版本">
@@ -631,11 +629,10 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 6. 成案率回推與漏斗 -->
-  <section class="slide" id="s-funnel" data-title="成案率回推" tabindex="-1" aria-labelledby="h-funnel">
+  <section class="slide" id="s-funnel" data-title="成案率回推" tabindex="-1" aria-label="成案率回推">
     <header class="slide-head row-head">
       <div>
         <p class="eyebrow">成案率回推與漏斗</p>
-        <h2 id="h-funnel">不同階段轉換率造成的差異</h2>
       </div>
       <div class="toggle" role="group" aria-label="切換漏斗模式">
         <button type="button" class="toggle-btn" data-funnel-mode="back" aria-pressed="true">反向：由目標回推</button>
@@ -652,10 +649,9 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 7. Q1 時間軸 -->
-  <section class="slide" id="s-timeline" data-title="Q1 時間軸" tabindex="-1" aria-labelledby="h-timeline">
+  <section class="slide" id="s-timeline" data-title="Q1 時間軸" tabindex="-1" aria-label="Q1 時間軸">
     <header class="slide-head">
       <p class="eyebrow">Q1 時間軸</p>
-      <h2 id="h-timeline">以回簽日倒推，避開春節空窗</h2>
       <p class="lead">A 版以 12 月啟動暖名單為前提。內部回簽目標 <strong data-bind="time.sign"></strong>，距季末留 <strong data-bind="time.buffer"></strong> 天緩衝。日期皆為暫定 <span class="tag-assume">假設</span>，春節放假以人事行政總處公告為準。</p>
     </header>
     <div class="panel timeline" id="timeline"></div>
@@ -663,29 +659,26 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   </section>
 
   <!-- 8. 特定情境／產品組合攻略 -->
-  <section class="slide" id="s-scenarios" data-title="情境攻略" tabindex="-1" aria-labelledby="h-scenarios">
+  <section class="slide" id="s-scenarios" data-title="情境攻略" tabindex="-1" aria-label="情境攻略">
     <header class="slide-head">
       <p class="eyebrow">特定情境／產品組合攻略</p>
-      <h2 id="h-scenarios">什麼客戶，給什麼組合</h2>
       <p class="lead">同一套價目表，依客戶階段組出不同報價；金額由價目表即時算出，人天為假設。</p>
     </header>
     <div class="scenario-grid" id="scenarios"></div>
   </section>
 
   <!-- 9. 風險與備援 -->
-  <section class="slide" id="s-risks" data-title="風險與備援" tabindex="-1" aria-labelledby="h-risks">
+  <section class="slide" id="s-risks" data-title="風險與備援" tabindex="-1" aria-label="風險與備援">
     <header class="slide-head">
       <p class="eyebrow">風險與備援</p>
-      <h2 id="h-risks">先想好哪裡會破，再準備怎麼補</h2>
     </header>
     <div class="risk-grid" id="risks"></div>
   </section>
 
   <!-- 10. 資料來源（2026-11-22：假設面板移至 PDF 附錄 C，簡報只保留來源連結） -->
-  <section class="slide" id="s-sources" data-title="資料來源" tabindex="-1" aria-labelledby="h-sources">
+  <section class="slide" id="s-sources" data-title="資料來源" tabindex="-1" aria-label="資料來源">
     <header class="slide-head">
       <p class="eyebrow">資料來源</p>
-      <h2 id="h-sources">所有客戶資訊都標來源</h2>
       <p class="lead">點連結可開啟原始報導或官網；箭頭後為引用該來源的客戶。</p>
     </header>
     <div class="panel" id="sources"></div>
