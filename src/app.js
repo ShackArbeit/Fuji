@@ -286,16 +286,12 @@
         <span class="muted">${esc(c.industryNote || IND[c.industry].name)}｜${esc(c.title)}${hero ? "｜主打" : ""}</span>
       </div>
       <div class="case-sections">
-        <section class="sec">
+        <div class="case-col">
+        <section class="sec sec-1">
           <h4><span class="sec-no">1</span>客戶名稱 & 背景 ${infoTag("fact")}</h4>
           <ul class="plain">${c.background.map(b => `<li>${esc(b.text)} <span class="src-ref">（${srcLinks(b.sourceId)}）</span></li>`).join("")}</ul>
         </section>
-        <section class="sec">
-          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
-          ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
-          <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
-        </section>
-        <div class="sec-stack">
+        <div class="sec-stack st-1">
         <section class="sec">
           <h4><span class="sec-no">3</span>解決方案<span class="muted roi-sub">${c.productType === "full" ? "（全自動：排程執行，無人值守）" : "（半自動：由人點一下啟動，機器人跑完）"}</span></h4>
           <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
@@ -305,7 +301,14 @@
           ${roiHtml(c)}
         </section>
         </div>
-        <div class="sec-stack">
+        </div>
+        <div class="case-col">
+        <section class="sec sec-2">
+          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
+          ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
+          <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+        </section>
+        <div class="sec-stack st-2">
         <section class="sec">
           <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
           <p class="benefit-note">分鐘＝人工處理時間（RPA 執行時間不計）；1 人力＝每月 ${FTE_HOURS} 小時</p>
@@ -318,6 +321,7 @@
           ${quoteTable(q)}
           <p class="muted">${esc(c.productNote || "")}${dealText ? `<br>業績對應：${esc(dealText)}` : ""}</p>
         </section>
+        </div>
         </div>
       </div>`;
   }
