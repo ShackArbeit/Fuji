@@ -317,7 +317,8 @@ export const DATA = {
         { actor: "robot", text: "會計每天點一下啟動，機器人匯出各店 POS 銷售，寫進 Ragic 並核對庫存" },
         { actor: "robot", text: "自動比對訂金和尾款，列出還沒收尾款、逾期沒來取的訂製單" },
         { actor: "robot", text: "自動產出總部日報和會計入帳用的底稿" },
-        { actor: "human", text: "特殊交易（訂金、尾款）由會計確認後才入帳" }
+        { actor: "robot", text: "延伸（不算進效益）：Ragic 主管簽核完成的代墊請款、交通費，自動轉成會計入帳資料" },
+        { actor: "human", text: "主管簽核照舊；訂金、尾款與費用由會計確認後才入帳" }
       ],
       benefit: { count: 6, unit: "店", per: "day", workDays: 26, minutes: 15, autoRate: 0.8,
         quality: "價值主張改為降低漏帳與客訴風險；量體小，先輕量訪談驗證再決定是否推進" },
@@ -664,6 +665,7 @@ export const DATA = {
         { actor: "robot", text: "匯出 POS 銷售寫進 Ragic", solves: [2] },
         { actor: "robot", text: "比對訂金尾款，列出未收、逾期", solves: [3] },
         { actor: "robot", text: "產出總部日報與入帳底稿", solves: [2] },
+        { actor: "robot", text: "延伸：簽核完成的請款轉會計入帳", solves: [] },
         { actor: "human", text: "訂金、尾款由會計確認後入帳", solves: [] }
       ],
       toBeOut: { text: "不漏帳、不漏追，降低客訴" }
