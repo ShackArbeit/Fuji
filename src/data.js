@@ -166,7 +166,7 @@ export const DATA = {
   // 客戶來源
   customerSources: {
     "fuji-rpa":   "富士既有 RPA 客戶",
-    "fuji-other": "富士既有客戶（非 RPA）",
+    "fuji-other": "富士既有客戶（尚未導入 RPA）",
     "new":        "集團外新客"
   },
 
