@@ -554,3 +554,4 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 /* 回本試算備註（2026-11-27 由第 2 段移入）：先導入其他富士產品、再推 RPA（2026-11-27，東培） */
 .challenge-note { margin: .2rem 0 0; padding: .1rem .6rem; border: 1px dashed var(--human); border-radius: 6px; background: var(--human-soft); line-height: 1.45; }
 .challenge-note b { color: var(--human); }
+@media print { .ap-case .challenge-note { font-size: .72rem; line-height: 1.25; padding: .05rem .35rem; margin-top: .15rem; } }
