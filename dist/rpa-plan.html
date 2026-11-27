@@ -562,6 +562,37 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .challenge-note { margin: .2rem 0 0; padding: .1rem .6rem; border: 1px dashed var(--human); border-radius: 6px; background: var(--human-soft); line-height: 1.45; }
 .challenge-note b { color: var(--human); }
 @media print { .ap-case .challenge-note { font-size: .72rem; line-height: 1.25; padding: .05rem .35rem; margin-top: .15rem; } }
+/* 卡片「流程解析圖」（2026-11-27 由 rpa-plan2.html 移植；標題列切換「五段式內容／流程解析圖」） */
+.cases-ctrl { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }
+.case-view-toggle .toggle-btn { font-size: .85rem; padding: .2rem .7rem; }
+.case-flowview { display: flex; flex-direction: column; gap: .6rem; }
+ul.plain.chal-num { list-style: none; padding-left: 0; }
+ul.plain.chal-num li { display: flex; gap: .3rem; }
+.fc-tag { flex: 0 0 auto; color: var(--bad); font-weight: 700; }
+.fc-lane { display: grid; grid-template-columns: 4.6rem 1fr auto 10rem; gap: .45rem; align-items: stretch; }
+.fc-lane > .fc-lane-label, .fc-lane > .fc-arrow { align-self: center; }
+.fc-lane-label { font-weight: 700; font-size: .85rem; text-align: center; padding: .35rem .2rem; border-radius: 6px; line-height: 1.25; }
+.fc-lane-asis .fc-lane-label { background: #fdecea; color: var(--bad); }
+.fc-lane-tobe .fc-lane-label { background: var(--robot-soft); color: var(--robot); }
+.fc-row { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; align-items: stretch; gap: .3rem; min-width: 0; }
+.fc-node { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: .15rem;
+  border: 1px solid var(--line); border-radius: 8px; padding: .35rem .5rem; background: #fff; font-size: .92rem; line-height: 1.35; }
+.fc-who { font-size: .76rem; font-weight: 700; color: var(--muted); }
+.fc-refs { font-size: .78rem; font-weight: 700; color: var(--bad); margin-top: auto; }
+.fc-pain { border: 2px solid var(--bad); background: #fdecea; }
+.fc-robot { border: 2px solid var(--robot); background: var(--robot-soft); }
+.fc-robot .fc-who, .fc-robot .fc-refs { color: var(--robot); }
+.fc-human { border: 2px solid var(--human); background: var(--human-soft); }
+.fc-human .fc-who, .fc-human .fc-refs { color: var(--human); }
+.fc-out { font-weight: 700; }
+.fc-out .fc-who, .fc-out .fc-refs { color: #fff; }
+.fc-out-bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+.fc-out-good { background: var(--robot); border-color: var(--robot); color: #fff; }
+.fc-arrow { align-self: center; color: var(--muted); font-weight: 700; flex: 0 0 auto; }
+.fc-divider { margin: .4rem 0 .4rem 4.6rem; padding-left: .5rem; font-size: .85rem; font-weight: 700; color: var(--primary); }
+.fc-legend { margin: .5rem 0 0; font-size: .8rem; color: var(--muted); }
+@media print { .case-view-toggle { display: none; } }
+@media (max-width: 1500px) { .fc-lane { grid-template-columns: 3.4rem 1fr auto 6.5rem; gap: .3rem; } .fc-lane-label { font-size: .78rem; } .fc-divider { margin-left: 3.4rem; } .fc-node { padding: .3rem .4rem; font-size: .86rem; } }
 
 </style>
 </head>
@@ -634,7 +665,13 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
         <p class="eyebrow">客戶案例卡片</p>
         <p class="lead">一家公司＝背景（公開事實）→ 挑戰（推估）→ 方案 → 效益（試算）→ 報價</p>
       </div>
-      <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
+      <div class="cases-ctrl">
+        <div class="filter" id="case-filter" role="group" aria-label="依產業篩選"></div>
+        <div class="toggle case-view-toggle" role="group" aria-label="切換卡片內容">
+          <button type="button" class="toggle-btn" data-case-view="detail" aria-pressed="true">五段式內容</button>
+          <button type="button" class="toggle-btn" data-case-view="flow" aria-pressed="false">流程解析圖</button>
+        </div>
+      </div>
     </header>
     <div class="cases-layout">
       <div class="case-grid" id="case-grid"></div>
@@ -1328,6 +1365,252 @@ const DATA = {
   ],
 
   // 資料來源（paraphrase 摘要；urls 可多個）
+  // 卡片「流程解析圖」（2026-11-27 依 rpa-plan2.html 移植，①②③ 改對應目前的 challenge）。皆為【推估】，需 Discovery 驗證。
+  // asIs：現況人工步驟（who＝誰在做；pain＝對應第幾條挑戰）；asIsOut：現況結果；toBe：導入後（solves＝解決第幾條挑戰）；toBeOut：效果
+  flows: {
+    "porite-delivery": {
+      asIs: [
+        { who: "採購", text: "從 kintone 匯出未交單", pain: [2] },
+        { who: "採購", text: "逐家寄信、打電話問交期", pain: [2] },
+        { who: "採購", text: "讀 Email、LINE、電話回覆", pain: [3] },
+        { who: "採購", text: "手動把交期打回系統", pain: [3] }
+      ],
+      asIsOut: { text: "資料更新慢，延誤太晚發現，排程跟著延誤", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "找出未交單，提前寄信問交期", solves: [2] },
+        { actor: "robot", text: "讀表單回覆，交期填回 kintone", solves: [3] },
+        { actor: "robot", text: "沒回、非表單回覆列進異常清單", solves: [3] },
+        { actor: "human", text: "採購只追清單上的例外", solves: [1] }
+      ],
+      toBeOut: { text: "提早看到延誤，生管及早調排程" }
+    },
+    "teco-drawing-sync": {
+      asIs: [
+        { who: "工程", text: "ECN 設計變更核准" },
+        { who: "文管", text: "人工上傳文件庫", pain: [2] },
+        { who: "文管", text: "登入 ERP 改圖面版次", pain: [2] },
+        { who: "文管", text: "寄信通知採購、生管、品保", pain: [2] }
+      ],
+      asIsOut: { text: "沒同步就有人拿舊圖：買錯、報廢重工", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "抓出新核准圖面的圖號、版次、料號", solves: [2] },
+        { actor: "robot", text: "自動更新 ERP 版次與圖面連結", solves: [2] },
+        { actor: "robot", text: "通知各部門，舊版標記「作廢」", solves: [3] },
+        { actor: "human", text: "在製料件怎麼處理，由工程與生管決定", solves: [3] }
+      ],
+      toBeOut: { text: "各部門幾分鐘內拿到唯一新版" }
+    },
+    "tpi-stock-alert": {
+      asIs: [
+        { who: "生管", text: "從 ERP 撈庫存報表", pain: [2] },
+        { who: "生管", text: "另撈在途採購、未交訂單", pain: [2, 3] },
+        { who: "生管", text: "用 Excel 算實際可用量", pain: [2] },
+        { who: "生管", text: "一個個通知採購、生管", pain: [3] }
+      ],
+      asIsOut: { text: "低庫存晚發現，採購和排程受影響", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "撈庫存、在途、未交訂單", solves: [2, 3] },
+        { actor: "robot", text: "算出快不夠的料號", solves: [2] },
+        { actor: "robot", text: "原料通知採購、成品通知生管", solves: [3] },
+        { actor: "human", text: "要不要補料、調排程，由採購與生管決定" }
+      ],
+      toBeOut: { text: "缺料從事後發現變成每日預警" }
+    },
+    "skfiber-invoice-3way": {
+      asIs: [
+        { who: "會計", text: "收紙本、電子、國外發票" },
+        { who: "會計", text: "人工登打紙本與國外發票", pain: [3] },
+        { who: "會計", text: "逐筆對採購單、收貨紀錄", pain: [2] },
+        { who: "會計", text: "分批交貨要回頭翻單", pain: [1, 3] },
+        { who: "會計", text: "對不上找採購、倉庫、供應商", pain: [3] }
+      ],
+      asIsOut: { text: "月底付款作業負擔重，有溢付風險", pain: [2, 3] },
+      toBe: [
+        { actor: "robot", text: "電子發票直讀，紙本與國外發票 OCR", solves: [3] },
+        { actor: "robot", text: "依採購單項次累計比對三方", solves: [1, 2] },
+        { actor: "robot", text: "相符標「可付款」，異常分派給負責人", solves: [3] },
+        { actor: "human", text: "會計確認後才付款" }
+      ],
+      toBeOut: { text: "會計只看例外，付款前把關" }
+    },
+    "yuan-omni-orders": {
+      asIs: [
+        { who: "客服", text: "到各平台後台下載訂單", pain: [1, 2] },
+        { who: "客服", text: "手動拆組合品、贈品", pain: [3] },
+        { who: "客服", text: "匯入 ERP", pain: [2] },
+        { who: "客服", text: "出貨後回填物流單號", pain: [2] },
+        { who: "客服", text: "和門市 POS 資料手動併報表", pain: [1] }
+      ],
+      asIsOut: { text: "促銷檔期：漏單、資料對不上", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "抓各平台訂單，依對照表拆單", solves: [2, 3] },
+        { actor: "robot", text: "匯入 ERP，出貨後回填單號", solves: [2] },
+        { actor: "robot", text: "合併 POS，產出全通路報表", solves: [1] },
+        { actor: "human", text: "取消、退款、地址問題由客服處理" }
+      ],
+      toBeOut: { text: "檔期爆單也不必臨時加人" }
+    },
+    "ginza-store-daily": {
+      asIs: [
+        { who: "會計", text: "各店 POS 匯出銷售", pain: [2] },
+        { who: "會計", text: "整理日報、對庫存與帳務", pain: [2] },
+        { who: "門市", text: "人工記訂金、尾款", pain: [3] },
+        { who: "門市", text: "憑記憶追尾款與取件", pain: [3] }
+      ],
+      asIsOut: { text: "漏收尾款、逾期未取，引發客訴", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "匯出 POS 銷售寫進 Ragic", solves: [2] },
+        { actor: "robot", text: "比對訂金尾款，列出未收、逾期", solves: [3] },
+        { actor: "robot", text: "產出總部日報與入帳底稿", solves: [2] },
+        { actor: "human", text: "訂金、尾款由會計確認後入帳" }
+      ],
+      toBeOut: { text: "不漏帳、不漏追，降低客訴" }
+    },
+    "greattree-pos-recon": {
+      asIs: [
+        { who: "財務", text: "下載各支付業者撥款明細", pain: [1, 2] },
+        { who: "財務", text: "匯出各店 POS 日結", pain: [2] },
+        { who: "財務", text: "逐店逐筆比對金額、手續費", pain: [2, 3] },
+        { who: "財務", text: "線上訂單再跨系統對一次" }
+      ],
+      asIsOut: { text: "店越開越多，對帳越慢、差異越晚發現", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "下載撥款明細與 POS 日結", solves: [1, 2] },
+        { actor: "robot", text: "扣掉時間差與手續費，逐店對帳", solves: [2, 3] },
+        { actor: "robot", text: "比對線上訂單與門市取貨" },
+        { actor: "human", text: "差異原因由財務確認才調帳" }
+      ],
+      toBeOut: { text: "展店不必等比例增加對帳人力" }
+    },
+    "poya-omo-pickup": {
+      asIs: [
+        { who: "客服", text: "查物流到貨狀態", pain: [1] },
+        { who: "客服", text: "更新狀態、通知客人取貨", pain: [2] },
+        { who: "客服", text: "追逾期未取、安排退回", pain: [2] },
+        { who: "門市", text: "對 POS 核銷與線上訂單", pain: [3] }
+      ],
+      asIsOut: { text: "到貨沒通知、取貨沒核銷", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "依到貨狀態更新訂單、通知取貨", solves: [2] },
+        { actor: "robot", text: "逾期再提醒，列入退回清單", solves: [2] },
+        { actor: "robot", text: "比對 POS 取件紀錄與線上訂單", solves: [3] },
+        { actor: "human", text: "缺貨、換店、退款由客服處理" }
+      ],
+      toBeOut: { text: "店取量成長，不必等比例加人" }
+    },
+    "coretronic-quality-report": {
+      asIs: [
+        { who: "工程師", text: "從 MES、各測試站撈資料", pain: [2] },
+        { who: "工程師", text: "用 Excel 算良率、做圖", pain: [2] },
+        { who: "工程師", text: "寄給主管與相關單位", pain: [2] }
+      ],
+      asIsOut: { text: "時間耗在報表，分析與查異常被壓縮", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "讀測試紀錄與 MES（只讀不改）", solves: [2] },
+        { actor: "robot", text: "算良率、做好圖表", solves: [2] },
+        { actor: "robot", text: "早會前寄出，標出異常站點", solves: [2] },
+        { actor: "human", text: "異常原因與處置由工程師判斷", solves: [3] }
+      ],
+      toBeOut: { text: "工程師把時間花在根因分析" }
+    },
+    "yungda-commission": {
+      asIs: [
+        { who: "財務", text: "登入各保險公司下載明細", pain: [2] },
+        { who: "財務", text: "各種格式手動整理", pain: [3] },
+        { who: "財務", text: "對照內部保單與應收佣金", pain: [2] },
+        { who: "財務", text: "對不上回頭追差異", pain: [3] }
+      ],
+      asIsOut: { text: "合作家數越多，對帳越吃力", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "主力 3–5 家明細轉成同一格式", solves: [3] },
+        { actor: "robot", text: "PDF 用 OCR，沒把握的轉人工", solves: [3] },
+        { actor: "robot", text: "比對應收，列出差異與追討清單", solves: [2, 3] },
+        { actor: "human", text: "財務確認後才入帳、發佣" }
+      ],
+      toBeOut: { text: "不漏追，對帳量增加也撐得住" }
+    },
+    "skm-concession": {
+      asIs: [
+        { who: "財務", text: "POS 匯出各櫃營業額", pain: [2] },
+        { who: "財務", text: "翻合約查租金、抽成條件", pain: [1] },
+        { who: "財務", text: "用 Excel 一櫃一櫃算", pain: [2] },
+        { who: "財務", text: "人工確認條件、核對金額", pain: [3] }
+      ],
+      asIsOut: { text: "每月結帳工作量大，容易算錯", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "彙整單一館各櫃營業額", solves: [2] },
+        { actor: "robot", text: "套一般抽成，產出對帳單草稿", solves: [2] },
+        { actor: "robot", text: "保底、級距等特殊條件只標記", solves: [1, 3] },
+        { actor: "human", text: "財務核對特殊條件後才寄出", solves: [3] }
+      ],
+      toBeOut: { text: "關帳更快，抽成爭議更少" }
+    },
+    "ntpc-traffic-adjudication": {
+      asIs: [
+        { who: "承辦人", text: "逐件開線上申辦", pain: [2] },
+        { who: "承辦人", text: "核對車號、身分、附件", pain: [2] },
+        { who: "承辦人", text: "登錄、分案", pain: [2] },
+        { who: "承辦人", text: "電子公文一件件分課室", pain: [3] }
+      ],
+      asIsOut: { text: "件數一多，承辦時間被行政作業吃掉", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "承辦人登入後，批次讀申辦、比對", solves: [2] },
+        { actor: "robot", text: "齊全就入案，缺件產生通知草稿", solves: [2] },
+        { actor: "robot", text: "電子公文依課室分好、點收", solves: [3] },
+        { actor: "human", text: "申訴與裁罰由承辦人判斷" }
+      ],
+      toBeOut: { text: "不增編制，也能吸收案件增量" }
+    },
+    "tc-1999-petition": {
+      asIs: [
+        { who: "研考", text: "讀陳情內容", pain: [2] },
+        { who: "研考", text: "判斷權責局處、分案", pain: [2] },
+        { who: "研考", text: "追各局處進度與期限", pain: [2] },
+        { who: "研考", text: "整理逾期、催辦與統計", pain: [3] }
+      ],
+      asIsOut: { text: "量一大，時間都花在重複管理", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "AI 建議承辦局處，機器人填進系統", solves: [2] },
+        { actor: "human", text: "研考人員確認後才分案", solves: [2] },
+        { actor: "robot", text: "列出快逾期、多次改分的案件", solves: [2, 3] },
+        { actor: "robot", text: "產出統計與首長月報草稿", solves: [3] }
+      ],
+      toBeOut: { text: "分案與催辦時效一致" }
+    },
+    "lin-land-expansion": {
+      asIs: [
+        { who: "同仁", text: "插卡登入地政系統" },
+        { who: "同仁", text: "逐件查辦理狀態", pain: [2] },
+        { who: "同仁", text: "登記完成後調謄本歸檔", pain: [2] },
+        { who: "同仁", text: "一封封回報建商、銀行", pain: [3] }
+      ],
+      asIsOut: { text: "重複查詢、通知吃掉大量行政時間", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "同仁登入後，批次查案件進度", solves: [2] },
+        { actor: "robot", text: "登記完畢才下載謄本，不重複下載", solves: [2] },
+        { actor: "robot", text: "自動寄通知，產出大客戶指定報表", solves: [3] },
+        { actor: "human", text: "補正、狀態異常由地政士處理" }
+      ],
+      toBeOut: { text: "登記一完成，建商和銀行馬上知道" }
+    },
+    "lens-dual-erp-recon": {
+      asIs: [
+        { who: "系統", text: "兩套 ERP 背景自動同步" },
+        { who: "會計", text: "定期人工檢查兩邊是否一致", pain: [2] },
+        { who: "系統", text: "同步失敗，沒有即時發現", pain: [3] },
+        { who: "會計", text: "月結對不上才回頭翻單", pain: [3] }
+      ],
+      asIsOut: { text: "月結集中排查，財務與倉管更吃力", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "每天檢查前一天同步紀錄", solves: [2] },
+        { actor: "robot", text: "失敗或數量不對，當天通知", solves: [3] },
+        { actor: "robot", text: "月結前自動產出差異報告", solves: [2, 3] },
+        { actor: "human", text: "差異原因由會計與倉管確認" }
+      ],
+      toBeOut: { text: "異常不過夜，月結提早完成" }
+    }
+  },
+
   sources: [
     { id: "fbtw-mfg", title: "富士官網｜製造業案例", summary: "台灣保來得、東元電機、台灣新光合成纖維（文件與流程方案）",
       urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/manufacturing"] },
@@ -1909,6 +2192,7 @@ function fmtNum(v, digits = 1) {
     bNewLeads: null, bExpOpps: null,
     industry: "all",
     openCase: DATA.meta.heroCaseId,
+    caseView: "detail", // 第 3 章：detail＝五段式內容／flow＝流程解析圖
     renewalRate: DATA.versionB.renewalRate,
     funnel: { ...DATA.funnel },
     leads: null, // null = 跟隨反推所需名單
@@ -2071,6 +2355,11 @@ function fmtNum(v, digits = 1) {
       return;
     }
     el.innerHTML = caseDetailHtml(c);
+    const hasFlow = !!(DATA.flows && DATA.flows[c.id]);
+    document.querySelectorAll("[data-case-view]").forEach(btn => {
+      btn.setAttribute("aria-pressed", String((state.caseView === "flow" && hasFlow) === (btn.dataset.caseView === "flow")));
+      btn.disabled = !hasFlow && btn.dataset.caseView === "flow";
+    });
   }
   // 回本試算（試算假設）：達標顯示回本月數與三年淨效益；未達標改提多流程攤提或量體門檻，不顯示負數
   function roiHtml(c) {
@@ -2135,7 +2424,34 @@ function fmtNum(v, digits = 1) {
     </ol>${b.countNote ? `<p class="benefit-note">${esc(b.countNote)}</p>` : ""}`;
   }
 
-  function caseDetailHtml(c) {
+  // 流程解析圖：現況（人工）→ 導入後（機器人／人工覆核）；①②③ 對應「挑戰」編號（2026-11-27 由 rpa-plan2.html 移植）
+  const CIRCLED = "①②③④⑤⑥";
+  function challengeList(c) {
+    return `<ul class="plain chal-num">${c.challenge.map((t, i) => `<li><span class="fc-tag">${CIRCLED[i]}</span>${esc(t)}</li>`).join("")}</ul>`;
+  }
+  function flowHtml(c) {
+    const f = DATA.flows && DATA.flows[c.id];
+    if (!f) return "";
+    const tags = (arr, prefix) => (arr && arr.length)
+      ? `<span class="fc-refs">${prefix}${arr.map(n => CIRCLED[n - 1]).join("")}</span>` : "";
+    const arrow = `<li class="fc-arrow" aria-hidden="true">→</li>`;
+    const asIs = f.asIs.map(s => `<li class="fc-node${s.pain ? " fc-pain" : ""}"><span class="fc-who">${esc(s.who)}</span><span class="fc-text">${esc(s.text)}</span>${tags(s.pain, "⚠ ")}</li>`);
+    const outBad = `<div class="fc-node fc-out fc-out-bad"><span class="fc-who">結果</span><span class="fc-text">${esc(f.asIsOut.text)}</span>${tags(f.asIsOut.pain, "")}</div>`;
+    const toBe = f.toBe.map(s => `<li class="fc-node fc-${s.actor}"><span class="fc-who">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span class="fc-text">${esc(s.text)}</span>${tags(s.solves, "解 ")}</li>`);
+    const outGood = `<div class="fc-node fc-out fc-out-good"><span class="fc-who">效果</span><span class="fc-text">${esc(f.toBeOut.text)}</span></div>`;
+    const lane = (label, cls, items, out) => `<div class="fc-lane ${cls}"><div class="fc-lane-label">${label}</div>
+        <ol class="fc-row" aria-label="${label.replace(/<[^>]+>/g, "")}">${items.join(arrow)}</ol>
+        <span class="fc-arrow" aria-hidden="true">⇒</span>${out}</div>`;
+    return `<section class="sec sec-flow">
+        <h4>流程解析圖：現況困境 → 導入後 ${infoTag("guess")}</h4>
+        ${lane("現況<br>（人工）", "fc-lane-asis", asIs, outBad)}
+        <div class="fc-divider" aria-hidden="true">▼ 導入 RPA 後</div>
+        ${lane("導入後", "fc-lane-tobe", toBe, outGood)}
+        <p class="fc-legend">⚠ 紅框＝痛點，①②③ 對應上方「挑戰」編號；綠＝機器人、橘＝人工覆核，「解 ①」表示解決第 ① 條挑戰。</p>
+      </section>`;
+  }
+
+  function caseDetailHtml(c, inAppendix = false) {
     const q = caseQuote(c.id);
     const bf = benefit(c.id);
     const hero = c.id === DATA.meta.heroCaseId;
@@ -2146,7 +2462,14 @@ function fmtNum(v, digits = 1) {
         <h3>${esc(customerName(c))}</h3>${srcBadge(c.customerSource)}${prodBadge(c.productType)}
         <span class="muted">${esc(c.industryNote || IND[c.industry].name)}｜${esc(c.title)}${hero ? "｜主打" : ""}</span>
       </div>
-      <div class="case-sections">
+      ${!inAppendix && state.caseView === "flow" && DATA.flows && DATA.flows[c.id] ? `<div class="case-flowview">
+        <section class="sec">
+          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
+          ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
+          ${challengeList(c)}
+        </section>
+        ${flowHtml(c)}
+      </div>` : `<div class="case-sections">
         <div class="case-col">
         <section class="sec sec-1">
           <h4><span class="sec-no">1</span>客戶名稱 & 背景 ${infoTag("fact")}</h4>
@@ -2168,7 +2491,7 @@ function fmtNum(v, digits = 1) {
         <section class="sec sec-2">
           <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
           ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
-          <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+          ${challengeList(c)}
         </section>
         <div class="sec-stack st-2">
         <section class="sec">
@@ -2185,7 +2508,7 @@ function fmtNum(v, digits = 1) {
         </section>
         </div>
         </div>
-      </div>`;
+      </div>`}`;
   }
 
   // ---------- 4. 組合器 ----------
@@ -2753,11 +3076,11 @@ function fmtNum(v, digits = 1) {
 
     $("#ap-cases").innerHTML = `<div class="ap-title"><p class="eyebrow">附錄 B</p><h2>客戶案例完整內容（${DATA.cases.length} 家）</h2>
       <p class="muted">背景＝公開事實（附來源）；挑戰＝推估，需 Discovery 驗證；效益＝試算假設，非客戶實績。</p></div>` +
-      DATA.cases.map(c => `<article class="ap-case">${caseDetailHtml(c)}</article>`).join("");
+      DATA.cases.map(c => `<article class="ap-case">${caseDetailHtml(c, true)}</article>`).join("");
   }
 
   // ---------- 更新（保留焦點）----------
-  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver", "data-src-group"];
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver", "data-src-group", "data-case-view"];
   function update() {
     const act = document.activeElement;
     let restore = null;
@@ -2841,7 +3164,7 @@ function fmtNum(v, digits = 1) {
   });
 
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver],[data-src-group]");
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver],[data-src-group],[data-case-view]");
     if (!t) return;
     const d = t.dataset;
     if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
@@ -2868,6 +3191,8 @@ function fmtNum(v, digits = 1) {
       state.version = d.version;
     } else if (d.tier) {
       state.tier = d.tier;
+    } else if (d.caseView) {
+      state.caseView = d.caseView;
     } else if (d.srcGroup) {
       state.srcGroup = d.srcGroup;
     } else if (d.funnelVer) {

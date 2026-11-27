@@ -555,3 +555,34 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .challenge-note { margin: .2rem 0 0; padding: .1rem .6rem; border: 1px dashed var(--human); border-radius: 6px; background: var(--human-soft); line-height: 1.45; }
 .challenge-note b { color: var(--human); }
 @media print { .ap-case .challenge-note { font-size: .72rem; line-height: 1.25; padding: .05rem .35rem; margin-top: .15rem; } }
+/* 卡片「流程解析圖」（2026-11-27 由 rpa-plan2.html 移植；標題列切換「五段式內容／流程解析圖」） */
+.cases-ctrl { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }
+.case-view-toggle .toggle-btn { font-size: .85rem; padding: .2rem .7rem; }
+.case-flowview { display: flex; flex-direction: column; gap: .6rem; }
+ul.plain.chal-num { list-style: none; padding-left: 0; }
+ul.plain.chal-num li { display: flex; gap: .3rem; }
+.fc-tag { flex: 0 0 auto; color: var(--bad); font-weight: 700; }
+.fc-lane { display: grid; grid-template-columns: 4.6rem 1fr auto 10rem; gap: .45rem; align-items: stretch; }
+.fc-lane > .fc-lane-label, .fc-lane > .fc-arrow { align-self: center; }
+.fc-lane-label { font-weight: 700; font-size: .85rem; text-align: center; padding: .35rem .2rem; border-radius: 6px; line-height: 1.25; }
+.fc-lane-asis .fc-lane-label { background: #fdecea; color: var(--bad); }
+.fc-lane-tobe .fc-lane-label { background: var(--robot-soft); color: var(--robot); }
+.fc-row { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; align-items: stretch; gap: .3rem; min-width: 0; }
+.fc-node { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: .15rem;
+  border: 1px solid var(--line); border-radius: 8px; padding: .35rem .5rem; background: #fff; font-size: .92rem; line-height: 1.35; }
+.fc-who { font-size: .76rem; font-weight: 700; color: var(--muted); }
+.fc-refs { font-size: .78rem; font-weight: 700; color: var(--bad); margin-top: auto; }
+.fc-pain { border: 2px solid var(--bad); background: #fdecea; }
+.fc-robot { border: 2px solid var(--robot); background: var(--robot-soft); }
+.fc-robot .fc-who, .fc-robot .fc-refs { color: var(--robot); }
+.fc-human { border: 2px solid var(--human); background: var(--human-soft); }
+.fc-human .fc-who, .fc-human .fc-refs { color: var(--human); }
+.fc-out { font-weight: 700; }
+.fc-out .fc-who, .fc-out .fc-refs { color: #fff; }
+.fc-out-bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+.fc-out-good { background: var(--robot); border-color: var(--robot); color: #fff; }
+.fc-arrow { align-self: center; color: var(--muted); font-weight: 700; flex: 0 0 auto; }
+.fc-divider { margin: .4rem 0 .4rem 4.6rem; padding-left: .5rem; font-size: .85rem; font-weight: 700; color: var(--primary); }
+.fc-legend { margin: .5rem 0 0; font-size: .8rem; color: var(--muted); }
+@media print { .case-view-toggle { display: none; } }
+@media (max-width: 1500px) { .fc-lane { grid-template-columns: 3.4rem 1fr auto 6.5rem; gap: .3rem; } .fc-lane-label { font-size: .78rem; } .fc-divider { margin-left: 3.4rem; } .fc-node { padding: .3rem .4rem; font-size: .86rem; } }

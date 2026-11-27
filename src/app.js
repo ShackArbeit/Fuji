@@ -48,6 +48,7 @@
     bNewLeads: null, bExpOpps: null,
     industry: "all",
     openCase: DATA.meta.heroCaseId,
+    caseView: "detail", // 第 3 章：detail＝五段式內容／flow＝流程解析圖
     renewalRate: DATA.versionB.renewalRate,
     funnel: { ...DATA.funnel },
     leads: null, // null = 跟隨反推所需名單
@@ -210,6 +211,11 @@
       return;
     }
     el.innerHTML = caseDetailHtml(c);
+    const hasFlow = !!(DATA.flows && DATA.flows[c.id]);
+    document.querySelectorAll("[data-case-view]").forEach(btn => {
+      btn.setAttribute("aria-pressed", String((state.caseView === "flow" && hasFlow) === (btn.dataset.caseView === "flow")));
+      btn.disabled = !hasFlow && btn.dataset.caseView === "flow";
+    });
   }
   // 回本試算（試算假設）：達標顯示回本月數與三年淨效益；未達標改提多流程攤提或量體門檻，不顯示負數
   function roiHtml(c) {
@@ -274,7 +280,34 @@
     </ol>${b.countNote ? `<p class="benefit-note">${esc(b.countNote)}</p>` : ""}`;
   }
 
-  function caseDetailHtml(c) {
+  // 流程解析圖：現況（人工）→ 導入後（機器人／人工覆核）；①②③ 對應「挑戰」編號（2026-11-27 由 rpa-plan2.html 移植）
+  const CIRCLED = "①②③④⑤⑥";
+  function challengeList(c) {
+    return `<ul class="plain chal-num">${c.challenge.map((t, i) => `<li><span class="fc-tag">${CIRCLED[i]}</span>${esc(t)}</li>`).join("")}</ul>`;
+  }
+  function flowHtml(c) {
+    const f = DATA.flows && DATA.flows[c.id];
+    if (!f) return "";
+    const tags = (arr, prefix) => (arr && arr.length)
+      ? `<span class="fc-refs">${prefix}${arr.map(n => CIRCLED[n - 1]).join("")}</span>` : "";
+    const arrow = `<li class="fc-arrow" aria-hidden="true">→</li>`;
+    const asIs = f.asIs.map(s => `<li class="fc-node${s.pain ? " fc-pain" : ""}"><span class="fc-who">${esc(s.who)}</span><span class="fc-text">${esc(s.text)}</span>${tags(s.pain, "⚠ ")}</li>`);
+    const outBad = `<div class="fc-node fc-out fc-out-bad"><span class="fc-who">結果</span><span class="fc-text">${esc(f.asIsOut.text)}</span>${tags(f.asIsOut.pain, "")}</div>`;
+    const toBe = f.toBe.map(s => `<li class="fc-node fc-${s.actor}"><span class="fc-who">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span class="fc-text">${esc(s.text)}</span>${tags(s.solves, "解 ")}</li>`);
+    const outGood = `<div class="fc-node fc-out fc-out-good"><span class="fc-who">效果</span><span class="fc-text">${esc(f.toBeOut.text)}</span></div>`;
+    const lane = (label, cls, items, out) => `<div class="fc-lane ${cls}"><div class="fc-lane-label">${label}</div>
+        <ol class="fc-row" aria-label="${label.replace(/<[^>]+>/g, "")}">${items.join(arrow)}</ol>
+        <span class="fc-arrow" aria-hidden="true">⇒</span>${out}</div>`;
+    return `<section class="sec sec-flow">
+        <h4>流程解析圖：現況困境 → 導入後 ${infoTag("guess")}</h4>
+        ${lane("現況<br>（人工）", "fc-lane-asis", asIs, outBad)}
+        <div class="fc-divider" aria-hidden="true">▼ 導入 RPA 後</div>
+        ${lane("導入後", "fc-lane-tobe", toBe, outGood)}
+        <p class="fc-legend">⚠ 紅框＝痛點，①②③ 對應上方「挑戰」編號；綠＝機器人、橘＝人工覆核，「解 ①」表示解決第 ① 條挑戰。</p>
+      </section>`;
+  }
+
+  function caseDetailHtml(c, inAppendix = false) {
     const q = caseQuote(c.id);
     const bf = benefit(c.id);
     const hero = c.id === DATA.meta.heroCaseId;
@@ -285,7 +318,14 @@
         <h3>${esc(customerName(c))}</h3>${srcBadge(c.customerSource)}${prodBadge(c.productType)}
         <span class="muted">${esc(c.industryNote || IND[c.industry].name)}｜${esc(c.title)}${hero ? "｜主打" : ""}</span>
       </div>
-      <div class="case-sections">
+      ${!inAppendix && state.caseView === "flow" && DATA.flows && DATA.flows[c.id] ? `<div class="case-flowview">
+        <section class="sec">
+          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
+          ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
+          ${challengeList(c)}
+        </section>
+        ${flowHtml(c)}
+      </div>` : `<div class="case-sections">
         <div class="case-col">
         <section class="sec sec-1">
           <h4><span class="sec-no">1</span>客戶名稱 & 背景 ${infoTag("fact")}</h4>
@@ -307,7 +347,7 @@
         <section class="sec sec-2">
           <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
           ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
-          <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+          ${challengeList(c)}
         </section>
         <div class="sec-stack st-2">
         <section class="sec">
@@ -324,7 +364,7 @@
         </section>
         </div>
         </div>
-      </div>`;
+      </div>`}`;
   }
 
   // ---------- 4. 組合器 ----------
@@ -892,11 +932,11 @@
 
     $("#ap-cases").innerHTML = `<div class="ap-title"><p class="eyebrow">附錄 B</p><h2>客戶案例完整內容（${DATA.cases.length} 家）</h2>
       <p class="muted">背景＝公開事實（附來源）；挑戰＝推估，需 Discovery 驗證；效益＝試算假設，非客戶實績。</p></div>` +
-      DATA.cases.map(c => `<article class="ap-case">${caseDetailHtml(c)}</article>`).join("");
+      DATA.cases.map(c => `<article class="ap-case">${caseDetailHtml(c, true)}</article>`).join("");
   }
 
   // ---------- 更新（保留焦點）----------
-  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver", "data-src-group"];
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver", "data-src-group", "data-case-view"];
   function update() {
     const act = document.activeElement;
     let restore = null;
@@ -980,7 +1020,7 @@
   });
 
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver],[data-src-group]");
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver],[data-src-group],[data-case-view]");
     if (!t) return;
     const d = t.dataset;
     if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
@@ -1007,6 +1047,8 @@
       state.version = d.version;
     } else if (d.tier) {
       state.tier = d.tier;
+    } else if (d.caseView) {
+      state.caseView = d.caseView;
     } else if (d.srcGroup) {
       state.srcGroup = d.srcGroup;
     } else if (d.funnelVer) {

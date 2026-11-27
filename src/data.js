@@ -566,6 +566,252 @@ export const DATA = {
   ],
 
   // 資料來源（paraphrase 摘要；urls 可多個）
+  // 卡片「流程解析圖」（2026-11-27 依 rpa-plan2.html 移植，①②③ 改對應目前的 challenge）。皆為【推估】，需 Discovery 驗證。
+  // asIs：現況人工步驟（who＝誰在做；pain＝對應第幾條挑戰）；asIsOut：現況結果；toBe：導入後（solves＝解決第幾條挑戰）；toBeOut：效果
+  flows: {
+    "porite-delivery": {
+      asIs: [
+        { who: "採購", text: "從 kintone 匯出未交單", pain: [2] },
+        { who: "採購", text: "逐家寄信、打電話問交期", pain: [2] },
+        { who: "採購", text: "讀 Email、LINE、電話回覆", pain: [3] },
+        { who: "採購", text: "手動把交期打回系統", pain: [3] }
+      ],
+      asIsOut: { text: "資料更新慢，延誤太晚發現，排程跟著延誤", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "找出未交單，提前寄信問交期", solves: [2] },
+        { actor: "robot", text: "讀表單回覆，交期填回 kintone", solves: [3] },
+        { actor: "robot", text: "沒回、非表單回覆列進異常清單", solves: [3] },
+        { actor: "human", text: "採購只追清單上的例外", solves: [1] }
+      ],
+      toBeOut: { text: "提早看到延誤，生管及早調排程" }
+    },
+    "teco-drawing-sync": {
+      asIs: [
+        { who: "工程", text: "ECN 設計變更核准" },
+        { who: "文管", text: "人工上傳文件庫", pain: [2] },
+        { who: "文管", text: "登入 ERP 改圖面版次", pain: [2] },
+        { who: "文管", text: "寄信通知採購、生管、品保", pain: [2] }
+      ],
+      asIsOut: { text: "沒同步就有人拿舊圖：買錯、報廢重工", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "抓出新核准圖面的圖號、版次、料號", solves: [2] },
+        { actor: "robot", text: "自動更新 ERP 版次與圖面連結", solves: [2] },
+        { actor: "robot", text: "通知各部門，舊版標記「作廢」", solves: [3] },
+        { actor: "human", text: "在製料件怎麼處理，由工程與生管決定", solves: [3] }
+      ],
+      toBeOut: { text: "各部門幾分鐘內拿到唯一新版" }
+    },
+    "tpi-stock-alert": {
+      asIs: [
+        { who: "生管", text: "從 ERP 撈庫存報表", pain: [2] },
+        { who: "生管", text: "另撈在途採購、未交訂單", pain: [2, 3] },
+        { who: "生管", text: "用 Excel 算實際可用量", pain: [2] },
+        { who: "生管", text: "一個個通知採購、生管", pain: [3] }
+      ],
+      asIsOut: { text: "低庫存晚發現，採購和排程受影響", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "撈庫存、在途、未交訂單", solves: [2, 3] },
+        { actor: "robot", text: "算出快不夠的料號", solves: [2] },
+        { actor: "robot", text: "原料通知採購、成品通知生管", solves: [3] },
+        { actor: "human", text: "要不要補料、調排程，由採購與生管決定" }
+      ],
+      toBeOut: { text: "缺料從事後發現變成每日預警" }
+    },
+    "skfiber-invoice-3way": {
+      asIs: [
+        { who: "會計", text: "收紙本、電子、國外發票" },
+        { who: "會計", text: "人工登打紙本與國外發票", pain: [3] },
+        { who: "會計", text: "逐筆對採購單、收貨紀錄", pain: [2] },
+        { who: "會計", text: "分批交貨要回頭翻單", pain: [1, 3] },
+        { who: "會計", text: "對不上找採購、倉庫、供應商", pain: [3] }
+      ],
+      asIsOut: { text: "月底付款作業負擔重，有溢付風險", pain: [2, 3] },
+      toBe: [
+        { actor: "robot", text: "電子發票直讀，紙本與國外發票 OCR", solves: [3] },
+        { actor: "robot", text: "依採購單項次累計比對三方", solves: [1, 2] },
+        { actor: "robot", text: "相符標「可付款」，異常分派給負責人", solves: [3] },
+        { actor: "human", text: "會計確認後才付款" }
+      ],
+      toBeOut: { text: "會計只看例外，付款前把關" }
+    },
+    "yuan-omni-orders": {
+      asIs: [
+        { who: "客服", text: "到各平台後台下載訂單", pain: [1, 2] },
+        { who: "客服", text: "手動拆組合品、贈品", pain: [3] },
+        { who: "客服", text: "匯入 ERP", pain: [2] },
+        { who: "客服", text: "出貨後回填物流單號", pain: [2] },
+        { who: "客服", text: "和門市 POS 資料手動併報表", pain: [1] }
+      ],
+      asIsOut: { text: "促銷檔期：漏單、資料對不上", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "抓各平台訂單，依對照表拆單", solves: [2, 3] },
+        { actor: "robot", text: "匯入 ERP，出貨後回填單號", solves: [2] },
+        { actor: "robot", text: "合併 POS，產出全通路報表", solves: [1] },
+        { actor: "human", text: "取消、退款、地址問題由客服處理" }
+      ],
+      toBeOut: { text: "檔期爆單也不必臨時加人" }
+    },
+    "ginza-store-daily": {
+      asIs: [
+        { who: "會計", text: "各店 POS 匯出銷售", pain: [2] },
+        { who: "會計", text: "整理日報、對庫存與帳務", pain: [2] },
+        { who: "門市", text: "人工記訂金、尾款", pain: [3] },
+        { who: "門市", text: "憑記憶追尾款與取件", pain: [3] }
+      ],
+      asIsOut: { text: "漏收尾款、逾期未取，引發客訴", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "匯出 POS 銷售寫進 Ragic", solves: [2] },
+        { actor: "robot", text: "比對訂金尾款，列出未收、逾期", solves: [3] },
+        { actor: "robot", text: "產出總部日報與入帳底稿", solves: [2] },
+        { actor: "human", text: "訂金、尾款由會計確認後入帳" }
+      ],
+      toBeOut: { text: "不漏帳、不漏追，降低客訴" }
+    },
+    "greattree-pos-recon": {
+      asIs: [
+        { who: "財務", text: "下載各支付業者撥款明細", pain: [1, 2] },
+        { who: "財務", text: "匯出各店 POS 日結", pain: [2] },
+        { who: "財務", text: "逐店逐筆比對金額、手續費", pain: [2, 3] },
+        { who: "財務", text: "線上訂單再跨系統對一次" }
+      ],
+      asIsOut: { text: "店越開越多，對帳越慢、差異越晚發現", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "下載撥款明細與 POS 日結", solves: [1, 2] },
+        { actor: "robot", text: "扣掉時間差與手續費，逐店對帳", solves: [2, 3] },
+        { actor: "robot", text: "比對線上訂單與門市取貨" },
+        { actor: "human", text: "差異原因由財務確認才調帳" }
+      ],
+      toBeOut: { text: "展店不必等比例增加對帳人力" }
+    },
+    "poya-omo-pickup": {
+      asIs: [
+        { who: "客服", text: "查物流到貨狀態", pain: [1] },
+        { who: "客服", text: "更新狀態、通知客人取貨", pain: [2] },
+        { who: "客服", text: "追逾期未取、安排退回", pain: [2] },
+        { who: "門市", text: "對 POS 核銷與線上訂單", pain: [3] }
+      ],
+      asIsOut: { text: "到貨沒通知、取貨沒核銷", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "依到貨狀態更新訂單、通知取貨", solves: [2] },
+        { actor: "robot", text: "逾期再提醒，列入退回清單", solves: [2] },
+        { actor: "robot", text: "比對 POS 取件紀錄與線上訂單", solves: [3] },
+        { actor: "human", text: "缺貨、換店、退款由客服處理" }
+      ],
+      toBeOut: { text: "店取量成長，不必等比例加人" }
+    },
+    "coretronic-quality-report": {
+      asIs: [
+        { who: "工程師", text: "從 MES、各測試站撈資料", pain: [2] },
+        { who: "工程師", text: "用 Excel 算良率、做圖", pain: [2] },
+        { who: "工程師", text: "寄給主管與相關單位", pain: [2] }
+      ],
+      asIsOut: { text: "時間耗在報表，分析與查異常被壓縮", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "讀測試紀錄與 MES（只讀不改）", solves: [2] },
+        { actor: "robot", text: "算良率、做好圖表", solves: [2] },
+        { actor: "robot", text: "早會前寄出，標出異常站點", solves: [2] },
+        { actor: "human", text: "異常原因與處置由工程師判斷", solves: [3] }
+      ],
+      toBeOut: { text: "工程師把時間花在根因分析" }
+    },
+    "yungda-commission": {
+      asIs: [
+        { who: "財務", text: "登入各保險公司下載明細", pain: [2] },
+        { who: "財務", text: "各種格式手動整理", pain: [3] },
+        { who: "財務", text: "對照內部保單與應收佣金", pain: [2] },
+        { who: "財務", text: "對不上回頭追差異", pain: [3] }
+      ],
+      asIsOut: { text: "合作家數越多，對帳越吃力", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "主力 3–5 家明細轉成同一格式", solves: [3] },
+        { actor: "robot", text: "PDF 用 OCR，沒把握的轉人工", solves: [3] },
+        { actor: "robot", text: "比對應收，列出差異與追討清單", solves: [2, 3] },
+        { actor: "human", text: "財務確認後才入帳、發佣" }
+      ],
+      toBeOut: { text: "不漏追，對帳量增加也撐得住" }
+    },
+    "skm-concession": {
+      asIs: [
+        { who: "財務", text: "POS 匯出各櫃營業額", pain: [2] },
+        { who: "財務", text: "翻合約查租金、抽成條件", pain: [1] },
+        { who: "財務", text: "用 Excel 一櫃一櫃算", pain: [2] },
+        { who: "財務", text: "人工確認條件、核對金額", pain: [3] }
+      ],
+      asIsOut: { text: "每月結帳工作量大，容易算錯", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "彙整單一館各櫃營業額", solves: [2] },
+        { actor: "robot", text: "套一般抽成，產出對帳單草稿", solves: [2] },
+        { actor: "robot", text: "保底、級距等特殊條件只標記", solves: [1, 3] },
+        { actor: "human", text: "財務核對特殊條件後才寄出", solves: [3] }
+      ],
+      toBeOut: { text: "關帳更快，抽成爭議更少" }
+    },
+    "ntpc-traffic-adjudication": {
+      asIs: [
+        { who: "承辦人", text: "逐件開線上申辦", pain: [2] },
+        { who: "承辦人", text: "核對車號、身分、附件", pain: [2] },
+        { who: "承辦人", text: "登錄、分案", pain: [2] },
+        { who: "承辦人", text: "電子公文一件件分課室", pain: [3] }
+      ],
+      asIsOut: { text: "件數一多，承辦時間被行政作業吃掉", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "承辦人登入後，批次讀申辦、比對", solves: [2] },
+        { actor: "robot", text: "齊全就入案，缺件產生通知草稿", solves: [2] },
+        { actor: "robot", text: "電子公文依課室分好、點收", solves: [3] },
+        { actor: "human", text: "申訴與裁罰由承辦人判斷" }
+      ],
+      toBeOut: { text: "不增編制，也能吸收案件增量" }
+    },
+    "tc-1999-petition": {
+      asIs: [
+        { who: "研考", text: "讀陳情內容", pain: [2] },
+        { who: "研考", text: "判斷權責局處、分案", pain: [2] },
+        { who: "研考", text: "追各局處進度與期限", pain: [2] },
+        { who: "研考", text: "整理逾期、催辦與統計", pain: [3] }
+      ],
+      asIsOut: { text: "量一大，時間都花在重複管理", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "AI 建議承辦局處，機器人填進系統", solves: [2] },
+        { actor: "human", text: "研考人員確認後才分案", solves: [2] },
+        { actor: "robot", text: "列出快逾期、多次改分的案件", solves: [2, 3] },
+        { actor: "robot", text: "產出統計與首長月報草稿", solves: [3] }
+      ],
+      toBeOut: { text: "分案與催辦時效一致" }
+    },
+    "lin-land-expansion": {
+      asIs: [
+        { who: "同仁", text: "插卡登入地政系統" },
+        { who: "同仁", text: "逐件查辦理狀態", pain: [2] },
+        { who: "同仁", text: "登記完成後調謄本歸檔", pain: [2] },
+        { who: "同仁", text: "一封封回報建商、銀行", pain: [3] }
+      ],
+      asIsOut: { text: "重複查詢、通知吃掉大量行政時間", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "同仁登入後，批次查案件進度", solves: [2] },
+        { actor: "robot", text: "登記完畢才下載謄本，不重複下載", solves: [2] },
+        { actor: "robot", text: "自動寄通知，產出大客戶指定報表", solves: [3] },
+        { actor: "human", text: "補正、狀態異常由地政士處理" }
+      ],
+      toBeOut: { text: "登記一完成，建商和銀行馬上知道" }
+    },
+    "lens-dual-erp-recon": {
+      asIs: [
+        { who: "系統", text: "兩套 ERP 背景自動同步" },
+        { who: "會計", text: "定期人工檢查兩邊是否一致", pain: [2] },
+        { who: "系統", text: "同步失敗，沒有即時發現", pain: [3] },
+        { who: "會計", text: "月結對不上才回頭翻單", pain: [3] }
+      ],
+      asIsOut: { text: "月結集中排查，財務與倉管更吃力", pain: [3] },
+      toBe: [
+        { actor: "robot", text: "每天檢查前一天同步紀錄", solves: [2] },
+        { actor: "robot", text: "失敗或數量不對，當天通知", solves: [3] },
+        { actor: "robot", text: "月結前自動產出差異報告", solves: [2, 3] },
+        { actor: "human", text: "差異原因由會計與倉管確認" }
+      ],
+      toBeOut: { text: "異常不過夜，月結提早完成" }
+    }
+  },
+
   sources: [
     { id: "fbtw-mfg", title: "富士官網｜製造業案例", summary: "台灣保來得、東元電機、台灣新光合成纖維（文件與流程方案）",
       urls: ["https://www.fujifilm.com/fbtw/zh-tw/solutions/case-studies/manufacturing"] },
