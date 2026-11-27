@@ -323,11 +323,12 @@
           ${challengeList(c)}
         </section>
         ${inAppendix ? "" : flowHtml(c)}
+        <!-- 2026-11-27 Shack：簡報畫面移除「3 解決方案」（挑戰流程圖的「導入後」已涵蓋）；列印附錄 B 保留 -->
         <div class="sec-stack st-1">
-        <section class="sec">
+        ${inAppendix ? `<section class="sec">
           <h4><span class="sec-no">3</span>解決方案<span class="muted roi-sub">${c.productType === "full" ? "（全自動：排程執行，無人值守）" : "（半自動：由人點一下啟動，機器人跑完）"}</span></h4>
           <ol class="flow-list">${c.toBe.map(s => `<li class="step step-${s.actor}"><span class="actor">${s.actor === "robot" ? "機器人" : "人工覆核"}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>
-        </section>
+        </section>` : ""}
         <section class="sec sec-roi">
           <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（效益 × 報價；授權計算方式待向富士確認）</span></h4>
           ${roiHtml(c)}
@@ -336,14 +337,14 @@
         </div>
         <div class="sec-stack st-2">
         <section class="sec">
-          <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
+          <h4><span class="sec-no">${inAppendix ? 4 : 3}</span>預估成果／效益 ${infoTag("assume")}</h4>
           <p class="benefit-note">分鐘＝人工處理時間（RPA 執行時間不計）；1 人力＝每月 ${FTE_HOURS} 小時</p>
           <p class="benefit-big">每月約省 <strong>${fmtNum(bf.savedHours, 0)}</strong> 小時人工<span class="muted">（約 ${fmtNum(bf.fte, 1)} 人力）</span></p>
           ${benefitSteps(bf)}
           <p>${esc(bf.quality)}</p>
         </section>
         <section class="sec sec-quote">
-          <h4 class="sec-h-row"><span><span class="sec-no">5</span>報價試算</span><button type="button" class="btn btn-ghost btn-sm" data-goto-cfg="${c.id}">在組合器調整 →</button></h4>
+          <h4 class="sec-h-row"><span><span class="sec-no">${inAppendix ? 5 : 4}</span>報價試算</span><button type="button" class="btn btn-ghost btn-sm" data-goto-cfg="${c.id}">在組合器調整 →</button></h4>
           ${quoteTable(q)}
           <p class="muted">${esc(c.productNote || "")}${dealText ? `<br>業績對應：${esc(dealText)}` : ""}</p>
         </section>
