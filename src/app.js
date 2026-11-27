@@ -48,7 +48,6 @@
     bNewLeads: null, bExpOpps: null,
     industry: "all",
     openCase: DATA.meta.heroCaseId,
-    caseView: "detail", // 第 3 章：detail＝五段式內容／flow＝流程解析圖
     renewalRate: DATA.versionB.renewalRate,
     funnel: { ...DATA.funnel },
     leads: null, // null = 跟隨反推所需名單
@@ -211,11 +210,6 @@
       return;
     }
     el.innerHTML = caseDetailHtml(c);
-    const hasFlow = !!(DATA.flows && DATA.flows[c.id]);
-    document.querySelectorAll("[data-case-view]").forEach(btn => {
-      btn.setAttribute("aria-pressed", String((state.caseView === "flow" && hasFlow) === (btn.dataset.caseView === "flow")));
-      btn.disabled = !hasFlow && btn.dataset.caseView === "flow";
-    });
   }
   // 回本試算（試算假設）：達標顯示回本月數與三年淨效益；未達標改提多流程攤提或量體門檻，不顯示負數
   function roiHtml(c) {
@@ -280,7 +274,7 @@
     </ol>${b.countNote ? `<p class="benefit-note">${esc(b.countNote)}</p>` : ""}`;
   }
 
-  // 流程解析圖：現況（人工）→ 導入後（機器人／人工覆核）；①②③ 對應「挑戰」編號（2026-11-27 由 rpa-plan2.html 移植）
+  // 第 2 段流程圖：現況困境（人工）→ 導入後（機器人／人工覆核）；①②③ 對應 challenge 編號（2026-11-27 由 rpa-plan2.html 搬入）
   const CIRCLED = "①②③④⑤⑥";
   function challengeList(c) {
     return `<ul class="plain chal-num">${c.challenge.map((t, i) => `<li><span class="fc-tag">${CIRCLED[i]}</span>${esc(t)}</li>`).join("")}</ul>`;
@@ -299,7 +293,7 @@
         <ol class="fc-row" aria-label="${label.replace(/<[^>]+>/g, "")}">${items.join(arrow)}</ol>
         <span class="fc-arrow" aria-hidden="true">⇒</span>${out}</div>`;
     return `<section class="sec sec-flow">
-        <h4>流程解析圖：現況困境 → 導入後 ${infoTag("guess")}</h4>
+        <h4><span class="sec-no">2</span>挑戰流程圖：現況困境 → 導入後 ${infoTag("guess")}</h4>
         ${lane("現況<br>（人工）", "fc-lane-asis", asIs, outBad)}
         <div class="fc-divider" aria-hidden="true">▼ 導入 RPA 後</div>
         ${lane("導入後", "fc-lane-tobe", toBe, outGood)}
@@ -318,19 +312,17 @@
         <h3>${esc(customerName(c))}</h3>${srcBadge(c.customerSource)}${prodBadge(c.productType)}
         <span class="muted">${esc(c.industryNote || IND[c.industry].name)}｜${esc(c.title)}${hero ? "｜主打" : ""}</span>
       </div>
-      ${!inAppendix && state.caseView === "flow" && DATA.flows && DATA.flows[c.id] ? `<div class="case-flowview">
-        <section class="sec">
-          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
-          ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
-          ${challengeList(c)}
-        </section>
-        ${flowHtml(c)}
-      </div>` : `<div class="case-sections">
-        <div class="case-col">
+      <div class="case-sections">
         <section class="sec sec-1">
           <h4><span class="sec-no">1</span>客戶名稱 & 背景 ${infoTag("fact")}</h4>
           <ul class="plain">${c.background.map(b => `<li>${esc(b.text)} <span class="src-ref">（${srcLinks(b.sourceId)}）</span></li>`).join("")}</ul>
         </section>
+        <section class="sec sec-2">
+          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
+          ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
+          ${challengeList(c)}
+        </section>
+        ${inAppendix ? "" : flowHtml(c)}
         <div class="sec-stack st-1">
         <section class="sec">
           <h4><span class="sec-no">3</span>解決方案<span class="muted roi-sub">${c.productType === "full" ? "（全自動：排程執行，無人值守）" : "（半自動：由人點一下啟動，機器人跑完）"}</span></h4>
@@ -342,13 +334,6 @@
           ${c.roiNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.roiNote)}</p>` : ""}
         </section>
         </div>
-        </div>
-        <div class="case-col">
-        <section class="sec sec-2">
-          <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
-          ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
-          ${challengeList(c)}
-        </section>
         <div class="sec-stack st-2">
         <section class="sec">
           <h4><span class="sec-no">4</span>預估成果／效益 ${infoTag("assume")}</h4>
@@ -363,8 +348,7 @@
           <p class="muted">${esc(c.productNote || "")}${dealText ? `<br>業績對應：${esc(dealText)}` : ""}</p>
         </section>
         </div>
-        </div>
-      </div>`}`;
+      </div>`;
   }
 
   // ---------- 4. 組合器 ----------
@@ -936,7 +920,7 @@
   }
 
   // ---------- 更新（保留焦點）----------
-  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver", "data-src-group", "data-case-view"];
+  const FOCUS_ATTRS = ["data-case", "data-filter", "data-industry", "data-open-case", "data-goto-cfg", "data-tier", "data-version", "data-funnel-ver", "data-src-group"];
   function update() {
     const act = document.activeElement;
     let restore = null;
@@ -1020,7 +1004,7 @@
   });
 
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver],[data-src-group],[data-case-view]");
+    const t = e.target.closest("[data-goto],[data-industry],[data-filter],[data-case],[data-open-case],[data-goto-cfg],[data-version],[data-tier],[data-funnel-mode],[data-funnel-ver],[data-src-group]");
     if (!t) return;
     const d = t.dataset;
     if (d.goto !== undefined) { e.preventDefault(); go(+d.goto); return; }
@@ -1047,8 +1031,6 @@
       state.version = d.version;
     } else if (d.tier) {
       state.tier = d.tier;
-    } else if (d.caseView) {
-      state.caseView = d.caseView;
     } else if (d.srcGroup) {
       state.srcGroup = d.srcGroup;
     } else if (d.funnelVer) {
