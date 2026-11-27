@@ -586,3 +586,7 @@ ul.plain.chal-num li { display: flex; gap: .3rem; }
 /* 回本試算細項（2026-11-27，林懇伶） */
 .roi-detail { display: flex; flex-direction: column; gap: .1rem; margin-top: .25rem; padding-top: .25rem; border-top: 1px dashed var(--line); }
 @media print { .ap-case .roi-detail { display: none; } } /* 附錄 B 版面有限，回本細項只在簡報畫面顯示 */
+/* 回本試算「為什麼還是要做 + 待驗證」（2026-11-27，工業鏡頭廠） */
+.roi-verify p { margin: 0; font-size: .92rem; }
+.roi-verify ol { margin: .1rem 0 0; padding-left: 1.3rem; font-size: .9rem; line-height: 1.4; }
+@media print { .ap-case .roi-verify { display: none; } } /* 附錄 B 版面有限，待驗證清單只在簡報畫面顯示 */

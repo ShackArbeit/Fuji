@@ -593,6 +593,10 @@ ul.plain.chal-num li { display: flex; gap: .3rem; }
 /* 回本試算細項（2026-11-27，林懇伶） */
 .roi-detail { display: flex; flex-direction: column; gap: .1rem; margin-top: .25rem; padding-top: .25rem; border-top: 1px dashed var(--line); }
 @media print { .ap-case .roi-detail { display: none; } } /* 附錄 B 版面有限，回本細項只在簡報畫面顯示 */
+/* 回本試算「為什麼還是要做 + 待驗證」（2026-11-27，工業鏡頭廠） */
+.roi-verify p { margin: 0; font-size: .92rem; }
+.roi-verify ol { margin: .1rem 0 0; padding-left: 1.3rem; font-size: .9rem; line-height: 1.4; }
+@media print { .ap-case .roi-verify { display: none; } } /* 附錄 B 版面有限，待驗證清單只在簡報畫面顯示 */
 
 </style>
 </head>
@@ -1360,6 +1364,16 @@ const DATA = {
       benefit: { count: 1, unit: "次月結核對", measure: "次", per: "month", minutes: 960, autoRate: 0.8,
         quality: "同步異常當天發現，不必月底回頭追；月結提早 1–2 天" },
       pilotGoal: "同步異常當天發現、月結提早 1–2 天，降低兩套 ERP 的庫存差異",
+      // 回本試算「為什麼還是要做 + 待驗證」（2026-11-27 Shack 要求）；皆為推估，需 Discovery 驗證
+      roiVerify: {
+        why: "第一隻同步機器人已省約 80% 時間；同步失敗沒人發現時，月底回頭翻單會把省下的時間吃回去。這是保護既有投資，且目前效益只算月結核對，沒算平時追查失敗的時間",
+        checks: [
+          "每月同步失敗幾次？每次追查要花多久？（算進來可能就回本）",
+          "月結兩邊核對實際花幾小時？（目前假設 16 小時）",
+          "兩套 ERP 有沒有同步紀錄、錯誤訊息可以讓機器人讀？",
+          "客戶願意單獨付 30 萬，還是併入續約一起談？"
+        ]
+      },
       productType: "semi", estDays: 15, existingLicense: true,
       productNote: "既有授權沿用（續約不計入本案），30 萬為一次性開發；未含維運費"
     }
@@ -2521,6 +2535,8 @@ function fmtNum(v, digits = 1) {
           <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（效益 × 報價；授權計算方式待向富士確認）</span></h4>
           ${roiHtml(c)}
           ${c.roiNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.roiNote)}</p>` : ""}
+          ${c.roiVerify ? `<div class="challenge-note roi-verify"><p><b>為什麼還是要做</b>：${esc(c.roiVerify.why)}</p>
+            <p><b>待驗證</b>（拜訪時確認）：</p><ol>${c.roiVerify.checks.map(t => `<li>${esc(t)}</li>`).join("")}</ol></div>` : ""}
         </section>
         </div>
         <div class="sec-stack st-2">

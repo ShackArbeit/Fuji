@@ -347,6 +347,8 @@
           <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（效益 × 報價；授權計算方式待向富士確認）</span></h4>
           ${roiHtml(c)}
           ${c.roiNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.roiNote)}</p>` : ""}
+          ${c.roiVerify ? `<div class="challenge-note roi-verify"><p><b>為什麼還是要做</b>：${esc(c.roiVerify.why)}</p>
+            <p><b>待驗證</b>（拜訪時確認）：</p><ol>${c.roiVerify.checks.map(t => `<li>${esc(t)}</li>`).join("")}</ol></div>` : ""}
         </section>
         </div>
         <div class="sec-stack st-2">
