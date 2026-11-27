@@ -558,7 +558,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   .ap-case .case-col { display: contents; }
   .ap-case .sec-1 { order: 1; } .ap-case .sec-2 { order: 2; } .ap-case .st-1 { order: 3; } .ap-case .st-2 { order: 4; }
 }
-/* 卡片第 2 段備註：先導入其他富士產品、再推 RPA（2026-11-27，東培） */
+/* 回本試算備註（2026-11-27 由第 2 段移入）：先導入其他富士產品、再推 RPA（2026-11-27，東培） */
 .challenge-note { margin: .2rem 0 0; padding: .1rem .6rem; border: 1px dashed var(--human); border-radius: 6px; background: var(--human-soft); line-height: 1.45; }
 .challenge-note b { color: var(--human); }
 
@@ -999,11 +999,11 @@ const DATA = {
         "生管、採購從 ERP 撈庫存，加減在途、未交訂單，算出實際可用量",
         "資料散在各單據報表，算起來繁瑣；低庫存晚發現，排程就受影響"
       ],
-      challengeNote: "先評估實際流程，可先導入 DocuWorks（品質文件）、kintone（請購、盤點表單），用一段時間再推 RPA",
+      roiNote: "先評估實際流程，可先導入 DocuWorks（品質文件）、kintone（請購、盤點表單），用一段時間再推 RPA",
       toBe: [
-        { actor: "robot", text: "生管每天點一下啟動，機器人從 ERP 撈庫存、在途、未交訂單，找出快不夠的料號" },
+        { actor: "robot", text: "生管每天點一下啟動，機器人撈 ERP，找出快不夠的料號" },
         { actor: "robot", text: "原料不夠通知採購，成品不夠通知生管" },
-        { actor: "robot", text: "延伸（不算進效益）：年度盤點時比對系統帳和盤點表，列出差異" },
+        { actor: "robot", text: "延伸（不計效益）：年度盤點比對系統帳和盤點表" },
         { actor: "human", text: "盤點差異的原因由倉管查、主管決定要不要調帳" }
       ],
       benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
@@ -2159,6 +2159,7 @@ function fmtNum(v, digits = 1) {
         <section class="sec sec-roi">
           <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（效益 × 報價；授權計算方式待向富士確認）</span></h4>
           ${roiHtml(c)}
+          ${c.roiNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.roiNote)}</p>` : ""}
         </section>
         </div>
         </div>
@@ -2167,7 +2168,6 @@ function fmtNum(v, digits = 1) {
           <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
           ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
           <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
-          ${c.challengeNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.challengeNote)}</p>` : ""}
         </section>
         <div class="sec-stack st-2">
         <section class="sec">

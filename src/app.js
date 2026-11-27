@@ -299,6 +299,7 @@
         <section class="sec sec-roi">
           <h4>回本試算 ${infoTag("assume")}<span class="muted roi-sub">（效益 × 報價；授權計算方式待向富士確認）</span></h4>
           ${roiHtml(c)}
+          ${c.roiNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.roiNote)}</p>` : ""}
         </section>
         </div>
         </div>
@@ -307,7 +308,6 @@
           <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
           ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
           <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
-          ${c.challengeNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.challengeNote)}</p>` : ""}
         </section>
         <div class="sec-stack st-2">
         <section class="sec">

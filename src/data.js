@@ -238,11 +238,11 @@ export const DATA = {
         "生管、採購從 ERP 撈庫存，加減在途、未交訂單，算出實際可用量",
         "資料散在各單據報表，算起來繁瑣；低庫存晚發現，排程就受影響"
       ],
-      challengeNote: "先評估實際流程，可先導入 DocuWorks（品質文件）、kintone（請購、盤點表單），用一段時間再推 RPA",
+      roiNote: "先評估實際流程，可先導入 DocuWorks（品質文件）、kintone（請購、盤點表單），用一段時間再推 RPA",
       toBe: [
-        { actor: "robot", text: "生管每天點一下啟動，機器人從 ERP 撈庫存、在途、未交訂單，找出快不夠的料號" },
+        { actor: "robot", text: "生管每天點一下啟動，機器人撈 ERP，找出快不夠的料號" },
         { actor: "robot", text: "原料不夠通知採購，成品不夠通知生管" },
-        { actor: "robot", text: "延伸（不算進效益）：年度盤點時比對系統帳和盤點表，列出差異" },
+        { actor: "robot", text: "延伸（不計效益）：年度盤點比對系統帳和盤點表" },
         { actor: "human", text: "盤點差異的原因由倉管查、主管決定要不要調帳" }
       ],
       benefit: { count: 2, unit: "人次撈表算淨需求（採購、生管）", measure: "人次", per: "day", workDays: 21, minutes: 60, autoRate: 0.8,
