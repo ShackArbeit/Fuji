@@ -811,6 +811,7 @@ const DATA = {
     starter:     { label: "入門包",               fullAuto: false, days: 10 },  // 24 萬授權 + 10 人天 = 44 萬（A 版百貨用）
     starterLite: { label: "入門包（最低授權組合）", fullAuto: false, days: 0 },   // 開發工具 + 半自動 = 24 萬（必要組合，不含開發；B 版新客用）
     standard:    { label: "標準案",               fullAuto: false, days: 13 },  // 50 萬
+    standardAI:  { label: "標準案＋AI 分案",      fullAuto: false, days: 20 },  // 64 萬（2026-11-27 Shack 同意：臺中 1999 多 7 人天做 AI 分案建置與調校）
     flagship:    { label: "全自動旗艦",           fullAuto: true,  days: 30 },  // 57.6 萬授權 + 60 萬 = 117.6 萬
     expansion:   { label: "既有客戶擴充（純人天）", fullAuto: false, days: 15, noLicense: true } // 30 萬
   },
@@ -843,7 +844,7 @@ const DATA = {
       { source: "existing", type: "expansion",   n: 1, caseId: "lens-dual-erp-recon" },  // 既有 RPA 客戶擴充 30 萬
       { source: "new",      type: "standard",    n: 1, caseId: "porite-delivery" },      // 新 RPA 客戶標準案 50 萬
       { source: "new",      type: "starterLite", n: 1, caseId: "ginza-store-daily" },    // 入門包（最低授權組合：開發工具 + 半自動）24 萬
-      { source: "new",      type: "standard",    n: 1, caseId: "tc-1999-petition" }      // 公部門標準案 50 萬（2026-11-22 新增）；以決標／簽約日視同回簽
+      { source: "new",      type: "standardAI",  n: 1, caseId: "tc-1999-petition" }      // 公部門標準案＋AI 分案 64 萬（2026-11-22 新增；2026-11-27 由 50 萬調為 64 萬）；以決標／簽約日視同回簽
     ]
   },
 
@@ -1296,8 +1297,8 @@ const DATA = {
       ],
       benefit: { count: 10785, unit: "件陳情申訴", per: "month", minutes: 3, autoRate: 0.5,
         quality: "分案與催辦時效一致；統計報表可直接供施政考核" },
-      productType: "semi", estDays: 13,
-      productNote: "50 萬屬公開取得報價／企劃書級距；或先拆 15 萬以下小額先導加快成案（待確認）"
+      productType: "semi", estDays: 20,
+      productNote: "標準案 13 人天 + AI 分案建置 7 人天（整理歷史派案、調準確率）；AI 服務費另計、待向富士確認；64 萬仍屬公開取得報價級距，或先拆小額先導加快成案（待確認）"
     },
     {
       id: "lin-land-expansion", industry: "finance", customer: "林懇伶地政士事務所", customerSource: "fuji-rpa",

@@ -36,8 +36,8 @@ assert("A 版未達目標", A.total >= DATA.meta.target);
 
 const B = C.versionBTotal(0.95);
 check("B 版續約（95%）", B.renewal, 3_800_000);
-check("B 版新增金額", B.newTotal, 1_840_000);
-check("B 版合計", B.total, 5_640_000); // 2026-11-22 Shack 同意新增公部門案（臺中市研考會 1999）；原 4 案 5,140,000
+check("B 版新增金額", B.newTotal, 1_980_000); // 2026-11-27 Shack 同意：臺中 1999 由標準案 50 萬改為標準案＋AI 分案 64 萬（20 人天）；原 1,840,000
+check("B 版合計", B.total, 5_780_000); // 2026-11-27 臺中改 64 萬，原 5,640,000； // 2026-11-22 Shack 同意新增公部門案（臺中市研考會 1999）；原 4 案 5,140,000
 check("B 版新增案數", B.count, 5);
 
 const FA = C.funnelA();
@@ -54,9 +54,9 @@ check("B 新客名單", FB.fresh.byKey.lead.ceil, 60);
 // B 版正向試算（第 6 章，2026-11-24）：新客 60 名單 → 3 案 × 41.3 萬；擴充商機 4 → 2.4 案 × 30 萬；續約 380 萬
 const FFB = C.funnelForwardB({ newLeads: 60, expOpps: 4 });
 check("B 正向 新客回簽", FFB.fresh.wins, 3, near(1e-9));
-check("B 正向 新客金額", FFB.fresh.amount, 1_240_000, near(1e-6));
+check("B 正向 新客金額", FFB.fresh.amount, 1_380_000, near(1e-6)); // 2026-11-27 新客平均客單 46 萬（原 1,240,000）
 check("B 正向 擴充金額", FFB.expAmount, 720_000, near(1e-6));
-check("B 正向 合計", FFB.amount, 5_760_000, near(1e-6));
+check("B 正向 合計", FFB.amount, 5_900_000, near(1e-6)); // 原 5,760,000
 
 const expSens = new Map([[1.0, [1_000_000, 2]], [0.95, [1_200_000, 3]], [0.9, [1_400_000, 3]], [0.85, [1_600_000, 4]]]);
 for (const s of C.renewalSensitivity()) {
@@ -188,8 +188,8 @@ const TA = C.tiersA(), TB = C.tiersB(0.95);
 check("A 保守版（主力）", TA.conservative, 5_116_000);
 check("A 完整版", TA.complete, 6_116_000);
 check("A 保守版缺口", TA.gap, 0);
-check("B 保守版（續約 95% + 主力）", TB.conservative, 4_800_000);
-check("B 保守版缺口", TB.gap, 200_000);
+check("B 保守版（續約 95% + 主力）", TB.conservative, 4_940_000); // 2026-11-27 原 4,800,000
+check("B 保守版缺口", TB.gap, 60_000); // 原 200,000
 check("B 保守版缺口 → 擴充案數", TB.gapExpansion, 1);
 check("東元改跨事業部複製後列主力", C.dealTier("teco-drawing-sync"), "main");
 check("寶雅列主力", C.dealTier("poya-omo-pickup"), "main");
@@ -199,7 +199,9 @@ check("中強光電複製沿用授權", C.extraRobotOf("coretronic-quality-repor
 check("新光三越複製沿用授權", C.extraRobotOf("skm-concession"), 0);
 check("回本：東元 3 事業部（含加購）月數", C.roiPlan("teco-drawing-sync").alt.payback, 12);
 const TC = C.roi("tc-1999-petition");
-check("回本：臺中研考會三年淨效益（萬，四捨五入一位）", Math.round(TC.net3y / 1000) / 10, 277.5);
+check("回本：臺中研考會三年淨效益（萬，四捨五入一位）", Math.round(TC.net3y / 1000) / 10, 263.5); // 2026-11-27 報價 64 萬，原 277.5
+check("標準案＋AI 分案（20 人天）", C.dealAmount("standardAI"), 640_000);
+check("臺中卡片報價 = 標準案＋AI 分案", C.configure({ caseId: "tc-1999-petition" }).total, C.dealAmount("standardAI"));
 check("回本：臺中研考會三年淨效益 = 月省 × 36 － 三年成本", Math.round(TC.net3y), Math.round(TC.monthlySave * 36 - (TC.oneTime + TC.license * 2)));
 for (const c of DATA.cases) {
   if (C.hoursNeededForPayback(c.id) > C.benefit(c.id).monthlyHours && !(C.roiPlan(c.id).alt || {}).ok) assert(`回本：${c.id} 全自動也達不到門檻，須有 pilotGoal`, !!c.pilotGoal);
