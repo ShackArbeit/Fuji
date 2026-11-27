@@ -228,6 +228,23 @@ export function addFlowCostOf(caseId) {
   const c = DATA.cases.find(x => x.id === caseId);
   return c && c.replicate ? c.replicate.days * DATA.price.day : dealAmount("expansion");
 }
+// 回本試算細項（卡片 roiDetail）：每件分鐘拆解、三年淨效益（含超過門檻者）、每件分鐘改變時的回本月數；皆為假設
+export function roiDetail(caseId, r = DATA.roi) {
+  const c = DATA.cases.find(x => x.id === caseId);
+  if (!c || !c.roiDetail) return null;
+  const b = benefit(caseId), q = caseQuote(caseId), labor = laborMonthlyOf(caseId);
+  const saveFor = min => b.count * b.perMonth * min * b.autoRate / 60 / FTE_HOURS * labor;
+  const renewN = Math.ceil(r.horizonMonths / 12) - 1;
+  const cost3 = q.total + q.license * renewN;
+  const base = saveFor(b.minutes);
+  const sum = c.roiDetail.breakdown.reduce((t, x) => t + x.minutes, 0);
+  const w = c.roiDetail.whatIf;
+  const wSave = w ? saveFor(w.minutes) : 0;
+  const wPayback = w ? (q.license ? null : Math.ceil(q.total / wSave)) : null;
+  return { breakdown: c.roiDetail.breakdown, sum, note: c.roiDetail.note,
+    net3y: base * r.horizonMonths - cost3, cost3,
+    whatIf: w ? { ...w, monthlySave: wSave, savedHours: wSave / labor * FTE_HOURS, payback: wPayback, ok: wPayback !== null && wPayback <= r.paybackLimit } : null };
+}
 // 每多複製一處要加購的授權（年費）：只有 replicate.extraRobot 為 true 時才加 1 個半自動機器人
 export function extraRobotOf(caseId) {
   const c = DATA.cases.find(x => x.id === caseId);

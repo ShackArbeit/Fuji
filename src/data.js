@@ -533,6 +533,16 @@ export const DATA = {
       ],
       benefit: { count: 4000, unit: "件案件", per: "year", minutes: 10, autoRate: 0.7,
         quality: "登記一完成就通知建商與銀行，掌握撥款與交屋時程；第一流程已見效，擴充阻力低" },
+      // 回本試算細項（2026-11-27 Shack 要求更精確；皆為假設，待 Discovery 驗證）：每件 10 分拆成三段；whatIf＝每件多查 1 次時的回本月數
+      roiDetail: {
+        breakdown: [
+          { text: "查進度 3 次 × 2 分", minutes: 6 },
+          { text: "下載謄本、歸檔", minutes: 2 },
+          { text: "通知建商／銀行", minutes: 2 }
+        ],
+        whatIf: { label: "若實際每件查 4 次（多 1 次）", minutes: 12 },
+        note: "謄本只在登記完畢才下載、省下的重複規費未計入（保守）"
+      },
       productType: "semi", estDays: 15, existingLicense: true,
       productNote: "既有授權沿用（續約本來就在付，不計入本案），30 萬為一次性開發；未含後續維運費"
     },

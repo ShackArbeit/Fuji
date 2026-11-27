@@ -198,6 +198,11 @@ check("東元複製每處加購半自動（年費）", C.extraRobotOf("teco-draw
 check("中強光電複製沿用授權", C.extraRobotOf("coretronic-quality-report"), 0);
 check("新光三越複製沿用授權", C.extraRobotOf("skm-concession"), 0);
 check("回本：東元 3 事業部（含加購）月數", C.roiPlan("teco-drawing-sync").alt.payback, 12);
+// 林懇伶回本細項（2026-11-27）：分鐘拆解加總 = 卡片分鐘；每件多查 1 次（12 分）約 17 個月回本
+const LD = C.roiDetail("lin-land-expansion");
+check("林懇伶：每件分鐘拆解加總", LD.sum, DATA.cases.find(c => c.id === "lin-land-expansion").benefit.minutes);
+check("林懇伶：每件 12 分時回本月數", LD.whatIf.payback, 17);
+check("林懇伶：三年淨效益（萬，四捨五入一位）", Math.round(LD.net3y / 1000) / 10, 24.2);
 const TC = C.roi("tc-1999-petition");
 check("回本：臺中研考會三年淨效益（萬，四捨五入一位）", Math.round(TC.net3y / 1000) / 10, 263.5); // 2026-11-27 報價 64 萬，原 277.5
 check("標準案＋AI 分案（20 人天）", C.dealAmount("standardAI"), 640_000);

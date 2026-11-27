@@ -213,6 +213,20 @@
   }
   // 回本試算（試算假設）：達標顯示回本月數與三年淨效益；未達標改提多流程攤提或量體門檻，不顯示負數
   function roiHtml(c) {
+    const html = roiCore(c);
+    const d = roiDetail(c.id);
+    if (!d) return html;
+    const parts = d.breakdown.map(x => `${esc(x.text)} ${x.minutes} 分`).join(" ＋ ");
+    const w = d.whatIf;
+    const extra = `<span class="roi-detail">
+      <span class="roi-calc">每${esc(measureOf(benefit(c.id)))} ${d.sum} 分怎麼來（假設）：${parts}</span>
+      <span class="roi-calc">三年算總帳：月省 ${fmtWan(roiPlan(c.id).base.monthlySave)} × ${DATA.roi.horizonMonths} 月 － ${fmtWan(d.cost3)} ＝ <b>淨效益約 ${fmtWan(d.net3y)}</b>（超過 ${DATA.roi.paybackLimit} 個月，但三年仍划算）</span>
+      ${w ? `<span class="roi-alt">→ ${esc(w.label)}：每${esc(measureOf(benefit(c.id)))} ${w.minutes} 分，月省 ${fmtNum(w.savedHours, 0)} 小時、${fmtWan(w.monthlySave)}，約 ${w.payback} 個月回本${w.ok ? "，就達標" : ""}</span>` : ""}
+      ${d.note ? `<span class="roi-calc">${esc(d.note)}</span>` : ""}
+    </span>`;
+    return html.replace(/<\/p>$/, extra + "</p>");
+  }
+  function roiCore(c) {
     const r = DATA.roi;
     const { base, alt } = roiPlan(c.id);
     const wan = v => fmtWan(v);
