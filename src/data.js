@@ -426,6 +426,7 @@ export const DATA = {
         quality: "價值在減少對帳出錯與漏追、縮短結算週期；效益以擴到 20 家計" },
       pilotGoal: "降低對帳出錯與漏追、縮短佣金結算週期",
       productType: "semi", estDays: 13,
+      roiNote: "保經大量處理要保書與客戶個資，可先導入 Apeos 事務機＋影像備份（追蹤個資外洩）、DocuWorks（保單文件數位化），建立合作後再推 RPA",
       productNote: "先導模組（PoV）：首期 3–5 家，效益以同一套授權擴到 20 家計；需約定格式改版的維護範圍；金融資安審查期長，Q1 回簽有風險"
     },
     {
