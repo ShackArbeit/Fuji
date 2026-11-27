@@ -420,7 +420,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
   .ap-grid h3 { font-size: 1.1rem; margin-bottom: .3rem; }
   .ap-grid .tbl th, .ap-grid .tbl td { padding: .15rem .4rem; }
   .ap-grid .tbl td.hl { background: var(--primary-soft); font-weight: 800; }
-  .ap-case { break-inside: avoid; page-break-inside: avoid; border: 1px solid var(--line); border-radius: 8px; padding: .6rem .8rem; margin-bottom: 4mm; }
+  .ap-case { break-inside: avoid; page-break-inside: avoid; border: 1px solid var(--line); border-radius: 8px; padding: .5rem .8rem; margin-bottom: 3mm; }
   .ap-case .case-sections { grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: .4rem .6rem; }
   .ap-case .sec { padding: .35rem .5rem; }
   .ap-case .sec-stack { gap: .4rem; }
@@ -548,7 +548,7 @@ kbd { border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5p
 .src-other { columns: 2; column-gap: 1.6rem; }
 .src-other > strong { column-span: all; display: block; }
 .src-other > span { break-inside: avoid; }
-@media print { .ap-case { font-size: .94em; line-height: 1.32; } .ap-case .detail-head { margin-bottom: .2rem; } }
+@media print { .ap-case { font-size: .92em; line-height: 1.3; } .ap-case .detail-head { margin-bottom: .2rem; } }
 /* 卡片第 2 段：白話流程（2026-11-24） */
 .plain-flow { margin: .2rem 0 .35rem; padding: .3rem .6rem; background: var(--primary-soft); border-left: 4px solid var(--primary); border-radius: 0 6px 6px 0; line-height: 1.45; }
 .plain-flow b { color: var(--primary); }
@@ -1241,6 +1241,7 @@ const DATA = {
       benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
         quality: "縮短每月關帳天數、減少算錯抽成的帳務爭議；驗證可複製到其他分館的模板" },
       productType: "semi", estDays: 10,
+      roiNote: "品牌換約頻繁，可先導入 DocuWorks＋電子簽章（專櫃合約線上簽回）、Apeos 事務機，建立合作後再推 RPA",
       productNote: "入門包：先拿一館試點；模板驗證後複製到其他分館",
       pilotGoal: "縮短關帳天數、減少抽成算錯爭議，驗證可複製的分館模板",
       replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4, extraRobot: false, robotNote: "總部財務集中操作，沿用授權" }

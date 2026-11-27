@@ -451,6 +451,7 @@ export const DATA = {
       benefit: { count: 300, unit: "櫃", per: "month", minutes: 10, autoRate: 0.8,
         quality: "縮短每月關帳天數、減少算錯抽成的帳務爭議；驗證可複製到其他分館的模板" },
       productType: "semi", estDays: 10,
+      roiNote: "品牌換約頻繁，可先導入 DocuWorks＋電子簽章（專櫃合約線上簽回）、Apeos 事務機，建立合作後再推 RPA",
       productNote: "入門包：先拿一館試點；模板驗證後複製到其他分館",
       pilotGoal: "縮短關帳天數、減少抽成算錯爭議，驗證可複製的分館模板",
       replicate: { days: 5, label: "其他分館", unit: "館", maxCopies: 4, extraRobot: false, robotNote: "總部財務集中操作，沿用授權" }
