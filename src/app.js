@@ -307,6 +307,7 @@
           <h4><span class="sec-no">2</span>挑戰／流程現況 ${infoTag("guess")}</h4>
           ${c.plain ? `<p class="plain-flow"><b>白話流程</b>：${esc(c.plain)}</p>` : ""}
           <ul class="plain">${c.challenge.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+          ${c.challengeNote ? `<p class="challenge-note"><b>備註</b>：${esc(c.challengeNote)}</p>` : ""}
         </section>
         <div class="sec-stack st-2">
         <section class="sec">
